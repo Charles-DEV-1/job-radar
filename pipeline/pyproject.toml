@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "job-radar-pipeline"
+version = "0.1.0"
+description = "Private Job Radar ATS discovery pipeline"
+requires-python = ">=3.12"
+dependencies = [
+    "httpx>=0.27,<1",
+    "ruamel.yaml>=0.18,<0.20",
+    "beautifulsoup4>=4.12,<5",
+    "tldextract>=5,<6",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["pipeline*"]
+namespaces = false
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.package-data]
+pipeline = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]

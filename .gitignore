@@ -1,0 +1,38 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Private resume files; only templates may be tracked
+data/resumes/*
+!data/resumes/templates/
+*.docx
+*.pdf
+!data/resumes/templates/**
+data/detection-runs*.jsonl
+
+# Python environments, build output, and caches
+.venv/
+venv/
+.tools/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+build/
+dist/
+
+# Node and Next.js
+node_modules/
+.next/
+out/
+
+# Playwright artifacts
+playwright/.cache/
+playwright-report/
+blob-report/
+test-results/

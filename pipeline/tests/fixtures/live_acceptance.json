@@ -1,0 +1,79 @@
+{
+  "verified_on": "2026-10-05",
+  "run_id": "60fba53b-c5e0-450a-a9a7-bf9131e72597",
+  "companies": [
+    {
+      "run_id": "60fba53b-c5e0-450a-a9a7-bf9131e72597",
+      "event": "company",
+      "company": "Moniepoint",
+      "ats": "greenhouse",
+      "ats_slug": "moniepoint",
+      "status": "confirmed",
+      "job_count": 146,
+      "errors": [],
+      "reason": "Board company name matches entry",
+      "duration_ms": 8250.0
+    },
+    {
+      "run_id": "60fba53b-c5e0-450a-a9a7-bf9131e72597",
+      "event": "company",
+      "company": "M-KOPA",
+      "ats": "ashby",
+      "ats_slug": "M-KOPA",
+      "status": "confirmed",
+      "job_count": 38,
+      "errors": [],
+      "reason": "ATS link found on official company page",
+      "duration_ms": 8860.0
+    },
+    {
+      "run_id": "60fba53b-c5e0-450a-a9a7-bf9131e72597",
+      "event": "company",
+      "company": "FairMoney",
+      "ats": "workable",
+      "ats_slug": "fairmoney",
+      "status": "confirmed",
+      "job_count": 50,
+      "errors": [],
+      "reason": "Board company name matches entry",
+      "duration_ms": 11453.0
+    },
+    {
+      "run_id": "60fba53b-c5e0-450a-a9a7-bf9131e72597",
+      "event": "company",
+      "company": "Yoco",
+      "ats": "workable",
+      "ats_slug": "yoco",
+      "status": "confirmed",
+      "job_count": 0,
+      "errors": [],
+      "reason": "Board company name matches entry",
+      "duration_ms": 16797.0
+    },
+    {
+      "run_id": "60fba53b-c5e0-450a-a9a7-bf9131e72597",
+      "event": "company",
+      "company": "Paystack",
+      "ats": "workable",
+      "ats_slug": "paystack",
+      "status": "confirmed",
+      "job_count": 0,
+      "errors": [
+        "https://paystack.com/careers: robots.txt disallows this page",
+        "https://paystack.com/: robots.txt disallows this page"
+      ],
+      "reason": "Board company name matches entry",
+      "duration_ms": 8703.0
+    }
+  ],
+  "collision_checks": {
+    "M-KOPA board without official-page proof": "needs_review",
+    "Moniepoint board tested against FairMoney entry": "needs_review",
+    "Moniepoint board with contradictory official-page proof": "needs_review"
+  },
+  "notes": [
+    "Paystack official pages were not fetched because robots.txt disallowed access.",
+    "Yoco and Paystack returned valid named Workable boards with zero open jobs; this does not establish these boards are their current primary ATS.",
+    "Job counts are snapshots of live responses, not promises of current vacancies."
+  ]
+}

@@ -1,0 +1,39 @@
+# EXAMPLES ONLY: fictional companies, reserved example domains, disabled by default.
+# Replace these entries with your real companies and their official domains.
+# Detector fields are ats, ats_slug, and detection_status; --write updates only those.
+companies:
+  # Example 1: Nigerian fintech (fictional).
+  - name: Example Payments
+    aliases: [Example Pay]
+    domain: payments.example.com
+    careers_url: null # Optional public careers page on the official domain.
+    category: fintech # fintech | bank | ai | saas | telecom | other
+    country: NG
+    enabled: false
+    ats: unknown # greenhouse | lever | ashby | workable | recruitee | smartrecruiters | none | unknown
+    ats_slug: null
+    detection_status: needs_review # confirmed | needs_review | not_found
+
+  # Example 2: Kenyan SaaS company (fictional).
+  - name: Example Cloud
+    aliases: [Example Cloud Kenya]
+    domain: cloud.example.org
+    careers_url: https://cloud.example.org/careers
+    category: saas
+    country: KE
+    enabled: false
+    ats: unknown
+    ats_slug: null
+    detection_status: needs_review
+
+  # Example 3: South African AI company (fictional).
+  - name: Example Intelligence
+    aliases: [Example AI]
+    domain: intelligence.example.net
+    careers_url: null
+    category: ai
+    country: ZA
+    enabled: false
+    ats: unknown
+    ats_slug: null
+    detection_status: needs_review

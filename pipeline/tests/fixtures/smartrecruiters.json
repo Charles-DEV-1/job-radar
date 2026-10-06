@@ -1,0 +1,221 @@
+{
+  "offset": 0,
+  "limit": 100,
+  "totalFound": 130,
+  "content": [
+    {
+      "id": "744000153508782",
+      "name": "Wealth & Investment Relationship Manager (Mombasa)",
+      "uuid": "933cb850-b722-48c5-8c3f-97ccbb1e8019",
+      "jobAdId": "14904d32-b3d1-4f75-955c-aba22ce0e608",
+      "defaultJobAd": true,
+      "refNumber": "80261841A-0001",
+      "company": {
+        "identifier": "StandardBankGroup",
+        "name": "Standard Bank Group"
+      },
+      "releasedDate": "2026-10-05T13:43:48.067Z",
+      "location": {
+        "city": "Nairobi",
+        "region": "Nairobi County",
+        "country": "ke",
+        "address": "Westlands Road",
+        "remote": false,
+        "hybrid": false,
+        "latitude": "-1.2695135",
+        "longitude": "36.8087826",
+        "fullLocation": "Nairobi, Nairobi County, Kenya"
+      },
+      "industry": {
+        "id": "financial_services",
+        "label": "Financial Services"
+      },
+      "department": {},
+      "function": {
+        "id": "other",
+        "label": "Other"
+      },
+      "typeOfEmployment": {
+        "id": "permanent",
+        "label": "Full-time"
+      },
+      "experienceLevel": {
+        "id": "mid_senior_level",
+        "label": "Mid-Senior Level"
+      },
+      "customField": [
+        {
+          "fieldId": "62876c5db933796e12fe48fa",
+          "fieldLabel": "Employee Group",
+          "valueId": "B",
+          "valueLabel": "Management"
+        },
+        {
+          "fieldId": "COUNTRY",
+          "fieldLabel": "Country/Region",
+          "valueId": "ke",
+          "valueLabel": "Kenya"
+        },
+        {
+          "fieldId": "6278c01efdc7a223f6b77e94",
+          "fieldLabel": "Brands",
+          "valueId": "ec3aced8-381e-46e8-9f8c-5631815b1d41",
+          "valueLabel": "Standard Bank"
+        },
+        {
+          "fieldId": "62876b58f049c63266563039",
+          "fieldLabel": "Business Segment",
+          "valueId": "personalprivatebanking",
+          "valueLabel": "Personal & Private Banking"
+        },
+        {
+          "fieldId": "62876c1914c12e149dd78f9b",
+          "fieldLabel": "Cost Center",
+          "valueId": "0000042368",
+          "valueLabel": "42368 - KE:HIGH NET WORTH"
+        },
+        {
+          "fieldId": "62876c2df049c6326656303c",
+          "fieldLabel": "Company Code",
+          "valueId": "7032",
+          "valueLabel": "Stanbic Bank Kenya Ltd"
+        },
+        {
+          "fieldId": "62876cf814c12e149dd78f9f",
+          "fieldLabel": "Job Grade",
+          "valueId": "SBG12",
+          "valueLabel": "SBG12"
+        },
+        {
+          "fieldId": "62876e1ab3c48651f8a87bf4",
+          "fieldLabel": "Position Number ID",
+          "valueLabel": "80261841A-0001"
+        },
+        {
+          "fieldId": "673df7cb9a5e1a51e37c7ae7",
+          "fieldLabel": "Job Description Title",
+          "valueLabel": "Relationship Manager, Wealth and Investment Africa Regions"
+        }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/StandardBankGroup/postings/744000153508782",
+      "language": {
+        "code": "en-GB",
+        "label": "English (UK)",
+        "labelNative": "English (UK)"
+      }
+    },
+    {
+      "id": "744000153505229",
+      "name": "Finance Manager (6 Month Fixed Term Contract) ",
+      "uuid": "d753c2d8-8734-4fae-a04b-bf3bac5e436f",
+      "jobAdId": "a486a486-64d5-40d1-ace0-bda78f8637e8",
+      "defaultJobAd": true,
+      "refNumber": "80456500A-0001",
+      "company": {
+        "identifier": "StandardBankGroup",
+        "name": "Standard Bank Group"
+      },
+      "releasedDate": "2026-10-05T13:21:39.262Z",
+      "location": {
+        "city": "Johannesburg",
+        "region": "GP",
+        "country": "za",
+        "address": "30 Baker Street",
+        "postalCode": "2196",
+        "remote": false,
+        "hybrid": false,
+        "latitude": "-26.1479",
+        "longitude": "28.04396",
+        "fullLocation": "Johannesburg, GP, South Africa"
+      },
+      "industry": {
+        "id": "financial_services",
+        "label": "Financial Services"
+      },
+      "department": {
+        "id": "6085871",
+        "label": "Non-Perm job"
+      },
+      "function": {
+        "id": "other",
+        "label": "Other"
+      },
+      "typeOfEmployment": {
+        "id": "part-time",
+        "label": "Part-time"
+      },
+      "experienceLevel": {
+        "id": "mid_senior_level",
+        "label": "Mid-Senior Level"
+      },
+      "customField": [
+        {
+          "fieldId": "62876c5db933796e12fe48fa",
+          "fieldLabel": "Employee Group",
+          "valueId": "B",
+          "valueLabel": "Management"
+        },
+        {
+          "fieldId": "COUNTRY",
+          "fieldLabel": "Country/Region",
+          "valueId": "za",
+          "valueLabel": "South Africa"
+        },
+        {
+          "fieldId": "6278c01efdc7a223f6b77e94",
+          "fieldLabel": "Brands",
+          "valueId": "ec3aced8-381e-46e8-9f8c-5631815b1d41",
+          "valueLabel": "Standard Bank"
+        },
+        {
+          "fieldId": "6278c01efdc7a223f6b77e95",
+          "fieldLabel": "Department",
+          "valueId": "6085871",
+          "valueLabel": "Non-Perm job"
+        },
+        {
+          "fieldId": "62876b58f049c63266563039",
+          "fieldLabel": "Business Segment",
+          "valueId": "businesscommercialbanking",
+          "valueLabel": "Business & Commercial Banking"
+        },
+        {
+          "fieldId": "62876c1914c12e149dd78f9b",
+          "fieldLabel": "Cost Center",
+          "valueId": "0000030888",
+          "valueLabel": "30888 - BCB:SA FIN"
+        },
+        {
+          "fieldId": "62876c2df049c6326656303c",
+          "fieldLabel": "Company Code",
+          "valueId": "1000",
+          "valueLabel": "SBSA"
+        },
+        {
+          "fieldId": "62876cf814c12e149dd78f9f",
+          "fieldLabel": "Job Grade",
+          "valueId": "SBG12",
+          "valueLabel": "SBG12"
+        },
+        {
+          "fieldId": "62876e1ab3c48651f8a87bf4",
+          "fieldLabel": "Position Number ID",
+          "valueLabel": "80456500A-0001"
+        },
+        {
+          "fieldId": "673df7cb9a5e1a51e37c7ae7",
+          "fieldLabel": "Job Description Title",
+          "valueLabel": "Manager, Finance"
+        }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/StandardBankGroup/postings/744000153505229",
+      "language": {
+        "code": "en-GB",
+        "label": "English (UK)",
+        "labelNative": "English (UK)"
+      }
+    }
+  ]
+}

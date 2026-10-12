@@ -11,11 +11,47 @@ from pipeline.http import USER_AGENT, HTTPClient, checked_url
 from pipeline.models import BoardLink, Company, DiscoveryResult
 from pipeline.robots import RobotsPolicy
 
+KNOWN_ATS_DOMAINS = frozenset(
+    {
+        "breezy.hr",
+        "workable.com",
+        "greenhouse.io",
+        "lever.co",
+        "ashbyhq.com",
+        "recruitee.com",
+        "smartrecruiters.com",
+    }
+)
+
+
+def known_ats_url(url: str) -> bool:
+    try:
+        host = checked_url(url)
+    except ValueError:
+        return False
+    return any(
+        host == domain or host.endswith("." + domain) for domain in KNOWN_ATS_DOMAINS
+    )
+
 
 def owns_url(company: Company, url: str) -> bool:
     host = (urlsplit(url).hostname or "").lower().rstrip(".")
     domain = company.domain.lower().removeprefix("www.")
     return host == domain or host.endswith("." + domain)
+
+
+def trusted_careers_url(company: Company, url: str) -> bool:
+    """Official pages or the exact ATS host/path explicitly configured by the owner."""
+    if owns_url(company, url):
+        return True
+    configured = company.careers_url
+    if not configured or not known_ats_url(configured) or not known_ats_url(url):
+        return False
+    base, target = urlsplit(configured), urlsplit(url)
+    prefix = base.path.rstrip("/")
+    return target.netloc.lower() == base.netloc.lower() and (
+        target.path.rstrip("/") == prefix or target.path.startswith(prefix + "/")
+    )
 
 
 def parse_board_url(url: str, evidence_url: str | None = None) -> BoardLink | None:
@@ -150,12 +186,13 @@ class CareersDiscovery:
                 continue
             visited.add(url)
             page_count += 1
-            # A configured external board is a candidate, not official-site proof.
+            # An explicit known-ATS URL is trusted configuration, never a guessed API.
             configured = parse_board_url(url)
             if configured and not owns_url(company, url):
-                result.links.append(configured)
+                evidence = url if trusted_careers_url(company, url) else None
+                result.links.append(parse_board_url(url, evidence) or configured)
                 continue
-            if not owns_url(company, url):
+            if not trusted_careers_url(company, url):
                 result.errors.append(
                     "Configured careers URL is outside the official domain"
                 )
@@ -169,7 +206,7 @@ class CareersDiscovery:
                     if response.is_redirect:
                         target = urljoin(current, response.headers["location"])
                         checked_url(target)
-                        if not owns_url(company, target):
+                        if not trusted_careers_url(company, target):
                             linked = parse_board_url(target, current)
                             if linked:
                                 result.links.append(linked)
@@ -183,7 +220,7 @@ class CareersDiscovery:
                     queue.extend(
                         page
                         for page in career_pages
-                        if page not in visited and owns_url(company, page)
+                        if page not in visited and trusted_careers_url(company, page)
                     )
                     break
                 else:

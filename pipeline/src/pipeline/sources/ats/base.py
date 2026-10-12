@@ -72,6 +72,13 @@ class ATSAdapter(ABC):
             result.status = "found"
             result.job_count = self._count(payload, jobs)
             self._identity(payload, jobs, result)
+            if (
+                result.job_count == 0
+                and not result.company_names
+                and not result.company_domains
+            ):
+                result.status = "not_found"
+                result.not_found_reason = "Empty response has no company identity"
             for job in jobs[:3]:
                 title = job.get("title") or job.get("text") or job.get("name")
                 if isinstance(title, str):

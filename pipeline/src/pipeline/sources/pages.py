@@ -18,7 +18,7 @@ import httpx
 import tldextract
 from bs4 import BeautifulSoup
 
-from pipeline.discovery import CareersDiscovery
+from pipeline.discovery import KNOWN_ATS_DOMAINS, CareersDiscovery
 from pipeline.http import HTTPClient, checked_url
 
 DOMAIN = tldextract.TLDExtract(suffix_list_urls=())
@@ -28,14 +28,7 @@ class UnsafeRedirect(ValueError):
     """A listing redirected outside its permitted domains."""
 
 
-ATS_DOMAINS = {
-    "greenhouse.io",
-    "lever.co",
-    "ashbyhq.com",
-    "workable.com",
-    "recruitee.com",
-    "smartrecruiters.com",
-}
+ATS_DOMAINS = KNOWN_ATS_DOMAINS
 NOISE = (
     "script,style,noscript,nav,footer,body>header,[hidden],[aria-hidden='true'],"
     ".hidden,.sr-only,.visually-hidden,"

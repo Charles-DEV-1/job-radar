@@ -111,9 +111,13 @@ class Detector:
             probe = self._probe(company, adapter, slug)
             if probe.status == "found":
                 matches.append(verify_match(company, probe, evidence))
+            elif probe.status == "not_found" and probe.not_found_reason:
+                matches.append(
+                    Match(probe, "not_found", probe.not_found_reason, evidence)
+                )
             elif probe.status == "not_found" and evidence:
                 errors.append(
-                    f"{adapter.name}/{slug}: official ATS link found, "
+                    f"{adapter.name}/{slug}: careers ATS link found, "
                     "but the verified public endpoint returned a missing board"
                 )
             elif probe.error:
@@ -124,25 +128,32 @@ class Detector:
             adapter = self.adapters.get(link.ats)
             if adapter is not None:
                 attempt(adapter, link.slug, link.evidence_url)
-        if not any(match.status == "confirmed" for match in matches):
-            for adapter in self.adapters.values():
-                if not adapter.enabled:
-                    attempt(adapter, generate_slugs(company)[0])
-                    continue
-                for slug in generate_slugs(company):
-                    attempt(adapter, slug)
-                    if any(match.status == "confirmed" for match in matches):
-                        break
-                if any(match.status == "confirmed" for match in matches):
+        slugs = generate_slugs(company)
+        for adapter in self.adapters.values():
+            if not adapter.enabled:
+                attempt(adapter, slugs[0])
+                continue
+            for slug in slugs:
+                # Stop guessing within this provider only after finding a live,
+                # confirmed board. Every other provider is still probed.
+                if any(
+                    match.status == "confirmed"
+                    and match.probe.job_count > 0
+                    and match.probe.ats == adapter.name
+                    for match in matches
+                ):
                     break
-        if matches:
+                attempt(adapter, slug)
+        candidates = [match for match in matches if match.status != "not_found"]
+        if candidates:
             matches.sort(
                 key=lambda match: (
                     match.status != "confirmed",
+                    match.probe.job_count == 0,
                     match.evidence_url is None,
                 )
             )
-            best = matches[0]
+            best = next(match for match in matches if match.status != "not_found")
             result = DetectionResult(
                 company,
                 best.probe.ats,
@@ -161,6 +172,7 @@ class Detector:
                 "needs_review",
                 None,
                 "Discovery incomplete; see recorded errors",
+                matches=matches,
                 errors=errors,
             )
         else:
@@ -171,6 +183,7 @@ class Detector:
                 "not_found",
                 None,
                 "No supported public ATS board found",
+                matches=matches,
             )
         self.recorder.write(
             {
@@ -187,6 +200,7 @@ class Detector:
                         "ats": match.probe.ats,
                         "slug": match.probe.slug,
                         "status": match.status,
+                        "job_count": match.probe.job_count,
                         "reason": match.reason,
                         "evidence_url": match.evidence_url,
                     }

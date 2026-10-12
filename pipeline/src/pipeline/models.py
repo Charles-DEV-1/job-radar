@@ -36,6 +36,7 @@ class ProbeResult:
     sample_apply_urls: list[str] = field(default_factory=list)
     error: str | None = None
     duration_ms: float = 0
+    not_found_reason: str | None = None
 
 
 @dataclass(frozen=True)

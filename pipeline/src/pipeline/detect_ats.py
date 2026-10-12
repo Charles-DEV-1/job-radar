@@ -41,8 +41,14 @@ def print_report(results: list[DetectionResult]) -> None:
         if index == 0:
             print("-+-".join("-" * width for width in widths))
     for result in results:
-        if result.job_count == 0:
-            print(f"{readable(result.company.name)}: 0 open jobs (valid board)")
+        if result.job_count == 0 and result.detection_status == "confirmed":
+            print(f"{readable(result.company.name)}: 0 open jobs (empty, verify)")
+        for match in result.matches:
+            if match.status == "confirmed" and match.probe.job_count == 0:
+                print(
+                    f"{readable(result.company.name)}: {match.probe.ats}/"
+                    f"{readable(match.probe.slug)}: empty, verify"
+                )
     reviews = [
         (result, match)
         for result in results

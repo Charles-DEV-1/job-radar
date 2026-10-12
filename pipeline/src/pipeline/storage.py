@@ -142,9 +142,22 @@ class SupabaseStore:
         raise StoreError("Supabase request exhausted retries")
 
     def sync_sources(self, sources: list[SourceConfig]) -> dict[tuple[str, str], str]:
-        rows = self._rpc(
-            "radar_sync_sources", {"p_sources": [asdict(source) for source in sources]}
-        )
+        try:
+            rows = self._rpc(
+                "radar_sync_sources",
+                {"p_sources": [asdict(source) for source in sources]},
+            )
+        except StoreError as exc:
+            if "code 23514" in str(exc) and any(
+                source.source_type != "ats" for source in sources
+            ):
+                raise StoreError(
+                    f"{exc}. Verify that supabase/migrations/"
+                    "20261010000100_stage3_careers_monitor.sql is applied to the "
+                    "project configured by SUPABASE_URL; the Stage 2 sync function "
+                    "rejects careers_page/feed sources."
+                ) from None
+            raise
         if not isinstance(rows, list):
             raise StoreError("Supabase returned an invalid source registry")
         return {(row["ats"], row["slug"]): row["id"] for row in rows}

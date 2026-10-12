@@ -88,6 +88,46 @@ def test_anon_and_publishable_keys_are_rejected() -> None:
     require_service_key("sb_secret_mock_key_for_tests_only")
 
 
+@pytest.mark.parametrize("source_type", ["ats", "careers_page", "feed"])
+def test_source_constraint_failure_explains_monitor_migration(source_type: Any) -> None:
+    calls: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls.append(request)
+        return httpx.Response(
+            400,
+            json={
+                "code": "23514",
+                "message": "private payload",
+                "details": None,
+                "hint": None,
+            },
+        )
+
+    with httpx.Client(transport=httpx.MockTransport(handler)) as session:
+        store = SupabaseStore(
+            create_client(
+                "https://project.supabase.co",
+                "sb_secret_mock_key_for_tests_only",
+                options=SyncClientOptions(httpx_client=session),
+            )
+        )
+        source = SourceConfig(
+            "Company",
+            "workable" if source_type == "ats" else source_type,
+            "board",
+            "https://example.com",
+            source_type=source_type,
+        )
+        with pytest.raises(StoreError) as error:
+            store.sync_sources([source])
+    assert ("20261010000100_stage3_careers_monitor.sql" in str(error.value)) == (
+        source_type != "ats"
+    )
+    assert "private payload" not in str(error.value)
+    assert len(calls) == 1  # A constraint failure is not transient.
+
+
 @pytest.mark.parametrize("void_status", [200, 204])
 def test_sdk_snapshot_counts_and_void_results(void_status: int) -> None:
     counts = {

@@ -135,8 +135,12 @@ def test_load_sources_requires_confirmed_and_preserves_disabled(
     assert len(sources) == 2 and sources[0].enabled and not sources[1].enabled
 
 
-def test_cli_no_confirmed_companies_does_not_need_secrets(capsys: Any) -> None:
-    assert main([]) == 0
+def test_cli_no_confirmed_companies_does_not_need_secrets(
+    tmp_path: Path, capsys: Any
+) -> None:
+    path = tmp_path / "companies.yaml"
+    path.write_text('{"companies": []}', encoding="utf-8")
+    assert main(["--companies-file", str(path)]) == 0
     assert "No confirmed ATS entries" in capsys.readouterr().out
 
 

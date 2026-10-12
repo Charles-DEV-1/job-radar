@@ -4,7 +4,7 @@ import re
 import unicodedata
 from difflib import SequenceMatcher
 
-from pipeline.discovery import owns_url
+from pipeline.discovery import owns_url, trusted_careers_url
 from pipeline.models import Company, Match, ProbeResult
 
 LEGAL_SUFFIXES = {"inc", "ltd", "limited", "llc", "plc", "corp", "corporation"}
@@ -12,6 +12,9 @@ LEGAL_SUFFIXES = {"inc", "ltd", "limited", "llc", "plc", "corp", "corporation"}
 
 def normalized_name(value: str) -> str:
     value = unicodedata.normalize("NFKD", value).encode("ascii", "ignore").decode()
+    # Parenthetical brand/annotation text must not hide an approved legal name.
+    # Compare the remaining full name, never arbitrary substrings or bracket labels.
+    value = re.sub(r"\([^)]*\)", " ", value)
     words = re.findall(r"[a-z0-9]+", value.casefold())
     while words and words[-1] in LEGAL_SUFFIXES:
         words.pop()
@@ -40,33 +43,32 @@ def verify_match(
 ) -> Match:
     if probe.status != "found":
         raise ValueError("Only an existing board can be verified")
+
+    def confirmed(reason: str) -> Match:
+        if probe.job_count == 0:
+            reason += "; empty, verify"
+        return Match(probe, "confirmed", reason, evidence_url)
+
+    def unverified(reason: str) -> Match:
+        status = "not_found" if probe.job_count == 0 else "needs_review"
+        return Match(probe, status, reason, evidence_url)
+
     if probe.company_domains:
         matching = [
             owns_url(company, "https://" + domain) for domain in probe.company_domains
         ]
         if not all(matching):
-            return Match(
-                probe, "needs_review", "Board company domain conflicts with entry"
-            )
-        return Match(
-            probe,
-            "confirmed",
-            "Board company domain matches official domain",
-            evidence_url,
-        )
+            return unverified("Board company domain conflicts with entry")
+        return confirmed("Board company domain matches official domain")
     if probe.company_names:
         matching = [name_matches(name, company) for name in probe.company_names]
         if not all(matching):
-            return Match(
-                probe, "needs_review", "Board company name conflicts with entry"
-            )
-        return Match(
-            probe, "confirmed", "Board company name matches entry", evidence_url
-        )
+            return unverified("Board company name conflicts with entry")
+        return confirmed("Board company name matches entry")
+    if probe.job_count == 0:
+        return unverified("Empty board has no verified company identity")
     if evidence_url and owns_url(company, evidence_url):
-        return Match(
-            probe, "confirmed", "ATS link found on official company page", evidence_url
-        )
-    return Match(
-        probe, "needs_review", "Board exists but has no verified company identity"
-    )
+        return confirmed("ATS link found on official company page")
+    if evidence_url and trusted_careers_url(company, evidence_url):
+        return confirmed("ATS link supplied by explicitly configured careers URL")
+    return unverified("Board exists but has no verified company identity")

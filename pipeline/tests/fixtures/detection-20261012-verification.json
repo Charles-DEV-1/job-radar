@@ -1,0 +1,41 @@
+{
+  "checked_at": "2026-10-12",
+  "checks": [
+    {
+      "name": "paystack_greenhouse",
+      "url": "https://boards-api.greenhouse.io/v1/boards/paystack/jobs",
+      "status": 404,
+      "error": "HTTPStatusError"
+    },
+    {
+      "name": "paystack_workable",
+      "url": "https://apply.workable.com/api/v1/widget/accounts/paystack",
+      "status": 200,
+      "jobs": 0
+    },
+    {
+      "name": "piggyvest_workable",
+      "url": "https://apply.workable.com/api/v1/widget/accounts/piggyvest",
+      "status": 200,
+      "jobs": 0
+    },
+    {
+      "name": "smartrecruiters_missing",
+      "url": "https://api.smartrecruiters.com/v1/companies/jobradar-missing-company-20261012/postings",
+      "status": 200,
+      "jobs": 0
+    },
+    {
+      "name": "cowrywise_breezy",
+      "url": "https://cowrywise.breezy.hr/",
+      "status": 200,
+      "final_url": "https://cowrywise.breezy.hr/",
+      "title": "Openings at Cowrywise"
+    },
+    {
+      "name": "piggyvest_breezy",
+      "url": "https://piggyvest.breezy.hr/",
+      "error": "HTTPStatusError"
+    }
+  ]
+}

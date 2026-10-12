@@ -85,7 +85,7 @@ def test_discovered_link_with_unavailable_api_needs_review(
         create_adapters(http), CareersDiscovery(http), RunRecorder(tmp_path / "runs")
     ).detect(company)
     assert result.ats == "unknown" and result.detection_status == "needs_review"
-    assert any("official ATS link found" in error for error in result.errors)
+    assert any("ATS link found" in error for error in result.errors)
 
 
 def test_wrong_board_is_reviewed_then_correct_board_can_win(
@@ -144,7 +144,7 @@ def test_official_empty_board_is_kept_and_probe_is_cached(
     def handler(request: httpx.Request) -> httpx.Response:
         if request.url.host == "apply.workable.com":
             probes.append(str(request.url))
-            return httpx.Response(200, json={"jobs": []})
+            return httpx.Response(200, json={"name": "FairMoney", "jobs": []})
         if request.url.path == "/robots.txt":
             return httpx.Response(404)
         return httpx.Response(
@@ -160,5 +160,6 @@ def test_official_empty_board_is_kept_and_probe_is_cached(
     second = detector.detect(replace(company, aliases=("FM",)))
     assert first.job_count == second.job_count == 0
     assert first.detection_status == second.detection_status == "confirmed"
-    assert len(probes) == 1
+    assert len(probes) == len(set(probes))
+    assert "empty, verify" in first.reason
     assert '"cached": true' in report.read_text(encoding="utf-8")

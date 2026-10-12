@@ -139,12 +139,12 @@ def test_official_redirect_to_ats_is_evidence(company: Company, make_http: Any) 
     assert result.links[0].evidence_url == "https://fairmoney.io/"
 
 
-def test_configured_external_board_is_not_official_evidence(
+def test_configured_known_ats_board_is_trusted_evidence(
     company: Company, make_http: Any
 ) -> None:
     entry = replace(company, careers_url="https://jobs.lever.co/brand")
     result = CareersDiscovery(make_http(lambda _: httpx.Response(404))).discover(entry)
-    assert result.links[0].evidence_url is None
+    assert result.links[0].evidence_url == entry.careers_url
 
 
 def test_robots_crawl_delay_is_respected(company: Company, make_http: Any) -> None:

@@ -49,7 +49,9 @@ def test_long_name_allows_a_small_spelling_difference(company: Company) -> None:
     "wrong", ["FairMoney Loans", "Money", "Fairbank", "FairMoney Kenya"]
 )
 def test_wrong_company_is_never_confirmed(company: Company, wrong: str) -> None:
-    probe = ProbeResult("workable", "fairmoney", "found", company_names=[wrong])
+    probe = ProbeResult(
+        "workable", "fairmoney", "found", job_count=1, company_names=[wrong]
+    )
     assert verify_match(company, probe).status == "needs_review"
     assert (
         verify_match(company, probe, "https://fairmoney.io/careers").status
@@ -58,14 +60,14 @@ def test_wrong_company_is_never_confirmed(company: Company, wrong: str) -> None:
 
 
 def test_same_slug_without_identity_needs_review(company: Company) -> None:
-    probe = ProbeResult("lever", "fairmoney", "found")
+    probe = ProbeResult("lever", "fairmoney", "found", job_count=1)
     assert verify_match(company, probe).status == "needs_review"
 
 
-def test_official_link_verifies_even_an_empty_board(company: Company) -> None:
+def test_official_link_cannot_verify_an_anonymous_empty_board(company: Company) -> None:
     probe = ProbeResult("ashby", "unexpected-slug", "found", job_count=0)
     match = verify_match(company, probe, "https://careers.fairmoney.io/jobs")
-    assert match.status == "confirmed"
+    assert match.status == "not_found"
     assert match.evidence_url
 
 
@@ -79,7 +81,9 @@ def test_official_link_verifies_even_an_empty_board(company: Company) -> None:
 )
 def test_external_link_cannot_supply_official_proof(company: Company, url: str) -> None:
     assert (
-        verify_match(company, ProbeResult("lever", "fairmoney", "found"), url).status
+        verify_match(
+            company, ProbeResult("lever", "fairmoney", "found", job_count=1), url
+        ).status
         == "needs_review"
     )
 
@@ -90,6 +94,7 @@ def test_domain_match_and_conflict(company: Company) -> None:
     )
     assert verify_match(company, probe).status == "confirmed"
     probe.company_domains = ["wrong-company.com"]
+    probe.job_count = 1
     probe.company_names = ["FairMoney"]
     assert (
         verify_match(company, probe, "https://fairmoney.io/").status == "needs_review"
@@ -99,5 +104,7 @@ def test_domain_match_and_conflict(company: Company) -> None:
 def test_short_similar_brands_do_not_fuzzy_match(company: Company) -> None:
     entry = replace(company, name="Wave", aliases=())
     for wrong in ("Wav", "Flutterwave", "Wave Financial"):
-        probe = ProbeResult("lever", "wave", "found", company_names=[wrong])
+        probe = ProbeResult(
+            "lever", "wave", "found", job_count=1, company_names=[wrong]
+        )
         assert verify_match(entry, probe).status == "needs_review"

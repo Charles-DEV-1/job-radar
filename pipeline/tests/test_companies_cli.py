@@ -90,7 +90,9 @@ def test_cli_read_only_then_write(
             return httpx.Response(
                 200, text='<a href="https://apply.workable.com/fairmoney/">Jobs</a>'
             )
-        return httpx.Response(200, json={"name": "FairMoney", "jobs": []})
+        if request.url.host == "apply.workable.com":
+            return httpx.Response(200, json={"name": "FairMoney", "jobs": []})
+        return httpx.Response(404)
 
     monkeypatch.setattr(detect_ats, "HTTPClient", lambda: make_http(handler))
     args = [
@@ -103,13 +105,17 @@ def test_cli_read_only_then_write(
     ]
     assert detect_ats.main(args) == 0
     assert path.read_text(encoding="utf-8") == TEMPLATE
-    assert "0 open jobs" in capsys.readouterr().out
+    assert "0 open jobs (empty, verify)" in capsys.readouterr().out
     assert detect_ats.main([*args, "--write"]) == 0
     assert "ats: workable" in path.read_text(encoding="utf-8")
 
 
-def test_disabled_examples_do_not_make_requests(capsys: Any) -> None:
-    assert detect_ats.main([]) == 0
+def test_disabled_examples_do_not_make_requests(tmp_path: Path, capsys: Any) -> None:
+    path = tmp_path / "companies.yaml"
+    path.write_text(
+        TEMPLATE.replace("enabled: true", "enabled: false"), encoding="utf-8"
+    )
+    assert detect_ats.main(["--companies-file", str(path)]) == 0
     assert "No enabled companies" in capsys.readouterr().out
 
 

@@ -42,7 +42,11 @@ def test_probe_cases(
     assert result.ats == adapter_class.name
     assert result.duration_ms >= 0
     if case in {"found", "empty"}:
-        assert result.status == "found"
+        anonymous_empty = case == "empty" and not (
+            result.company_names or result.company_domains
+        )
+        assert result.status == ("not_found" if anonymous_empty else "found")
+        assert bool(result.not_found_reason) == anonymous_empty
         expected = payload["totalFound"] if adapter.name == "smartrecruiters" else 2
         assert result.job_count == (0 if case == "empty" else expected)
         assert result.error is None

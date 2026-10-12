@@ -136,8 +136,20 @@ class SupabaseStore:
                     time.sleep(0.5 * 2**attempt)
                     continue
                 suffix = f", code {code}" if code and code.isalnum() else ""
+                hint = ""
+                if (
+                    name == "radar_sync_sources"
+                    and code == "21000"
+                    and getattr(exc, "message", "") == "UPDATE requires a WHERE clause"
+                ):
+                    hint = (
+                        ". Apply supabase/migrations/"
+                        "20261012000100_stage3_sync_safe_updates.sql to the project "
+                        "configured by SUPABASE_URL; its safe-update guard rejects "
+                        "the previous unfiltered source-registry UPDATE."
+                    )
                 raise StoreError(
-                    f"Supabase {name} failed ({type(exc).__name__}{suffix})"
+                    f"Supabase {name} failed ({type(exc).__name__}{suffix}){hint}"
                 ) from None
         raise StoreError("Supabase request exhausted retries")
 

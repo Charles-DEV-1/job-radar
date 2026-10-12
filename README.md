@@ -72,6 +72,8 @@ Apply the [Stage 3 forward migration](supabase/migrations/20261010000100_stage3_
 
 If `run_fetch` reports `radar_sync_sources` error `23514` with careers/feed sources, verify that this migration was applied to the same project as `SUPABASE_URL`. Stage 2's sync function treats every source as an ATS and rejects `careers_page`/`feed`. Stage 3 adds `sources.company_domain`, `source_runs.metadata`, `jobs.source_type`, and `source_monitor_state`, and replaces the sync function. Apply it through that project's SQL editor or your migration workflow; do not remove the ATS check constraint.
 
+After Stage 3, apply [the source-sync fix](supabase/migrations/20261012000100_stage3_sync_safe_updates.sql). It makes the registry update compatible with Supabase's safe-update guard (`21000: UPDATE requires a WHERE clause`) by disabling only currently enabled sources before synchronizing the supplied list. Existing IDs, snapshots, grants, and source-type constraints are preserved. Apply this forward migration even if the original Stage 3 migration has already run.
+
 ```powershell
 .\.venv\Scripts\python.exe -m pip install -e "./pipeline[dev,llm]"
 .\.venv\Scripts\python.exe -m playwright install chromium

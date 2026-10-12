@@ -10,6 +10,7 @@ data/resumes/*
 *.pdf
 !data/resumes/templates/**
 data/detection-runs*.jsonl
+data/fetch-runs*.jsonl
 
 # Python environments, build output, and caches
 .venv/

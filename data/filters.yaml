@@ -1,0 +1,180 @@
+# Stage 2 rules. No salary, compensation, paid, or unpaid checks.
+roles:
+  # Explicit engineering titles take priority over product areas such as "Asset Sales".
+  engineering_titles: [backend engineer, backend developer, back-end engineer, software engineer, software developer, frontend engineer, full stack engineer, platform engineer, python developer, java developer, go engineer, node.js engineer]
+  include:
+    - backend
+    - back-end
+    - back end
+    - software engineer
+    - software engineering
+    - software developer
+    - developer
+    - platform engineer
+    - platform
+    - api
+    - python
+    - java
+    - golang
+    - go
+    - node
+    - nodejs
+    - node.js
+    - distributed systems
+    - infrastructure engineer
+    - infrastructure
+    - full stack
+    - full-stack
+    - frontend
+    - front-end
+    - mobile engineer
+    - engineering manager
+  maybe: [devops, sre, site reliability, data engineer, data engineering]
+  training: [intern, internship, graduate, trainee]
+  exclude:
+    - sales
+    - marketing
+    - human resources
+    - hr
+    - recruiter
+    - talent acquisition
+    - finance
+    - financial analyst
+    - accountant
+    - accounting
+    - customer support
+    - customer service
+    - customer care
+    - business relationship
+    - relationship manager
+    - business development
+    - business intelligence analyst
+    - sales executive
+    - telesales
+    - legal
+    - compliance officer
+    - office administrator
+    - administrative business partner
+    - operations manager
+    - driver
+    - medical
+    - nurse
+    - graphic designer
+  # Safer description fallback: avoid ordinary uses of words such as "go" or "node".
+  description_include:
+    - software engineering
+    - backend engineering
+    - backend development
+    - back-end development
+    - api development
+    - distributed systems
+    - python developer
+    - java developer
+    - golang
+    - node.js
+    - software development
+locations:
+  countries:
+    DZ: {name: Algeria, aliases: [Algeria], cities: [Algiers]}
+    AO: {name: Angola, aliases: [Angola], cities: [Luanda]}
+    BJ: {name: Benin, aliases: [Benin], cities: [Cotonou, Porto-Novo]}
+    BW: {name: Botswana, aliases: [Botswana], cities: [Gaborone]}
+    BF: {name: Burkina Faso, aliases: [Burkina Faso], cities: [Ouagadougou]}
+    BI: {name: Burundi, aliases: [Burundi], cities: [Bujumbura, Gitega]}
+    CV: {name: Cabo Verde, aliases: [Cabo Verde, Cape Verde], cities: [Praia]}
+    CM: {name: Cameroon, aliases: [Cameroon], cities: [Douala, Yaounde, Yaoundé]}
+    CF: {name: Central African Republic, aliases: [Central African Republic], cities: [Bangui]}
+    TD: {name: Chad, aliases: [Chad], cities: [N'Djamena]}
+    KM: {name: Comoros, aliases: [Comoros], cities: [Moroni]}
+    CG: {name: Republic of the Congo, aliases: [Republic of the Congo, Congo-Brazzaville], cities: [Brazzaville]}
+    CD: {name: Democratic Republic of the Congo, aliases: [Democratic Republic of the Congo, DR Congo, DRC], cities: [Kinshasa]}
+    CI: {name: Côte d'Ivoire, aliases: [Côte d'Ivoire, Cote d'Ivoire, Ivory Coast], cities: [Abidjan, Yamoussoukro]}
+    DJ: {name: Djibouti, aliases: [Djibouti], cities: []}
+    EG: {name: Egypt, aliases: [Egypt], cities: [Cairo, Alexandria, Giza]}
+    GQ: {name: Equatorial Guinea, aliases: [Equatorial Guinea], cities: [Malabo]}
+    ER: {name: Eritrea, aliases: [Eritrea], cities: [Asmara]}
+    SZ: {name: Eswatini, aliases: [Eswatini, Swaziland], cities: [Mbabane]}
+    ET: {name: Ethiopia, aliases: [Ethiopia], cities: [Addis Ababa]}
+    GA: {name: Gabon, aliases: [Gabon], cities: [Libreville]}
+    GM: {name: Gambia, aliases: [Gambia], cities: [Banjul]}
+    GH: {name: Ghana, aliases: [Ghana], cities: [Accra, Kumasi, Tema]}
+    GN: {name: Guinea, aliases: [Guinea], cities: [Conakry]}
+    GW: {name: Guinea-Bissau, aliases: [Guinea-Bissau], cities: [Bissau]}
+    KE: {name: Kenya, aliases: [Kenya], cities: [Nairobi, Mombasa, Kisumu]}
+    LS: {name: Lesotho, aliases: [Lesotho], cities: [Maseru]}
+    LR: {name: Liberia, aliases: [Liberia], cities: [Monrovia]}
+    LY: {name: Libya, aliases: [Libya], cities: [Tripoli]}
+    MG: {name: Madagascar, aliases: [Madagascar], cities: [Antananarivo]}
+    MW: {name: Malawi, aliases: [Malawi], cities: [Lilongwe, Blantyre]}
+    ML: {name: Mali, aliases: [Mali], cities: [Bamako]}
+    MR: {name: Mauritania, aliases: [Mauritania], cities: [Nouakchott]}
+    MU: {name: Mauritius, aliases: [Mauritius], cities: [Port Louis]}
+    MA: {name: Morocco, aliases: [Morocco], cities: [Casablanca, Rabat, Marrakesh, Marrakech]}
+    MZ: {name: Mozambique, aliases: [Mozambique], cities: [Maputo]}
+    NA: {name: Namibia, aliases: [Namibia], cities: [Windhoek]}
+    NE: {name: Niger, aliases: [Niger], cities: [Niamey]}
+    NG: {name: Nigeria, aliases: [Nigeria, Nigerian], cities: [Lagos, Abuja, Port Harcourt, Ibadan, Kano, Enugu, Benin City, Kaduna, Jos, Ilorin, Owerri, Uyo, Calabar, Abeokuta, Akure, Warri, Asaba, Onitsha, Aba]}
+    RW: {name: Rwanda, aliases: [Rwanda], cities: [Kigali]}
+    ST: {name: São Tomé and Príncipe, aliases: [São Tomé and Príncipe, Sao Tome and Principe], cities: [São Tomé, Sao Tome]}
+    SN: {name: Senegal, aliases: [Senegal], cities: [Dakar]}
+    SC: {name: Seychelles, aliases: [Seychelles], cities: []}
+    SL: {name: Sierra Leone, aliases: [Sierra Leone], cities: [Freetown]}
+    SO: {name: Somalia, aliases: [Somalia], cities: [Mogadishu]}
+    ZA: {name: South Africa, aliases: [South Africa, South African], cities: [Johannesburg, Cape Town, Pretoria, Durban, Sandton]}
+    SS: {name: South Sudan, aliases: [South Sudan], cities: [Juba]}
+    SD: {name: Sudan, aliases: [Sudan], cities: [Khartoum]}
+    TZ: {name: Tanzania, aliases: [Tanzania], cities: [Dar es Salaam, Dodoma, Arusha]}
+    TG: {name: Togo, aliases: [Togo], cities: [Lomé, Lome]}
+    TN: {name: Tunisia, aliases: [Tunisia], cities: [Tunis]}
+    UG: {name: Uganda, aliases: [Uganda], cities: [Kampala]}
+    ZM: {name: Zambia, aliases: [Zambia], cities: [Lusaka]}
+    ZW: {name: Zimbabwe, aliases: [Zimbabwe], cities: [Harare, Bulawayo]}
+  african_regions: [Africa, Sub-Saharan Africa, West Africa, East Africa, North Africa, Southern Africa]
+  remote_terms: [remote, remotely, work from home]
+  remote_regions: [EMEA, worldwide, world-wide, globally, anywhere in the world]
+  non_african:
+    - United States
+    - USA
+    - New York
+    - NYC
+    - San Francisco
+    - Seattle
+    - Austin
+    - United Kingdom
+    - UK
+    - London
+    - Europe
+    - European Union
+    - Germany
+    - Berlin
+    - France
+    - Paris
+    - Netherlands
+    - Amsterdam
+    - Portugal
+    - Lisbon
+    - Spain
+    - Madrid
+    - Poland
+    - Warsaw
+    - Bulgaria
+    - Sofia
+    - Canada
+    - Toronto
+    - Australia
+    - Sydney
+    - India
+    - Bangalore
+    - Bengaluru
+    - Mumbai
+    - Singapore
+    - Türkiye
+    - Turkey
+    - Istanbul
+    - United Arab Emirates
+    - UAE
+    - Dubai
+  # A description reference must describe worker eligibility, not customers or offices.
+  eligibility_patterns:
+    - '(?:remote|remotely|work from|based in|open to candidates in|eligible to work from|hiring in).{0,80}\b{region}\b'
+    - '\b{region}\b.{0,40}(?:remote|remotely)'

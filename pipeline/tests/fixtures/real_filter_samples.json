@@ -1,0 +1,461 @@
+{
+  "verified_on": "2026-10-06",
+  "samples": [
+    {
+      "source": {
+        "company_name": "M-KOPA",
+        "ats": "ashby",
+        "slug": "m-kopa",
+        "url": "https://api.ashbyhq.com/posting-api/job-board/m-kopa",
+        "enabled": true
+      },
+      "raw": {
+        "id": "f86c6921-fa3c-4dea-be16-962e0080b516",
+        "title": "Senior Backend Engineer ",
+        "department": "Fintech",
+        "team": "Software Engineering",
+        "employmentType": "FullTime",
+        "location": "Nairobi",
+        "secondaryLocations": [
+          {
+            "location": "Cape Town",
+            "address": {
+              "postalAddress": {
+                "addressRegion": "Western Cape",
+                "addressCountry": "South Africa",
+                "addressLocality": "Cape Town"
+              }
+            }
+          },
+          {
+            "location": "Lagos",
+            "address": {
+              "postalAddress": {
+                "addressRegion": "Lagos State",
+                "addressCountry": "Nigeria",
+                "addressLocality": "Lagos"
+              }
+            }
+          },
+          {
+            "location": "Kampala",
+            "address": {
+              "postalAddress": {
+                "addressRegion": "Central Region",
+                "addressCountry": "Uganda",
+                "addressLocality": "Central Region"
+              }
+            }
+          },
+          {
+            "location": "Accra",
+            "address": {
+              "postalAddress": {
+                "addressRegion": "Greater Accra Region",
+                "addressCountry": "Ghana",
+                "addressLocality": "Accra"
+              }
+            }
+          },
+          {
+            "location": "Johannesburg",
+            "address": {
+              "postalAddress": {
+                "addressRegion": "Gauteng Province",
+                "addressCountry": "South Africa",
+                "addressLocality": "Johannesburg"
+              }
+            }
+          }
+        ],
+        "publishedAt": "2026-09-14T15:23:07.674+00:00",
+        "isListed": true,
+        "isRemote": null,
+        "workplaceType": null,
+        "address": {
+          "postalAddress": {
+            "addressRegion": "Nairobi Province",
+            "addressCountry": "Kenya",
+            "addressLocality": "Nairobi"
+          }
+        },
+        "jobUrl": "https://jobs.ashbyhq.com/m-kopa/f86c6921-fa3c-4dea-be16-962e0080b516",
+        "applyUrl": "https://jobs.ashbyhq.com/m-kopa/f86c6921-fa3c-4dea-be16-962e0080b516/application",
+        "descriptionHtml": "<div style=\"text-align:left\"><img style=\"max-width:100%\" src=\"https://app.ashbyhq.com/api/images/user-content/1d985516-2a99-43c0-b591-957f5adaceb9/5ac97b31-49cd-4012-8bb0-5caf15e33c69/B25.png\" /></div><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><strong>Join our expanding engineering team! We're actively recruiting a Senior Backend Engineer to help scale M-KOPA Mobility, our fast-growing e-mobility business.</strong> <strong>This is an initial 12-month Fixed Term Contract, with the potential to extend or transition into a permanent role. Build the event-driven microservices that power clean, affordable transport for riders and entrepreneurs across Africa.</strong></p><p style=\"min-height:1.5em\"></p><div style=\"text-align:left\"><img style=\"max-width:100%\" src=\"https://app.ashbyhq.com/api/images/user-content/1d985516-2a99-43c0-b591-957f5adaceb9/98cde4bc-fa0a-4874-a12e-0db70c8c4abf/image.png\" /></div><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><strong>The Impact</strong> – Africa's transport sector is massive, underserved, and at an inflection point, and the transition to electric is accelerating, led by East Africa. Your code will directly power the technology behind Kenya's leading e-mobility financing platform. We've already financed over 11,000 electric motorbikes, helping riders save more than $3 a day and cutting air pollution by 90%. It's your chance to build tech for a business that's literally transforming lives across an entire continent 🌍</p><p style=\"min-height:1.5em\"></p><div style=\"text-align:left\"><img style=\"max-width:100%\" src=\"https://app.ashbyhq.com/api/images/user-content/1d985516-2a99-43c0-b591-957f5adaceb9/98cde4bc-fa0a-4874-a12e-0db70c8c4abf/image.png\" /></div><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><strong>The Opportunity</strong></p><p style=\"min-height:1.5em\">🎯 <strong>Mission-driven engineering:</strong> Every service you build helps put clean transport within reach of riders who'd otherwise be locked out of ownership</p><p style=\"min-height:1.5em\">🏆 <strong>Global recognition:</strong> Join a company named by the Financial Times as one of Africa's fastest-growing companies for 5 consecutive years running (2022–2026)</p><p style=\"min-height:1.5em\">🚀 <strong>Scale challenges:</strong> Build backend systems for a business growing at 3x year-on-year, with over 11,000 e-motorbikes financed and demand climbing</p><p style=\"min-height:1.5em\">🌱 <strong>Real climate impact:</strong> Electric is simply better for drivers, cities, and the planet — our e-motorbikes cut air pollution by 90% versus petrol equivalents</p><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><strong>What You'll Do</strong></p><p style=\"min-height:1.5em\">At M-KOPA, you'll build sophisticated event-driven microservices with real-world impact. Our engineering teams own their solutions end-to-end – from architecture decisions to production monitoring. Join us in combining cutting-edge .NET development with purpose-driven engineering that makes digital and financial inclusion possible across Africa.</p><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><strong>Technical Environment 💻</strong></p><ul style=\"min-height:1.5em\"><li><p style=\"min-height:1.5em\"><strong>Languages &amp; frameworks:</strong> C#/.NET</p></li><li><p style=\"min-height:1.5em\"><strong>Cloud:</strong> We work in Azure, and welcome experience across AWS or GCP</p></li><li><p style=\"min-height:1.5em\"><strong>Architecture:</strong> Event-driven systems and microservice development – we use Service Bus, and welcome experience with similar messaging technologies such as Kafka or RabbitMQ</p></li><li><p style=\"min-height:1.5em\"><strong>Infrastructure:</strong> Kubernetes, Docker</p></li><li><p style=\"min-height:1.5em\"><strong>Observability:</strong> Prometheus, Grafana</p></li><li><p style=\"min-height:1.5em\"><strong>Engineering culture:</strong> DevOps, infrastructure as code, automated testing across all environments including production, continuous delivery</p></li><li><p style=\"min-height:1.5em\"><strong>AI tooling:</strong> We use AI coding tools including Claude Code as part of our engineering workflow</p></li></ul><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><strong>Our Engineering Approach 🚀</strong></p><p style=\"min-height:1.5em\">As an engineer, you will work as a collaborator. More senior members will coach and contribute, placing an emphasis on:</p><ul style=\"min-height:1.5em\"><li><p style=\"min-height:1.5em\">High quality output</p></li><li><p style=\"min-height:1.5em\">Observability and monitoring</p></li><li><p style=\"min-height:1.5em\">Automated testing in all environments, including production</p></li><li><p style=\"min-height:1.5em\">Infrastructure as code and DevOps practices</p></li></ul><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><strong>What You Need</strong></p><p style=\"min-height:1.5em\">We expect you to be comfortable working as part of a team which owns the entire software stack, including supporting infrastructure, throughout the entire software lifecycle, from inception through production to decommissioning under a DevOps culture. You'll value the constraints that continuous delivery places upon engineering processes and embrace testing and observability as first-order concerns in development.</p><p style=\"min-height:1.5em\">Required Experience:</p><ul style=\"min-height:1.5em\"><li><p style=\"min-height:1.5em\">Strong grasp of C# .NET development</p></li><li><p style=\"min-height:1.5em\">Experience with event-driven systems – Service Bus or similar messaging technologies such as Kafka or RabbitMQ</p></li><li><p style=\"min-height:1.5em\">Microservices architecture experience</p></li><li><p style=\"min-height:1.5em\">Experience with Azure, or other major cloud providers such as AWS or GCP</p></li><li><p style=\"min-height:1.5em\">Familiarity with containerisation and orchestration tools (Kubernetes, Docker)</p></li><li><p style=\"min-height:1.5em\">Experience with observability tools such as Prometheus and Grafana</p></li><li><p style=\"min-height:1.5em\">Testing and deployment expertise</p></li><li><p style=\"min-height:1.5em\">DevOps culture mindset</p></li><li><p style=\"min-height:1.5em\">Experience working with AI coding tools, ideally Claude Code or similar</p></li></ul><p style=\"min-height:1.5em\"></p><div style=\"text-align:left\"><img style=\"max-width:100%\" src=\"https://app.ashbyhq.com/api/images/user-content/1d985516-2a99-43c0-b591-957f5adaceb9/86f7fe83-cdac-44e5-95f4-5cfc1d36c035/image.png\" /></div><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><strong>Location &amp; Benefits</strong></p><ul style=\"min-height:1.5em\"><li><p style=\"min-height:1.5em\">Initial 12-month Fixed Term Contract, with potential to extend or transition into a permanent role</p></li><li><p style=\"min-height:1.5em\">Fully remote role within UTC -1 to UTC +3 time zones</p></li><li><p style=\"min-height:1.5em\">Work with diverse teams across UK, Europe, and Africa</p></li><li><p style=\"min-height:1.5em\">Professional development programs and coaching partnerships</p></li><li><p style=\"min-height:1.5em\">Family-friendly policies and flexible working arrangements</p></li><li><p style=\"min-height:1.5em\">Well-being support and career growth opportunities</p><p style=\"min-height:1.5em\"></p></li></ul><p style=\"min-height:1.5em\"><strong>Our Mission 🌍</strong> We create financial inclusion for the traditionally excluded through a fair, flexible, customer-centric financing model, with M-KOPA Mobility extending that same model to clean transport. We strive to drive greater inclusion of women, youth, and low-income communities.</p><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><strong>Our Impact 💚</strong></p><ul style=\"min-height:1.5em\"><li><p style=\"min-height:1.5em\"><strong>Connected 📱:</strong> 6 million smartphone customers, 2.5 million first-time smartphone users</p></li><li><p style=\"min-height:1.5em\"><strong>Prosperous 💰:</strong> 70% of customers use their M-KOPA product for income generation, with 35,000+ livelihoods created for agents</p></li><li><p style=\"min-height:1.5em\"><strong>Green 🌱:</strong> 11,000+ e-motorbikes financed, growing 3x year-on-year, cutting air pollution by 90% and helping riders save more than $3 a day</p><p style=\"min-height:1.5em\"></p></li></ul><p style=\"min-height:1.5em\"><strong>Ready to build C# .NET solutions that put clean, affordable transport within reach of Every Day Earners, while advancing your career in modern backend engineering?</strong></p><p style=\"min-height:1.5em\"><strong>At M-KOPA, we empower our people to own their careers through diverse development programs, coaching partnerships, and on-the-job training. We support individual journeys with family-friendly policies, prioritise well-being, and embrace flexibility.</strong></p><p style=\"min-height:1.5em\"><strong>Apply now to join our mission of transforming lives across Africa through technology.</strong></p><p style=\"min-height:1.5em\"></p><h2><strong>Why M-KOPA?</strong></h2><p style=\"min-height:1.5em\">At M-KOPA, we empower our people to own their careers through diverse development programs, coaching partnerships, and on-the-job training. We support individual journeys with family-friendly policies, prioritize well-being, and embrace flexibility.</p><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\">Join us in shaping the future of M-KOPA as we grow together. Explore more at <a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"http://m-kopa.com\"><strong>m-kopa.com</strong></a>.</p><p style=\"min-height:1.5em\"></p><div style=\"text-align:left\"><img style=\"max-width:100%\" src=\"https://app.ashbyhq.com/api/images/user-content/1d985516-2a99-43c0-b591-957f5adaceb9/369018b8-cf9c-49c7-95f1-1d414482ba57/B13.png\" /></div><p style=\"min-height:1.5em\"><em>Recognized four times by the Financial Times as one Africa's fastest growing companies (2022, 2023, 2024, 2025 and 2026), named on CNBC's World’s Top Fintech Companies 2025 &amp; 2026 and by TIME100 Most influential companies in the world 2023 and 2024 , we've served over 10 million customers, unlocking $2 billion in cumulative credit for the everyday earners across Africa, in addition to over 10,000 e-bikes financed in Kenya.</em></p><div style=\"text-align:left\"><img style=\"max-width:100%\" src=\"https://app.ashbyhq.com/api/images/user-content/1d985516-2a99-43c0-b591-957f5adaceb9/481f6724-8375-4f39-b514-fbe00b8fc3b5/B13.png\" /></div><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><em><strong><u>Important Notice</u></strong></em><br /><br /><em>M-KOPA is an equal opportunity and affirmative action employer committed to assembling a diverse, broadly trained staff. Women, minorities, and people with disabilities are strongly encouraged to apply.</em></p><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><em>M-KOPA explicitly prohibits the use of Forced or Child Labour and respects the rights of its employees to agree to terms and conditions of employment voluntarily, without coercion, and freely terminate their employment on appropriate notice. M-KOPA shall ensure that its Employees are of legal working age and shall comply with local laws for youth employment or student work, such as internships or apprenticeships. </em></p><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><em>M-KOPA does not collect/charge any money as a pre-employment or post-employment requirement. This means that we never ask for ‘recruitment fees’, ‘processing fees’, ‘interview fees’, or any other kind of money in exchange for offer letters or interviews at any time during the hiring process.</em></p><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><em>Applications for this position will be reviewed on a rolling basis. Shortlisting and interviews will take place at any stage during the recruitment process. We reserve the right to close the vacancy early if a suitable candidate is selected before the advertised closing date.</em></p><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><em>If your application is successful M-KOPA undertakes pre-employment background checks as part of its recruitment process, these include; criminal records, identification verification, academic qualifications, employment dates and employer references.</em></p>",
+        "descriptionPlain": "[https://app.ashbyhq.com/api/images/user-content/1d985516-2a99-43c0-b591-957f5adaceb9/5ac97b31-49cd-4012-8bb0-5caf15e33c69/B25.png]\n\n\n\nJoin our expanding engineering team! We're actively recruiting a Senior Backend Engineer to help scale M-KOPA Mobility, our fast-growing e-mobility business. This is an initial 12-month Fixed Term Contract, with the potential to extend or transition into a permanent role. Build the event-driven microservices that power clean, affordable transport for riders and entrepreneurs across Africa.\n\n\n\n[https://app.ashbyhq.com/api/images/user-content/1d985516-2a99-43c0-b591-957f5adaceb9/98cde4bc-fa0a-4874-a12e-0db70c8c4abf/image.png]\n\n\n\nThe Impact – Africa's transport sector is massive, underserved, and at an inflection point, and the transition to electric is accelerating, led by East Africa. Your code will directly power the technology behind Kenya's leading e-mobility financing platform. We've already financed over 11,000 electric motorbikes, helping riders save more than $3 a day and cutting air pollution by 90%. It's your chance to build tech for a business that's literally transforming lives across an entire continent 🌍\n\n\n\n[https://app.ashbyhq.com/api/images/user-content/1d985516-2a99-43c0-b591-957f5adaceb9/98cde4bc-fa0a-4874-a12e-0db70c8c4abf/image.png]\n\n\n\nThe Opportunity\n\n🎯 Mission-driven engineering: Every service you build helps put clean transport within reach of riders who'd otherwise be locked out of ownership\n\n🏆 Global recognition: Join a company named by the Financial Times as one of Africa's fastest-growing companies for 5 consecutive years running (2022–2026)\n\n🚀 Scale challenges: Build backend systems for a business growing at 3x year-on-year, with over 11,000 e-motorbikes financed and demand climbing\n\n🌱 Real climate impact: Electric is simply better for drivers, cities, and the planet — our e-motorbikes cut air pollution by 90% versus petrol equivalents\n\n\n\nWhat You'll Do\n\nAt M-KOPA, you'll build sophisticated event-driven microservices with real-world impact. Our engineering teams own their solutions end-to-end – from architecture decisions to production monitoring. Join us in combining cutting-edge .NET development with purpose-driven engineering that makes digital and financial inclusion possible across Africa.\n\n\n\nTechnical Environment 💻\n\n - Languages & frameworks: C#/.NET\n\n - Cloud: We work in Azure, and welcome experience across AWS or GCP\n\n - Architecture: Event-driven systems and microservice development – we use Service Bus, and welcome experience with similar messaging technologies such as Kafka or RabbitMQ\n\n - Infrastructure: Kubernetes, Docker\n\n - Observability: Prometheus, Grafana\n\n - Engineering culture: DevOps, infrastructure as code, automated testing across all environments including production, continuous delivery\n\n - AI tooling: We use AI coding tools including Claude Code as part of our engineering workflow\n\n\n\nOur Engineering Approach 🚀\n\nAs an engineer, you will work as a collaborator. More senior members will coach and contribute, placing an emphasis on:\n\n - High quality output\n\n - Observability and monitoring\n\n - Automated testing in all environments, including production\n\n - Infrastructure as code and DevOps practices\n\n\n\nWhat You Need\n\nWe expect you to be comfortable working as part of a team which owns the entire software stack, including supporting infrastructure, throughout the entire software lifecycle, from inception through production to decommissioning under a DevOps culture. You'll value the constraints that continuous delivery places upon engineering processes and embrace testing and observability as first-order concerns in development.\n\nRequired Experience:\n\n - Strong grasp of C# .NET development\n\n - Experience with event-driven systems – Service Bus or similar messaging technologies such as Kafka or RabbitMQ\n\n - Microservices architecture experience\n\n - Experience with Azure, or other major cloud providers such as AWS or GCP\n\n - Familiarity with containerisation and orchestration tools (Kubernetes, Docker)\n\n - Experience with observability tools such as Prometheus and Grafana\n\n - Testing and deployment expertise\n\n - DevOps culture mindset\n\n - Experience working with AI coding tools, ideally Claude Code or similar\n\n\n\n[https://app.ashbyhq.com/api/images/user-content/1d985516-2a99-43c0-b591-957f5adaceb9/86f7fe83-cdac-44e5-95f4-5cfc1d36c035/image.png]\n\n\n\nLocation & Benefits\n\n - Initial 12-month Fixed Term Contract, with potential to extend or transition into a permanent role\n\n - Fully remote role within UTC -1 to UTC +3 time zones\n\n - Work with diverse teams across UK, Europe, and Africa\n\n - Professional development programs and coaching partnerships\n\n - Family-friendly policies and flexible working arrangements\n\n - Well-being support and career growth opportunities\n   \n   \n\nOur Mission 🌍 We create financial inclusion for the traditionally excluded through a fair, flexible, customer-centric financing model, with M-KOPA Mobility extending that same model to clean transport. We strive to drive greater inclusion of women, youth, and low-income communities.\n\n\n\nOur Impact 💚\n\n - Connected 📱: 6 million smartphone customers, 2.5 million first-time smartphone users\n\n - Prosperous 💰: 70% of customers use their M-KOPA product for income generation, with 35,000+ livelihoods created for agents\n\n - Green 🌱: 11,000+ e-motorbikes financed, growing 3x year-on-year, cutting air pollution by 90% and helping riders save more than $3 a day\n   \n   \n\nReady to build C# .NET solutions that put clean, affordable transport within reach of Every Day Earners, while advancing your career in modern backend engineering?\n\nAt M-KOPA, we empower our people to own their careers through diverse development programs, coaching partnerships, and on-the-job training. We support individual journeys with family-friendly policies, prioritise well-being, and embrace flexibility.\n\nApply now to join our mission of transforming lives across Africa through technology.\n\n\n\n\nWHY M-KOPA?\n\nAt M-KOPA, we empower our people to own their careers through diverse development programs, coaching partnerships, and on-the-job training. We support individual journeys with family-friendly policies, prioritize well-being, and embrace flexibility.\n\n\n\nJoin us in shaping the future of M-KOPA as we grow together. Explore more at m-kopa.com http://m-kopa.com.\n\n\n\n[https://app.ashbyhq.com/api/images/user-content/1d985516-2a99-43c0-b591-957f5adaceb9/369018b8-cf9c-49c7-95f1-1d414482ba57/B13.png]\n\nRecognized four times by the Financial Times as one Africa's fastest growing companies (2022, 2023, 2024, 2025 and 2026), named on CNBC's World’s Top Fintech Companies 2025 & 2026 and by TIME100 Most influential companies in the world 2023 and 2024 , we've served over 10 million customers, unlocking $2 billion in cumulative credit for the everyday earners across Africa, in addition to over 10,000 e-bikes financed in Kenya.\n\n[https://app.ashbyhq.com/api/images/user-content/1d985516-2a99-43c0-b591-957f5adaceb9/481f6724-8375-4f39-b514-fbe00b8fc3b5/B13.png]\n\n\n\nImportant Notice\n\nM-KOPA is an equal opportunity and affirmative action employer committed to assembling a diverse, broadly trained staff. Women, minorities, and people with disabilities are strongly encouraged to apply.\n\n\n\nM-KOPA explicitly prohibits the use of Forced or Child Labour and respects the rights of its employees to agree to terms and conditions of employment voluntarily, without coercion, and freely terminate their employment on appropriate notice. M-KOPA shall ensure that its Employees are of legal working age and shall comply with local laws for youth employment or student work, such as internships or apprenticeships. \n\n\n\nM-KOPA does not collect/charge any money as a pre-employment or post-employment requirement. This means that we never ask for ‘recruitment fees’, ‘processing fees’, ‘interview fees’, or any other kind of money in exchange for offer letters or interviews at any time during the hiring process.\n\n\n\nApplications for this position will be reviewed on a rolling basis. Shortlisting and interviews will take place at any stage during the recruitment process. We reserve the right to close the vacancy early if a suitable candidate is selected before the advertised closing date.\n\n\n\nIf your application is successful M-KOPA undertakes pre-employment background checks as part of its recruitment process, these include; criminal records, identification verification, academic qualifications, employment dates and employer references."
+      },
+      "expected": "include"
+    },
+    {
+      "source": {
+        "company_name": "M-KOPA",
+        "ats": "ashby",
+        "slug": "m-kopa",
+        "url": "https://api.ashbyhq.com/posting-api/job-board/m-kopa",
+        "enabled": true
+      },
+      "raw": {
+        "id": "8369de69-72a2-4c22-a2ab-02d5d133d758",
+        "title": "Senior Backend Engineer ",
+        "department": "Fintech",
+        "team": "Software Engineering",
+        "employmentType": "FullTime",
+        "location": "London",
+        "secondaryLocations": [
+          {
+            "location": "Bristol",
+            "address": {
+              "postalAddress": {
+                "addressRegion": "County of Bristol",
+                "addressCountry": "United Kingdom",
+                "addressLocality": "Bristol"
+              }
+            }
+          },
+          {
+            "location": "Madrid",
+            "address": {
+              "postalAddress": {
+                "addressRegion": "Madrid Provincia",
+                "addressCountry": "Spain",
+                "addressLocality": "Madrid"
+              }
+            }
+          },
+          {
+            "location": "Belfast",
+            "address": {
+              "postalAddress": {
+                "addressRegion": "Belfast",
+                "addressCountry": "UK",
+                "addressLocality": "Belfast"
+              }
+            }
+          },
+          {
+            "location": "Birmingham",
+            "address": {
+              "postalAddress": {
+                "addressRegion": "West Midlands",
+                "addressCountry": "United Kingdom",
+                "addressLocality": "Birmingham"
+              }
+            }
+          },
+          {
+            "location": "Cardiff",
+            "address": {
+              "postalAddress": {
+                "addressRegion": "Wales",
+                "addressCountry": "United Kingdom",
+                "addressLocality": "Cardiff"
+              }
+            }
+          },
+          {
+            "location": "Lisbon",
+            "address": {
+              "postalAddress": {
+                "addressRegion": "Lisbon",
+                "addressCountry": "Portugal",
+                "addressLocality": "Lisbon"
+              }
+            }
+          },
+          {
+            "location": "Edinburgh",
+            "address": {
+              "postalAddress": {
+                "addressRegion": "County of City of Edinburgh",
+                "addressCountry": "Scotland",
+                "addressLocality": "Edinburgh"
+              }
+            }
+          },
+          {
+            "location": "Dublin",
+            "address": {
+              "postalAddress": {
+                "addressRegion": "Dublin",
+                "addressCountry": "Ireland",
+                "addressLocality": "Dublin"
+              }
+            }
+          },
+          {
+            "location": "Manchester",
+            "address": {
+              "postalAddress": {
+                "addressRegion": "Greater Manchester",
+                "addressCountry": "United Kingdom",
+                "addressLocality": "Manchester"
+              }
+            }
+          }
+        ],
+        "publishedAt": "2026-09-14T15:21:55.067+00:00",
+        "isListed": true,
+        "isRemote": true,
+        "workplaceType": "Remote",
+        "address": {
+          "postalAddress": {
+            "addressRegion": "Greater London",
+            "addressCountry": "United Kingdom",
+            "addressLocality": "London"
+          }
+        },
+        "jobUrl": "https://jobs.ashbyhq.com/m-kopa/8369de69-72a2-4c22-a2ab-02d5d133d758",
+        "applyUrl": "https://jobs.ashbyhq.com/m-kopa/8369de69-72a2-4c22-a2ab-02d5d133d758/application",
+        "descriptionHtml": "<div style=\"text-align:left\"><img style=\"max-width:100%\" src=\"https://app.ashbyhq.com/api/images/user-content/1d985516-2a99-43c0-b591-957f5adaceb9/5ac97b31-49cd-4012-8bb0-5caf15e33c69/B25.png\" /></div><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><strong>Join our expanding engineering team! We're actively recruiting a Senior Backend Engineer to help scale M-KOPA Mobility, our fast-growing e-mobility business.</strong> <strong>This is an initial 12-month Fixed Term Contract, with the potential to extend or transition into a permanent role. Build the event-driven microservices that power clean, affordable transport for riders and entrepreneurs across Africa.</strong></p><p style=\"min-height:1.5em\"></p><div style=\"text-align:left\"><img style=\"max-width:100%\" src=\"https://app.ashbyhq.com/api/images/user-content/1d985516-2a99-43c0-b591-957f5adaceb9/98cde4bc-fa0a-4874-a12e-0db70c8c4abf/image.png\" /></div><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><strong>The Impact</strong> – Africa's transport sector is massive, underserved, and at an inflection point, and the transition to electric is accelerating, led by East Africa. Your code will directly power the technology behind Kenya's leading e-mobility financing platform. We've already financed over 11,000 electric motorbikes, helping riders save more than $3 a day and cutting air pollution by 90%. It's your chance to build tech for a business that's literally transforming lives across an entire continent 🌍</p><p style=\"min-height:1.5em\"></p><div style=\"text-align:left\"><img style=\"max-width:100%\" src=\"https://app.ashbyhq.com/api/images/user-content/1d985516-2a99-43c0-b591-957f5adaceb9/98cde4bc-fa0a-4874-a12e-0db70c8c4abf/image.png\" /></div><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><strong>The Opportunity</strong></p><p style=\"min-height:1.5em\">🎯 <strong>Mission-driven engineering:</strong> Every service you build helps put clean transport within reach of riders who'd otherwise be locked out of ownership</p><p style=\"min-height:1.5em\">🏆 <strong>Global recognition:</strong> Join a company named by the Financial Times as one of Africa's fastest-growing companies for 5 consecutive years running (2022–2026)</p><p style=\"min-height:1.5em\">🚀 <strong>Scale challenges:</strong> Build backend systems for a business growing at 3x year-on-year, with over 11,000 e-motorbikes financed and demand climbing</p><p style=\"min-height:1.5em\">🌱 <strong>Real climate impact:</strong> Electric is simply better for drivers, cities, and the planet — our e-motorbikes cut air pollution by 90% versus petrol equivalents</p><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><strong>What You'll Do</strong></p><p style=\"min-height:1.5em\">At M-KOPA, you'll build sophisticated event-driven microservices with real-world impact. Our engineering teams own their solutions end-to-end – from architecture decisions to production monitoring. Join us in combining cutting-edge .NET development with purpose-driven engineering that makes digital and financial inclusion possible across Africa.</p><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><strong>Technical Environment 💻</strong></p><ul style=\"min-height:1.5em\"><li><p style=\"min-height:1.5em\"><strong>Languages &amp; frameworks:</strong> C#/.NET</p></li><li><p style=\"min-height:1.5em\"><strong>Cloud:</strong> We work in Azure, and welcome experience across AWS or GCP</p></li><li><p style=\"min-height:1.5em\"><strong>Architecture:</strong> Event-driven systems and microservice development – we use Service Bus, and welcome experience with similar messaging technologies such as Kafka or RabbitMQ</p></li><li><p style=\"min-height:1.5em\"><strong>Infrastructure:</strong> Kubernetes, Docker</p></li><li><p style=\"min-height:1.5em\"><strong>Observability:</strong> Prometheus, Grafana</p></li><li><p style=\"min-height:1.5em\"><strong>Engineering culture:</strong> DevOps, infrastructure as code, automated testing across all environments including production, continuous delivery</p></li><li><p style=\"min-height:1.5em\"><strong>AI tooling:</strong> We use AI coding tools including Claude Code as part of our engineering workflow</p></li></ul><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><strong>Our Engineering Approach 🚀</strong></p><p style=\"min-height:1.5em\">As an engineer, you will work as a collaborator. More senior members will coach and contribute, placing an emphasis on:</p><ul style=\"min-height:1.5em\"><li><p style=\"min-height:1.5em\">High quality output</p></li><li><p style=\"min-height:1.5em\">Observability and monitoring</p></li><li><p style=\"min-height:1.5em\">Automated testing in all environments, including production</p></li><li><p style=\"min-height:1.5em\">Infrastructure as code and DevOps practices</p></li></ul><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><strong>What You Need</strong></p><p style=\"min-height:1.5em\">We expect you to be comfortable working as part of a team which owns the entire software stack, including supporting infrastructure, throughout the entire software lifecycle, from inception through production to decommissioning under a DevOps culture. You'll value the constraints that continuous delivery places upon engineering processes and embrace testing and observability as first-order concerns in development.</p><p style=\"min-height:1.5em\">Required Experience:</p><ul style=\"min-height:1.5em\"><li><p style=\"min-height:1.5em\">Strong grasp of C# .NET development</p></li><li><p style=\"min-height:1.5em\">Experience with event-driven systems – Service Bus or similar messaging technologies such as Kafka or RabbitMQ</p></li><li><p style=\"min-height:1.5em\">Microservices architecture experience</p></li><li><p style=\"min-height:1.5em\">Experience with Azure, or other major cloud providers such as AWS or GCP</p></li><li><p style=\"min-height:1.5em\">Familiarity with containerisation and orchestration tools (Kubernetes, Docker)</p></li><li><p style=\"min-height:1.5em\">Experience with observability tools such as Prometheus and Grafana</p></li><li><p style=\"min-height:1.5em\">Testing and deployment expertise</p></li><li><p style=\"min-height:1.5em\">DevOps culture mindset</p></li><li><p style=\"min-height:1.5em\">Experience working with AI coding tools, ideally Claude Code or similar</p></li></ul><p style=\"min-height:1.5em\"></p><div style=\"text-align:left\"><img style=\"max-width:100%\" src=\"https://app.ashbyhq.com/api/images/user-content/1d985516-2a99-43c0-b591-957f5adaceb9/86f7fe83-cdac-44e5-95f4-5cfc1d36c035/image.png\" /></div><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><strong>Location &amp; Benefits</strong></p><ul style=\"min-height:1.5em\"><li><p style=\"min-height:1.5em\">Initial 12-month Fixed Term Contract, with potential to extend or transition into a permanent role</p></li><li><p style=\"min-height:1.5em\">Fully remote role within UTC -1 to UTC +3 time zones</p></li><li><p style=\"min-height:1.5em\">Work with diverse teams across UK, Europe, and Africa</p></li><li><p style=\"min-height:1.5em\">Professional development programs and coaching partnerships</p></li><li><p style=\"min-height:1.5em\">Family-friendly policies and flexible working arrangements</p></li><li><p style=\"min-height:1.5em\">Well-being support and career growth opportunities</p><p style=\"min-height:1.5em\"></p></li></ul><p style=\"min-height:1.5em\"><strong>Our Mission 🌍</strong> We create financial inclusion for the traditionally excluded through a fair, flexible, customer-centric financing model, with M-KOPA Mobility extending that same model to clean transport. We strive to drive greater inclusion of women, youth, and low-income communities.</p><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><strong>Our Impact 💚</strong></p><ul style=\"min-height:1.5em\"><li><p style=\"min-height:1.5em\"><strong>Connected 📱:</strong> 6 million smartphone customers, 2.5 million first-time smartphone users</p></li><li><p style=\"min-height:1.5em\"><strong>Prosperous 💰:</strong> 70% of customers use their M-KOPA product for income generation, with 35,000+ livelihoods created for agents</p></li><li><p style=\"min-height:1.5em\"><strong>Green 🌱:</strong> 11,000+ e-motorbikes financed, growing 3x year-on-year, cutting air pollution by 90% and helping riders save more than $3 a day</p><p style=\"min-height:1.5em\"></p></li></ul><p style=\"min-height:1.5em\"><strong>Ready to build C# .NET solutions that put clean, affordable transport within reach of Every Day Earners, while advancing your career in modern backend engineering?</strong></p><p style=\"min-height:1.5em\"><strong>At M-KOPA, we empower our people to own their careers through diverse development programs, coaching partnerships, and on-the-job training. We support individual journeys with family-friendly policies, prioritise well-being, and embrace flexibility.</strong></p><p style=\"min-height:1.5em\"><strong>Apply now to join our mission of transforming lives across Africa through technology.</strong></p><p style=\"min-height:1.5em\"></p><h2><strong>Why M-KOPA?</strong></h2><p style=\"min-height:1.5em\">At M-KOPA, we empower our people to own their careers through diverse development programs, coaching partnerships, and on-the-job training. We support individual journeys with family-friendly policies, prioritize well-being, and embrace flexibility.</p><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\">Join us in shaping the future of M-KOPA as we grow together. Explore more at <a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"http://m-kopa.com\"><strong>m-kopa.com</strong></a>.</p><p style=\"min-height:1.5em\"></p><div style=\"text-align:left\"><img style=\"max-width:100%\" src=\"https://app.ashbyhq.com/api/images/user-content/1d985516-2a99-43c0-b591-957f5adaceb9/369018b8-cf9c-49c7-95f1-1d414482ba57/B13.png\" /></div><p style=\"min-height:1.5em\"><em>Recognized four times by the Financial Times as one Africa's fastest growing companies (2022, 2023, 2024, 2025 and 2026), named on CNBC's World’s Top Fintech Companies 2025 &amp; 2026 and by TIME100 Most influential companies in the world 2023 and 2024 , we've served over 10 million customers, unlocking $2 billion in cumulative credit for the everyday earners across Africa, in addition to over 10,000 e-bikes financed in Kenya.</em></p><div style=\"text-align:left\"><img style=\"max-width:100%\" src=\"https://app.ashbyhq.com/api/images/user-content/1d985516-2a99-43c0-b591-957f5adaceb9/481f6724-8375-4f39-b514-fbe00b8fc3b5/B13.png\" /></div><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><em><strong><u>Important Notice</u></strong></em><br /><br /><em>M-KOPA is an equal opportunity and affirmative action employer committed to assembling a diverse, broadly trained staff. Women, minorities, and people with disabilities are strongly encouraged to apply.</em></p><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><em>M-KOPA explicitly prohibits the use of Forced or Child Labour and respects the rights of its employees to agree to terms and conditions of employment voluntarily, without coercion, and freely terminate their employment on appropriate notice. M-KOPA shall ensure that its Employees are of legal working age and shall comply with local laws for youth employment or student work, such as internships or apprenticeships. </em></p><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><em>M-KOPA does not collect/charge any money as a pre-employment or post-employment requirement. This means that we never ask for ‘recruitment fees’, ‘processing fees’, ‘interview fees’, or any other kind of money in exchange for offer letters or interviews at any time during the hiring process.</em></p><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><em>Applications for this position will be reviewed on a rolling basis. Shortlisting and interviews will take place at any stage during the recruitment process. We reserve the right to close the vacancy early if a suitable candidate is selected before the advertised closing date.</em></p><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><em>If your application is successful M-KOPA undertakes pre-employment background checks as part of its recruitment process, these include; criminal records, identification verification, academic qualifications, employment dates and employer references.</em></p>",
+        "descriptionPlain": "[https://app.ashbyhq.com/api/images/user-content/1d985516-2a99-43c0-b591-957f5adaceb9/5ac97b31-49cd-4012-8bb0-5caf15e33c69/B25.png]\n\n\n\nJoin our expanding engineering team! We're actively recruiting a Senior Backend Engineer to help scale M-KOPA Mobility, our fast-growing e-mobility business. This is an initial 12-month Fixed Term Contract, with the potential to extend or transition into a permanent role. Build the event-driven microservices that power clean, affordable transport for riders and entrepreneurs across Africa.\n\n\n\n[https://app.ashbyhq.com/api/images/user-content/1d985516-2a99-43c0-b591-957f5adaceb9/98cde4bc-fa0a-4874-a12e-0db70c8c4abf/image.png]\n\n\n\nThe Impact – Africa's transport sector is massive, underserved, and at an inflection point, and the transition to electric is accelerating, led by East Africa. Your code will directly power the technology behind Kenya's leading e-mobility financing platform. We've already financed over 11,000 electric motorbikes, helping riders save more than $3 a day and cutting air pollution by 90%. It's your chance to build tech for a business that's literally transforming lives across an entire continent 🌍\n\n\n\n[https://app.ashbyhq.com/api/images/user-content/1d985516-2a99-43c0-b591-957f5adaceb9/98cde4bc-fa0a-4874-a12e-0db70c8c4abf/image.png]\n\n\n\nThe Opportunity\n\n🎯 Mission-driven engineering: Every service you build helps put clean transport within reach of riders who'd otherwise be locked out of ownership\n\n🏆 Global recognition: Join a company named by the Financial Times as one of Africa's fastest-growing companies for 5 consecutive years running (2022–2026)\n\n🚀 Scale challenges: Build backend systems for a business growing at 3x year-on-year, with over 11,000 e-motorbikes financed and demand climbing\n\n🌱 Real climate impact: Electric is simply better for drivers, cities, and the planet — our e-motorbikes cut air pollution by 90% versus petrol equivalents\n\n\n\nWhat You'll Do\n\nAt M-KOPA, you'll build sophisticated event-driven microservices with real-world impact. Our engineering teams own their solutions end-to-end – from architecture decisions to production monitoring. Join us in combining cutting-edge .NET development with purpose-driven engineering that makes digital and financial inclusion possible across Africa.\n\n\n\nTechnical Environment 💻\n\n - Languages & frameworks: C#/.NET\n\n - Cloud: We work in Azure, and welcome experience across AWS or GCP\n\n - Architecture: Event-driven systems and microservice development – we use Service Bus, and welcome experience with similar messaging technologies such as Kafka or RabbitMQ\n\n - Infrastructure: Kubernetes, Docker\n\n - Observability: Prometheus, Grafana\n\n - Engineering culture: DevOps, infrastructure as code, automated testing across all environments including production, continuous delivery\n\n - AI tooling: We use AI coding tools including Claude Code as part of our engineering workflow\n\n\n\nOur Engineering Approach 🚀\n\nAs an engineer, you will work as a collaborator. More senior members will coach and contribute, placing an emphasis on:\n\n - High quality output\n\n - Observability and monitoring\n\n - Automated testing in all environments, including production\n\n - Infrastructure as code and DevOps practices\n\n\n\nWhat You Need\n\nWe expect you to be comfortable working as part of a team which owns the entire software stack, including supporting infrastructure, throughout the entire software lifecycle, from inception through production to decommissioning under a DevOps culture. You'll value the constraints that continuous delivery places upon engineering processes and embrace testing and observability as first-order concerns in development.\n\nRequired Experience:\n\n - Strong grasp of C# .NET development\n\n - Experience with event-driven systems – Service Bus or similar messaging technologies such as Kafka or RabbitMQ\n\n - Microservices architecture experience\n\n - Experience with Azure, or other major cloud providers such as AWS or GCP\n\n - Familiarity with containerisation and orchestration tools (Kubernetes, Docker)\n\n - Experience with observability tools such as Prometheus and Grafana\n\n - Testing and deployment expertise\n\n - DevOps culture mindset\n\n - Experience working with AI coding tools, ideally Claude Code or similar\n\n\n\n[https://app.ashbyhq.com/api/images/user-content/1d985516-2a99-43c0-b591-957f5adaceb9/86f7fe83-cdac-44e5-95f4-5cfc1d36c035/image.png]\n\n\n\nLocation & Benefits\n\n - Initial 12-month Fixed Term Contract, with potential to extend or transition into a permanent role\n\n - Fully remote role within UTC -1 to UTC +3 time zones\n\n - Work with diverse teams across UK, Europe, and Africa\n\n - Professional development programs and coaching partnerships\n\n - Family-friendly policies and flexible working arrangements\n\n - Well-being support and career growth opportunities\n   \n   \n\nOur Mission 🌍 We create financial inclusion for the traditionally excluded through a fair, flexible, customer-centric financing model, with M-KOPA Mobility extending that same model to clean transport. We strive to drive greater inclusion of women, youth, and low-income communities.\n\n\n\nOur Impact 💚\n\n - Connected 📱: 6 million smartphone customers, 2.5 million first-time smartphone users\n\n - Prosperous 💰: 70% of customers use their M-KOPA product for income generation, with 35,000+ livelihoods created for agents\n\n - Green 🌱: 11,000+ e-motorbikes financed, growing 3x year-on-year, cutting air pollution by 90% and helping riders save more than $3 a day\n   \n   \n\nReady to build C# .NET solutions that put clean, affordable transport within reach of Every Day Earners, while advancing your career in modern backend engineering?\n\nAt M-KOPA, we empower our people to own their careers through diverse development programs, coaching partnerships, and on-the-job training. We support individual journeys with family-friendly policies, prioritise well-being, and embrace flexibility.\n\nApply now to join our mission of transforming lives across Africa through technology.\n\n\n\n\nWHY M-KOPA?\n\nAt M-KOPA, we empower our people to own their careers through diverse development programs, coaching partnerships, and on-the-job training. We support individual journeys with family-friendly policies, prioritize well-being, and embrace flexibility.\n\n\n\nJoin us in shaping the future of M-KOPA as we grow together. Explore more at m-kopa.com http://m-kopa.com.\n\n\n\n[https://app.ashbyhq.com/api/images/user-content/1d985516-2a99-43c0-b591-957f5adaceb9/369018b8-cf9c-49c7-95f1-1d414482ba57/B13.png]\n\nRecognized four times by the Financial Times as one Africa's fastest growing companies (2022, 2023, 2024, 2025 and 2026), named on CNBC's World’s Top Fintech Companies 2025 & 2026 and by TIME100 Most influential companies in the world 2023 and 2024 , we've served over 10 million customers, unlocking $2 billion in cumulative credit for the everyday earners across Africa, in addition to over 10,000 e-bikes financed in Kenya.\n\n[https://app.ashbyhq.com/api/images/user-content/1d985516-2a99-43c0-b591-957f5adaceb9/481f6724-8375-4f39-b514-fbe00b8fc3b5/B13.png]\n\n\n\nImportant Notice\n\nM-KOPA is an equal opportunity and affirmative action employer committed to assembling a diverse, broadly trained staff. Women, minorities, and people with disabilities are strongly encouraged to apply.\n\n\n\nM-KOPA explicitly prohibits the use of Forced or Child Labour and respects the rights of its employees to agree to terms and conditions of employment voluntarily, without coercion, and freely terminate their employment on appropriate notice. M-KOPA shall ensure that its Employees are of legal working age and shall comply with local laws for youth employment or student work, such as internships or apprenticeships. \n\n\n\nM-KOPA does not collect/charge any money as a pre-employment or post-employment requirement. This means that we never ask for ‘recruitment fees’, ‘processing fees’, ‘interview fees’, or any other kind of money in exchange for offer letters or interviews at any time during the hiring process.\n\n\n\nApplications for this position will be reviewed on a rolling basis. Shortlisting and interviews will take place at any stage during the recruitment process. We reserve the right to close the vacancy early if a suitable candidate is selected before the advertised closing date.\n\n\n\nIf your application is successful M-KOPA undertakes pre-employment background checks as part of its recruitment process, these include; criminal records, identification verification, academic qualifications, employment dates and employer references."
+      },
+      "expected": "exclude"
+    },
+    {
+      "source": {
+        "company_name": "M-KOPA",
+        "ats": "ashby",
+        "slug": "m-kopa",
+        "url": "https://api.ashbyhq.com/posting-api/job-board/m-kopa",
+        "enabled": true
+      },
+      "raw": {
+        "id": "0c0fdef0-61b7-4f7d-bd56-c09d66471396",
+        "title": "Senior Backend Engineer - Asset Sales ",
+        "department": "Fintech",
+        "team": "Software Engineering",
+        "employmentType": "FullTime",
+        "location": "Nairobi",
+        "secondaryLocations": [
+          {
+            "location": "Cape Town",
+            "address": {
+              "postalAddress": {
+                "addressRegion": "Western Cape",
+                "addressCountry": "South Africa",
+                "addressLocality": "Cape Town"
+              }
+            }
+          },
+          {
+            "location": "Lagos",
+            "address": {
+              "postalAddress": {
+                "addressRegion": "Lagos State",
+                "addressCountry": "Nigeria",
+                "addressLocality": "Lagos"
+              }
+            }
+          },
+          {
+            "location": "Kampala",
+            "address": {
+              "postalAddress": {
+                "addressRegion": "Central Region",
+                "addressCountry": "Uganda",
+                "addressLocality": "Central Region"
+              }
+            }
+          },
+          {
+            "location": "Accra",
+            "address": {
+              "postalAddress": {
+                "addressRegion": "Greater Accra Region",
+                "addressCountry": "Ghana",
+                "addressLocality": "Accra"
+              }
+            }
+          },
+          {
+            "location": "Johannesburg",
+            "address": {
+              "postalAddress": {
+                "addressRegion": "Gauteng Province",
+                "addressCountry": "South Africa",
+                "addressLocality": "Johannesburg"
+              }
+            }
+          }
+        ],
+        "publishedAt": "2026-09-30T09:06:10.344+00:00",
+        "isListed": true,
+        "isRemote": true,
+        "workplaceType": "Remote",
+        "address": {
+          "postalAddress": {
+            "addressRegion": "Nairobi Province",
+            "addressCountry": "Kenya",
+            "addressLocality": "Nairobi"
+          }
+        },
+        "jobUrl": "https://jobs.ashbyhq.com/m-kopa/0c0fdef0-61b7-4f7d-bd56-c09d66471396",
+        "applyUrl": "https://jobs.ashbyhq.com/m-kopa/0c0fdef0-61b7-4f7d-bd56-c09d66471396/application",
+        "descriptionHtml": "<div style=\"text-align:left\"><img style=\"max-width:100%\" src=\"https://app.ashbyhq.com/api/images/user-content/1d985516-2a99-43c0-b591-957f5adaceb9/5ac97b31-49cd-4012-8bb0-5caf15e33c69/B25.png\" /></div><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><strong>Join our expanding engineering team!</strong></p><p style=\"min-height:1.5em\">We're hiring a permanent Senior Backend Engineer to join our Asset Sales group as we scale one of the most important parts of M-KOPA's FinTech platform. Build distributed, event-driven microservices and help shape what AI-native engineering looks like at M-KOPA.</p><p style=\"min-height:1.5em\"></p><div style=\"text-align:left\"><img style=\"max-width:100%\" src=\"https://app.ashbyhq.com/api/images/user-content/1d985516-2a99-43c0-b591-957f5adaceb9/98cde4bc-fa0a-4874-a12e-0db70c8c4abf/image.png\" /></div><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><strong>The Impact 💚</strong></p><p style=\"min-height:1.5em\">Your code will directly power the systems that put smartphones and e-motorbikes into the hands of Every Day Earners across Africa. We've already helped over 10 million customers access more than $2 billion in credit. It's your chance to be part of something that's literally transforming lives across an entire continent 🌍</p><p style=\"min-height:1.5em\"></p><div style=\"text-align:left\"><img style=\"max-width:100%\" src=\"https://app.ashbyhq.com/api/images/user-content/1d985516-2a99-43c0-b591-957f5adaceb9/98cde4bc-fa0a-4874-a12e-0db70c8c4abf/image.png\" /></div><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><strong>The Opportunity</strong></p><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\">🎯 <strong>Mission-driven engineering</strong>: Every service you build helps expand financial inclusion for under-banked populations</p><p style=\"min-height:1.5em\">🏆 <strong>Global recognition</strong>: Join a company named by the Financial Times as one of Africa's fastest-growing companies for five consecutive years (2022–2026)</p><p style=\"min-height:1.5em\">🚀 <strong>Scale challenges</strong>: Build backend systems serving millions across multiple African markets</p><p style=\"min-height:1.5em\">🤖 <strong>AI-native from day one</strong>: We're actively embracing AI as part of the engineering craft, not bolting it on</p><p style=\"min-height:1.5em\">🌍 <strong>Fully distributed</strong>: Work remotely with diverse teams across UK, Europe, and Africa</p><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><strong>What You'll Do</strong></p><p style=\"min-height:1.5em\">At M-KOPA, you'll build and operate distributed C# and .NET microservices on Azure, working within an event-driven architecture at significant scale. This is an outcomes-driven role: we care far more about the value you create than where you sit or how many hours you're online. You'll own what you build end-to-end — from idea, through implementation and deployment, into production and iteration.</p><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><strong>Technical Environment 💻</strong></p><ul style=\"min-height:1.5em\"><li><p style=\"min-height:1.5em\"><strong>Modern C# stack</strong>: Distributed C# and .NET microservices</p></li><li><p style=\"min-height:1.5em\"><strong>Cloud &amp; orchestration</strong>: Hosted on Azure using Kubernetes</p></li><li><p style=\"min-height:1.5em\"><strong>Architecture</strong>: Event-driven, supporting products used at significant scale</p></li><li><p style=\"min-height:1.5em\"><strong>Observability</strong>: Grafana, Azure Application Insights, logs, traces, and metrics</p></li><li><p style=\"min-height:1.5em\"><strong>AI tooling</strong>: Claude and other AI tools used throughout the engineering workflow — design exploration, code generation and review, test writing, incident investigation, and technical communication</p></li></ul><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><strong>Our Engineering Approach 🚀</strong></p><ul style=\"min-height:1.5em\"><li><p style=\"min-height:1.5em\"><strong>AI-native engineering</strong>: We want engineers who tinker — experimenting with new tools, agents, and workflows, and sharing what works</p></li><li><p style=\"min-height:1.5em\"><strong>Guardrails as we accelerate</strong>: Automated tests, SLOs, alerting, observability, and deployment safeguards around everything we ship</p></li><li><p style=\"min-height:1.5em\"><strong>Own it beyond the pull request</strong>: Design for idempotency, retries, out-of-order events, and failure modes, and know how your services behave in production</p></li><li><p style=\"min-height:1.5em\"><strong>The Campfire Rule</strong>: Leave the systems you touch a little better than you found them</p></li><li><p style=\"min-height:1.5em\"><strong>On-call as feedback, not heroics</strong>: Engineers who build our systems also help operate them, using incidents to make the platform more resilient</p></li></ul><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><strong>What You Need</strong></p><p style=\"min-height:1.5em\">We're looking for a senior engineer who's curious, autonomous, and highly trusted. You're comfortable owning the entire software stack — including supporting infrastructure — throughout its lifecycle, and you see production data, not just deployment, as the real measure of \"done.\"</p><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><strong>Required Experience:</strong></p><ul style=\"min-height:1.5em\"><li><p style=\"min-height:1.5em\">Strong grasp of C# and .NET development</p></li><li><p style=\"min-height:1.5em\">Experience with event-driven systems - We use Azure Service Bus, but would love to hear from you if you have experience with similar messaging technology (Kafka, RabbitMQ, etc.)</p></li><li><p style=\"min-height:1.5em\">Microservices architecture experience, ideally on Azure and Kubernetes</p></li><li><p style=\"min-height:1.5em\">Experience using observability tooling (e.g. Grafana, Application Insights) to understand production behaviour</p></li><li><p style=\"min-height:1.5em\">Comfort using AI tools as part of a daily engineering workflow (design, code review, testing, incident investigation)</p></li><li><p style=\"min-height:1.5em\">DevOps culture mindset, including on-call/production ownership</p></li><li><p style=\"min-height:1.5em\">Proven ability to collaborate effectively in distributed teams across time zones</p></li><li><p style=\"min-height:1.5em\">Continuous learning mindset and openness to feedback</p><p style=\"min-height:1.5em\"></p></li></ul><p style=\"min-height:1.5em\"></p><div style=\"text-align:left\"><img style=\"max-width:100%\" src=\"https://app.ashbyhq.com/api/images/user-content/1d985516-2a99-43c0-b591-957f5adaceb9/86f7fe83-cdac-44e5-95f4-5cfc1d36c035/image.png\" /></div><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><strong>Location &amp; Benefits</strong></p><ul style=\"min-height:1.5em\"><li><p style=\"min-height:1.5em\">Fully remote role, collaborating during core GMT working hours</p></li><li><p style=\"min-height:1.5em\">Work with diverse teams distributed across UK, Europe, and Africa</p></li><li><p style=\"min-height:1.5em\">Personalised training budget to support your development</p></li><li><p style=\"min-height:1.5em\">Home office setup budget</p></li><li><p style=\"min-height:1.5em\">Professional development programs and coaching partnerships</p></li><li><p style=\"min-height:1.5em\">Family-friendly policies and flexible working arrangements</p></li><li><p style=\"min-height:1.5em\">Well-being support and career growth opportunities</p></li></ul><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><strong>Our Mission 🌍</strong></p><p style=\"min-height:1.5em\">We create financial inclusion for the traditionally excluded through a fair, flexible, customer-centric financing model. We strive to drive greater inclusion of women, youth, and low-income communities.</p><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><strong>Our Impact 💚</strong></p><p style=\"min-height:1.5em\">Our technology has created measurable change:</p><ul style=\"min-height:1.5em\"><li><p style=\"min-height:1.5em\"><strong>Connected 📱</strong>: 2.5 million first-time smartphone users connected</p></li><li><p style=\"min-height:1.5em\"><strong>Prosperous 💰</strong>: 70% of customers use M-KOPA products for income generation, with 35,000 livelihoods created for agents</p></li><li><p style=\"min-height:1.5em\"><strong>Green 🌱</strong>: 2.155 million tonnes of CO₂ avoided since 2010 through clean energy, refurbished devices, and e-mobility</p><p style=\"min-height:1.5em\"></p></li></ul><p style=\"min-height:1.5em\"><strong>Ready to build C#/.NET systems — with AI as part of your craft — that create real-world financial inclusion? Apply Now!</strong></p><p style=\"min-height:1.5em\"></p><h2><strong>Why M-KOPA?</strong></h2><p style=\"min-height:1.5em\">At M-KOPA, we empower our people to own their careers through diverse development programs, coaching partnerships, and on-the-job training. We support individual journeys with family-friendly policies, prioritize well-being, and embrace flexibility.</p><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\">Join us in shaping the future of M-KOPA as we grow together. Explore more at <a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"http://m-kopa.com\"><strong>m-kopa.com</strong></a>.</p><p style=\"min-height:1.5em\"></p><div style=\"text-align:left\"><img style=\"max-width:100%\" src=\"https://app.ashbyhq.com/api/images/user-content/1d985516-2a99-43c0-b591-957f5adaceb9/369018b8-cf9c-49c7-95f1-1d414482ba57/B13.png\" /></div><p style=\"min-height:1.5em\"><em>Recognized four times by the Financial Times as one Africa's fastest growing companies (2022, 2023, 2024, 2025 and 2026), named on CNBC's World’s Top Fintech Companies 2025 &amp; 2026 and by TIME100 Most influential companies in the world 2023 and 2024 , we've served over 10 million customers, unlocking $2 billion in cumulative credit for the everyday earners across Africa, in addition to over 10,000 e-bikes financed in Kenya.</em></p><div style=\"text-align:left\"><img style=\"max-width:100%\" src=\"https://app.ashbyhq.com/api/images/user-content/1d985516-2a99-43c0-b591-957f5adaceb9/481f6724-8375-4f39-b514-fbe00b8fc3b5/B13.png\" /></div><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><em><strong><u>Important Notice</u></strong></em><br /><br /><em>M-KOPA is an equal opportunity and affirmative action employer committed to assembling a diverse, broadly trained staff. Women, minorities, and people with disabilities are strongly encouraged to apply.</em></p><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><em>M-KOPA explicitly prohibits the use of Forced or Child Labour and respects the rights of its employees to agree to terms and conditions of employment voluntarily, without coercion, and freely terminate their employment on appropriate notice. M-KOPA shall ensure that its Employees are of legal working age and shall comply with local laws for youth employment or student work, such as internships or apprenticeships. </em></p><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><em>M-KOPA does not collect/charge any money as a pre-employment or post-employment requirement. This means that we never ask for ‘recruitment fees’, ‘processing fees’, ‘interview fees’, or any other kind of money in exchange for offer letters or interviews at any time during the hiring process.</em></p><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><em>Applications for this position will be reviewed on a rolling basis. Shortlisting and interviews will take place at any stage during the recruitment process. We reserve the right to close the vacancy early if a suitable candidate is selected before the advertised closing date.</em></p><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\"><em>If your application is successful M-KOPA undertakes pre-employment background checks as part of its recruitment process, these include; criminal records, identification verification, academic qualifications, employment dates and employer references.</em></p>",
+        "descriptionPlain": "[https://app.ashbyhq.com/api/images/user-content/1d985516-2a99-43c0-b591-957f5adaceb9/5ac97b31-49cd-4012-8bb0-5caf15e33c69/B25.png]\n\n\n\nJoin our expanding engineering team!\n\nWe're hiring a permanent Senior Backend Engineer to join our Asset Sales group as we scale one of the most important parts of M-KOPA's FinTech platform. Build distributed, event-driven microservices and help shape what AI-native engineering looks like at M-KOPA.\n\n\n\n[https://app.ashbyhq.com/api/images/user-content/1d985516-2a99-43c0-b591-957f5adaceb9/98cde4bc-fa0a-4874-a12e-0db70c8c4abf/image.png]\n\n\n\nThe Impact 💚\n\nYour code will directly power the systems that put smartphones and e-motorbikes into the hands of Every Day Earners across Africa. We've already helped over 10 million customers access more than $2 billion in credit. It's your chance to be part of something that's literally transforming lives across an entire continent 🌍\n\n\n\n[https://app.ashbyhq.com/api/images/user-content/1d985516-2a99-43c0-b591-957f5adaceb9/98cde4bc-fa0a-4874-a12e-0db70c8c4abf/image.png]\n\n\n\nThe Opportunity\n\n\n\n🎯 Mission-driven engineering: Every service you build helps expand financial inclusion for under-banked populations\n\n🏆 Global recognition: Join a company named by the Financial Times as one of Africa's fastest-growing companies for five consecutive years (2022–2026)\n\n🚀 Scale challenges: Build backend systems serving millions across multiple African markets\n\n🤖 AI-native from day one: We're actively embracing AI as part of the engineering craft, not bolting it on\n\n🌍 Fully distributed: Work remotely with diverse teams across UK, Europe, and Africa\n\n\n\nWhat You'll Do\n\nAt M-KOPA, you'll build and operate distributed C# and .NET microservices on Azure, working within an event-driven architecture at significant scale. This is an outcomes-driven role: we care far more about the value you create than where you sit or how many hours you're online. You'll own what you build end-to-end — from idea, through implementation and deployment, into production and iteration.\n\n\n\nTechnical Environment 💻\n\n - Modern C# stack: Distributed C# and .NET microservices\n\n - Cloud & orchestration: Hosted on Azure using Kubernetes\n\n - Architecture: Event-driven, supporting products used at significant scale\n\n - Observability: Grafana, Azure Application Insights, logs, traces, and metrics\n\n - AI tooling: Claude and other AI tools used throughout the engineering workflow — design exploration, code generation and review, test writing, incident investigation, and technical communication\n\n\n\nOur Engineering Approach 🚀\n\n - AI-native engineering: We want engineers who tinker — experimenting with new tools, agents, and workflows, and sharing what works\n\n - Guardrails as we accelerate: Automated tests, SLOs, alerting, observability, and deployment safeguards around everything we ship\n\n - Own it beyond the pull request: Design for idempotency, retries, out-of-order events, and failure modes, and know how your services behave in production\n\n - The Campfire Rule: Leave the systems you touch a little better than you found them\n\n - On-call as feedback, not heroics: Engineers who build our systems also help operate them, using incidents to make the platform more resilient\n\n\n\nWhat You Need\n\nWe're looking for a senior engineer who's curious, autonomous, and highly trusted. You're comfortable owning the entire software stack — including supporting infrastructure — throughout its lifecycle, and you see production data, not just deployment, as the real measure of \"done.\"\n\n\n\nRequired Experience:\n\n - Strong grasp of C# and .NET development\n\n - Experience with event-driven systems - We use Azure Service Bus, but would love to hear from you if you have experience with similar messaging technology (Kafka, RabbitMQ, etc.)\n\n - Microservices architecture experience, ideally on Azure and Kubernetes\n\n - Experience using observability tooling (e.g. Grafana, Application Insights) to understand production behaviour\n\n - Comfort using AI tools as part of a daily engineering workflow (design, code review, testing, incident investigation)\n\n - DevOps culture mindset, including on-call/production ownership\n\n - Proven ability to collaborate effectively in distributed teams across time zones\n\n - Continuous learning mindset and openness to feedback\n   \n   \n\n\n\n[https://app.ashbyhq.com/api/images/user-content/1d985516-2a99-43c0-b591-957f5adaceb9/86f7fe83-cdac-44e5-95f4-5cfc1d36c035/image.png]\n\n\n\nLocation & Benefits\n\n - Fully remote role, collaborating during core GMT working hours\n\n - Work with diverse teams distributed across UK, Europe, and Africa\n\n - Personalised training budget to support your development\n\n - Home office setup budget\n\n - Professional development programs and coaching partnerships\n\n - Family-friendly policies and flexible working arrangements\n\n - Well-being support and career growth opportunities\n\n\n\nOur Mission 🌍\n\nWe create financial inclusion for the traditionally excluded through a fair, flexible, customer-centric financing model. We strive to drive greater inclusion of women, youth, and low-income communities.\n\n\n\nOur Impact 💚\n\nOur technology has created measurable change:\n\n - Connected 📱: 2.5 million first-time smartphone users connected\n\n - Prosperous 💰: 70% of customers use M-KOPA products for income generation, with 35,000 livelihoods created for agents\n\n - Green 🌱: 2.155 million tonnes of CO₂ avoided since 2010 through clean energy, refurbished devices, and e-mobility\n   \n   \n\nReady to build C#/.NET systems — with AI as part of your craft — that create real-world financial inclusion? Apply Now!\n\n\n\n\nWHY M-KOPA?\n\nAt M-KOPA, we empower our people to own their careers through diverse development programs, coaching partnerships, and on-the-job training. We support individual journeys with family-friendly policies, prioritize well-being, and embrace flexibility.\n\n\n\nJoin us in shaping the future of M-KOPA as we grow together. Explore more at m-kopa.com http://m-kopa.com.\n\n\n\n[https://app.ashbyhq.com/api/images/user-content/1d985516-2a99-43c0-b591-957f5adaceb9/369018b8-cf9c-49c7-95f1-1d414482ba57/B13.png]\n\nRecognized four times by the Financial Times as one Africa's fastest growing companies (2022, 2023, 2024, 2025 and 2026), named on CNBC's World’s Top Fintech Companies 2025 & 2026 and by TIME100 Most influential companies in the world 2023 and 2024 , we've served over 10 million customers, unlocking $2 billion in cumulative credit for the everyday earners across Africa, in addition to over 10,000 e-bikes financed in Kenya.\n\n[https://app.ashbyhq.com/api/images/user-content/1d985516-2a99-43c0-b591-957f5adaceb9/481f6724-8375-4f39-b514-fbe00b8fc3b5/B13.png]\n\n\n\nImportant Notice\n\nM-KOPA is an equal opportunity and affirmative action employer committed to assembling a diverse, broadly trained staff. Women, minorities, and people with disabilities are strongly encouraged to apply.\n\n\n\nM-KOPA explicitly prohibits the use of Forced or Child Labour and respects the rights of its employees to agree to terms and conditions of employment voluntarily, without coercion, and freely terminate their employment on appropriate notice. M-KOPA shall ensure that its Employees are of legal working age and shall comply with local laws for youth employment or student work, such as internships or apprenticeships. \n\n\n\nM-KOPA does not collect/charge any money as a pre-employment or post-employment requirement. This means that we never ask for ‘recruitment fees’, ‘processing fees’, ‘interview fees’, or any other kind of money in exchange for offer letters or interviews at any time during the hiring process.\n\n\n\nApplications for this position will be reviewed on a rolling basis. Shortlisting and interviews will take place at any stage during the recruitment process. We reserve the right to close the vacancy early if a suitable candidate is selected before the advertised closing date.\n\n\n\nIf your application is successful M-KOPA undertakes pre-employment background checks as part of its recruitment process, these include; criminal records, identification verification, academic qualifications, employment dates and employer references."
+      },
+      "expected": "include"
+    },
+    {
+      "source": {
+        "company_name": "Moniepoint",
+        "ats": "greenhouse",
+        "slug": "moniepoint",
+        "url": "https://boards-api.greenhouse.io/v1/boards/moniepoint/jobs",
+        "enabled": true
+      },
+      "raw": {
+        "absolute_url": "https://job-boards.eu.greenhouse.io/moniepoint/jobs/4637395101",
+        "data_compliance": [
+          {
+            "type": "gdpr",
+            "requires_consent": false,
+            "requires_processing_consent": false,
+            "requires_retention_consent": false,
+            "retention_period": null,
+            "demographic_data_consent_applies": true
+          }
+        ],
+        "internal_job_id": 4020732101,
+        "location": {
+          "name": "Remote, Nigeria"
+        },
+        "metadata": null,
+        "id": 4637395101,
+        "updated_at": "2026-09-25T04:40:57-04:00",
+        "requisition_id": "327",
+        "title": "Senior Site Reliability Engineer",
+        "company_name": "Moniepoint",
+        "first_published": "2025-07-14T14:01:05-04:00",
+        "language": "en",
+        "application_deadline": null,
+        "content": "&lt;p&gt;&lt;strong&gt;Who We Are&lt;/strong&gt;&lt;/p&gt;\n&lt;p&gt;&amp;nbsp;&lt;/p&gt;\n&lt;p&gt;Moniepoint Inc. is Africa’s all-in-one financial platform, helping 20 million businesses and individuals access seamless payments, banking, credit, cross-border, and business management tools each month.&amp;nbsp;&lt;/p&gt;\n&lt;p&gt;As Nigeria’s largest merchant acquirer, we power most of the country’s point-of-sale (POS) transactions. Through our subsidiaries, Moniepoint Inc. processes over $250 billion in digital payment transaction value annually.&lt;/p&gt;\n&lt;p&gt;&lt;strong&gt;What We Do&lt;/strong&gt;&lt;/p&gt;\n&lt;p&gt;At Moniepoint, we are a customer-focused community, dedicated to crafting solutions that redefine our industry. We have several products that provide essential services for businesses, such as credit, overdrafts, etc. We leverage artificial intelligence and data to make our decisions, but also have the technology and data-driven best practices used to support our businesses.&lt;/p&gt;\n&lt;p&gt;Curious about what makes Moniepoint an incredible place to work? &lt;a href=&quot;https://moniepoint.com/blog&quot;&gt;Check out posts on how we cultivate a culture of innovation, teamwork, and growth.&lt;/a&gt;&lt;/p&gt;\n&lt;p&gt;&lt;strong&gt;Job Summary&lt;/strong&gt;&lt;/p&gt;\n&lt;p&gt;We are seeking an experienced SRE to engineer the reliability of our highly distributed platform. You will combine deep knowledge of distributed systems with strong coding skills to define SLOs, lead incident response, and build automation and self-healing mechanisms into our systems. You will balance immediate operational stability with long-term strategic engineering to ensure our services scale linearly with our hyper-growth.&lt;/p&gt;\n&lt;p&gt;&lt;strong&gt;Responsibilities&lt;/strong&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;Participate in on-call rotations as the primary technical lead. Act as the Incident Commander during major severity incidents: initiating war rooms, coordinating cross-functional teams, and providing clear status updates.&lt;br&gt;&lt;br&gt;&lt;/li&gt;\n&lt;li&gt;Instrument code to expose high-cardinality metrics and distributed traces. Collaboratively define, measure, and defend Service Level Objectives (SLOs) and Error Budgets with product owners.&lt;br&gt;&lt;br&gt;&lt;/li&gt;\n&lt;li&gt;Write high-quality, production-ready code (in Java, Go, or Python) to build internal tooling, automation platforms, and self-healing mechanisms that eliminate manual operator intervention.&lt;br&gt;&lt;br&gt;&lt;/li&gt;\n&lt;li&gt;Partner with Product Engineering teams during the design phase to ensure new services are built with reliability, scalability, and observability patterns (circuit breakers, rate limiting, backpressure, fallback strategies) from day one.&lt;br&gt;&lt;br&gt;&lt;/li&gt;\n&lt;li&gt;Analyze system performance and traffic patterns to model future capacity needs. Conduct load testing and chaos engineering experiments to verify system resilience under failure conditions.&lt;br&gt;.&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;&lt;strong&gt;Requirements&lt;/strong&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;Minimum of 5 years of experience in SRE or Backend Engineering with a strong ability to write clean, performant, and tested code in Java, Go, Rust, or Python.&lt;br&gt;&lt;br&gt;&lt;/li&gt;\n&lt;li&gt;Deep understanding of distributed systems architecture and design patterns. You possess a strong command of microservices fundamentals, event-driven architectures, and the underlying principles required to build systems that scale.&lt;br&gt;&lt;br&gt;&lt;/li&gt;\n&lt;li&gt;Extensive experience with Google Cloud Platform (GCP) or similar cloud providers (AWS/Azure). You are proficient in running production workloads on Kubernetes (GKE/EKS) and troubleshooting cluster/infrastructure issues.&lt;br&gt;&lt;br&gt;&lt;/li&gt;\n&lt;li&gt;Experience designing observability strategies using OpenTelemetry, Prometheus, New Relic, Datadog, or SigNoz to improve system visibility.&lt;br&gt;&lt;br&gt;&lt;/li&gt;\n&lt;li&gt;Familiarity with operating and tuning production data stores (e.g., PostgreSQL, MySQL) and streaming platforms (e.g., Kafka, RabbitMQ) in a high-throughput environment.&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;&lt;br&gt;&lt;br&gt;&lt;/p&gt;\n&lt;p&gt;&lt;strong&gt;What we can offer you&lt;/strong&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;&lt;a href=&quot;https://moniepoint.com/culture&quot;&gt;Culture&lt;/a&gt; - We put our people first and prioritize the well-being of every team member. We’ve built a company where all opinions carry weight and where all voices are heard. We value and respect each other and always look out for one another. Above all, we are human.&lt;/li&gt;\n&lt;li&gt;Learning - We have a learning and development-focused environment with an emphasis on knowledge sharing, training, and regular internal technical talks.&lt;/li&gt;\n&lt;li&gt;Compensation - You’ll receive an attractive salary, pension, health insurance, annual bonus, plus other benefits.&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;&lt;strong&gt;What to expect in the hiring process&lt;/strong&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;A preliminary phone call with the recruiter&lt;/li&gt;\n&lt;li&gt;A technical interview with the Hiring Manager&lt;/li&gt;\n&lt;li&gt;A behavioural and technical interview with a member of the Executive team.&amp;nbsp;&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;Moniepoint is an equal opportunity employer. We celebrate diversity and are committed to creating an inclusive environment for all employees and candidates.&lt;/p&gt;\n&lt;p&gt;&amp;nbsp;&lt;/p&gt;",
+        "departments": [
+          {
+            "id": 4020843101,
+            "name": "Site Reliability Engineering",
+            "child_ids": [],
+            "parent_id": 4020825101
+          }
+        ],
+        "offices": [
+          {
+            "id": 4000339101,
+            "name": "Moniepoint Headquaters ",
+            "location": "Lagos, Nigeria",
+            "child_ids": [
+              4002233101,
+              4000392101,
+              4000822101,
+              4000823101,
+              4000824101,
+              4000825101,
+              4000821101,
+              4000820101,
+              4000819101,
+              4000817101,
+              4000816101,
+              4000815101,
+              4000814101,
+              4000826101,
+              4000827101,
+              4000828101,
+              4000829101,
+              4000830101,
+              4000831101,
+              4000832101,
+              4000833101,
+              4000834101,
+              4000835101,
+              4000836101,
+              4000837101,
+              4000838101,
+              4000839101,
+              4000840101,
+              4000841101,
+              4000842101,
+              4000843101,
+              4000844101,
+              4000845101,
+              4000846101,
+              4000847101,
+              4000848101,
+              4000812101,
+              4000813101,
+              4000818101
+            ],
+            "parent_id": null
+          }
+        ],
+        "ai_disclaimer": null,
+        "include_ai_disclaimer": null,
+        "ai_opt_out_request_url": null
+      },
+      "expected": "maybe"
+    },
+    {
+      "source": {
+        "company_name": "Moniepoint",
+        "ats": "greenhouse",
+        "slug": "moniepoint",
+        "url": "https://boards-api.greenhouse.io/v1/boards/moniepoint/jobs",
+        "enabled": true
+      },
+      "raw": {
+        "absolute_url": "https://job-boards.eu.greenhouse.io/moniepoint/jobs/4976360101",
+        "data_compliance": [
+          {
+            "type": "gdpr",
+            "requires_consent": false,
+            "requires_processing_consent": false,
+            "requires_retention_consent": false,
+            "retention_period": null,
+            "demographic_data_consent_applies": false
+          }
+        ],
+        "internal_job_id": 4504282101,
+        "location": {
+          "name": "Remote, Portugal"
+        },
+        "metadata": null,
+        "id": 4976360101,
+        "updated_at": "2026-09-21T12:13:23-04:00",
+        "requisition_id": null,
+        "title": "Analytics Manager",
+        "company_name": "Moniepoint",
+        "first_published": "2026-09-15T04:43:27-04:00",
+        "language": "en",
+        "application_deadline": null,
+        "content": "&lt;p&gt;&lt;strong&gt;Who we are&lt;/strong&gt;&lt;/p&gt;\n&lt;p&gt;Moniepoint Inc. is Africa’s all-in-one financial platform, helping 20 million businesses and individuals access seamless payments, banking, credit, cross-border, and business management tools each month.&amp;nbsp;&lt;/p&gt;\n&lt;p&gt;As Nigeria’s largest merchant acquirer, we power most of the country’s point-of-sale (POS) transactions. Through our subsidiaries, Moniepoint Inc. processes over $250 billion in digital payment transaction value annually.&lt;/p&gt;\n&lt;p&gt;&lt;strong&gt;About the role&lt;/strong&gt;&lt;/p&gt;\n&lt;p&gt;At Moniepoint, as an Analytics Manager, you will use data to make better decisions, faster for the business. You will own metrics, measurement, experimentation and the analysis/data roadmap for a business area. You’ll use data to quantify business KPIs and conduct analyses to uncover unknowns, helping the business unit achieve its goals for acquisition, conversion, activation, retention, and revenue. As a leader of the business unit, the role sits at the intersection of product management, data engineering, and growth.&lt;/p&gt;\n&lt;p&gt;&lt;strong&gt;What you’ll do&lt;/strong&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;Strategic Leadership: Build a disciplined, exceptional analytical team. Develop and execute a comprehensive data and analytics roadmap and strategy&lt;/li&gt;\n&lt;li&gt;Team Building &amp;amp; Management: Hire, develop, and retain a high-performing team of analytics professionals&lt;/li&gt;\n&lt;li&gt;Data Insights &amp;amp; Analytics - including forecast building, business analysis and model development and productionisation. Drive the generation of actionable insights from data to support various business functions, including product, operations, marketing and engineering. What is our actual CAC per channel? Which customer segments are more/less engaged? What are our customers’ share of wallet - how can we use this? What is the typical behaviour of a Moniepoint consumer? What products cause the biggest incremental engagement?&lt;/li&gt;\n&lt;li&gt;Stakeholder Collaboration: Partner with growth, product, and engineering managers to ensure we collect the right data for meaningful business insights. Bring data leadership and rigour to our approach to product development. Build a strategic understanding of the business and structure complex projects to bring them to life.&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;&lt;strong&gt;Business: Growth&lt;/strong&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;Create and maintain the yearly forecast and budget for your products.&lt;/li&gt;\n&lt;li&gt;Define the product&#39;s growth plan and lead execution across the entire funnel from acquisition through to monetisation and retention&lt;/li&gt;\n&lt;li&gt;Own and optimise specific business metrics or commercial goals, covering the entire funnel from new user acquisition through conversion, activation, retention, and expansion&lt;a href=&quot;https://www.productled.org/foundations/the-rise-of-the-growth-product-manager&quot;&gt;&amp;nbsp;&lt;/a&gt;&lt;/li&gt;\n&lt;li&gt;Perform detailed product analysis covering the product management funnel with all its aspects, implementing changes into the buying funnel to improve conversion&lt;/li&gt;\n&lt;li&gt;Design and execute A/B testing programs to optimise sales and conversion rates/adoption at each funnel stage&lt;/li&gt;\n&lt;li&gt;Lead testing and optimisation efforts for the conversion funnel across offline and online channels, prioritising tests that drive the biggest business impact&lt;/li&gt;\n&lt;li&gt;Improve the product&#39;s design and deploy experiments to improve lifetime value (LTV) and decrease churn&lt;a href=&quot;https://medium.com/swlh/who-are-growth-product-managers-43626ffed444&quot;&gt;&amp;nbsp;&lt;/a&gt;&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;&lt;strong&gt;Technical: Data &amp;amp; Analytics&lt;/strong&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;Use deep, flexible, and comprehensive analytics covering the entire funnel from marketing acquisition to product usage&lt;/li&gt;\n&lt;li&gt;Analyse user behaviour to improve the sales funnel and increase conversions, using advanced analytics to assess campaign performance and refine strategies&lt;/li&gt;\n&lt;li&gt;Define and track growth metrics including customer acquisition cost (CAC), activation rate, retention rate, payback time, and revenue per customer&lt;/li&gt;\n&lt;li&gt;Conduct cohort analysis and journey mapping to identify bottlenecks and optimisation opportunities&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;&lt;strong&gt;What you need to succeed&lt;/strong&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;+5 years in Analytics and Analytics Management.&lt;/li&gt;\n&lt;li&gt;2+ years in a management role managing teams and driving strategic initiatives&lt;/li&gt;\n&lt;li&gt;Proven track record in a consumer-FMCG environment, preferably in a CPG or fintech environment&lt;/li&gt;\n&lt;li&gt;Deep experience scaling product businesses, with demonstrated ownership of significant revenue targets&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;&lt;strong&gt;Technical Skills&lt;/strong&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;Strong analytical skills with ability to drive metrics and benchmarks, plus experience with growth experiments, A/B testing, and funnel optimisation&lt;/li&gt;\n&lt;li&gt;Deep SQL knowledge.&lt;/li&gt;\n&lt;li&gt;Proficiency in product analytics tools (Mixpanel, Grafana, Tableau, Looker, etc)&lt;/li&gt;\n&lt;li&gt;Deep understanding of data analytics, user behaviour analysis and segmentation&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;&lt;strong&gt;Leadership &amp;amp; Soft Skills&lt;/strong&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;Strong communication skills to interact with teams, stakeholders, and users through verbal presentations, written reports, and visual media&lt;a href=&quot;https://www.hotjar.com/growth-product-management/growth-product-manager/&quot;&gt;&amp;nbsp;&lt;/a&gt;&lt;/li&gt;\n&lt;li&gt;Proven ability to build, mentor, and scale high-performing product teams&lt;/li&gt;\n&lt;li&gt;Expertise in data analytics tools and digital marketing platforms with the ability to manage and mentor teams of marketers, analysts, and designers&lt;/li&gt;\n&lt;li&gt;Strategic thinker with strong commercial awareness and business acumen&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;&lt;strong&gt;Key Performance Indicators&lt;/strong&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;User acquisition and activation rates&lt;/li&gt;\n&lt;li&gt;Customer retention and churn rates&lt;/li&gt;\n&lt;li&gt;Expansion revenue (upsell/cross-sell)&lt;/li&gt;\n&lt;li&gt;Customer Lifetime Value (LTV) / Customer Acquisition Cost (CAC) ratio&lt;/li&gt;\n&lt;li&gt;Product adoption metrics&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;&lt;strong&gt;What sets you apart&lt;/strong&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;Advanced degree in Business or STEM&lt;/li&gt;\n&lt;li&gt;Experience in Growth Analytics, Product analytics, Credit risk analytics&lt;/li&gt;\n&lt;li&gt;Background in both mass-marketing and product-led growth models&lt;/li&gt;\n&lt;li&gt;Experience managing P&amp;amp;L or budget responsibility&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;&lt;strong&gt;What you’ll get&lt;/strong&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;Culture - We put our people first and prioritise the well-being of every team member. We’ve built a company where all opinions carry weight and where all voices are heard. We value and respect each other and always look out for one another. Above all, we are human.&lt;/li&gt;\n&lt;li&gt;Learning - We have a learning and development-focused environment with an emphasis on knowledge sharing, training, and regular internal technical talks.&lt;/li&gt;\n&lt;li&gt;Compensation - You’ll receive an attractive salary, pension, health insurance, annual bonus, plus other benefits.&lt;/li&gt;\n&lt;/ul&gt;\n&lt;p&gt;&lt;strong&gt;What to expect in the hiring process&lt;/strong&gt;&lt;/p&gt;\n&lt;ul&gt;\n&lt;li&gt;Online SQL take-home task &lt;em&gt;(30 mins): &lt;/em&gt;Take-home test.&lt;/li&gt;\n&lt;li&gt;Business Case 1 &lt;em&gt;(1 hour - 1 hour 30 mins)&lt;/em&gt;: Live case. No take-home required.&lt;/li&gt;\n&lt;li&gt;Business Case 2 &lt;em&gt;(1 hour - 1 hour 30 mins)&lt;/em&gt;: Live case. No take-home required.&lt;/li&gt;\n&lt;li&gt;Exec Interview &lt;em&gt;(30 mins - 1 hour)&lt;/em&gt;: Culture Fit. No take-home required.&lt;/li&gt;\n&lt;/ul&gt;",
+        "departments": [
+          {
+            "id": 4020829101,
+            "name": "Marketing & Sales",
+            "child_ids": [
+              4020848101,
+              4020849101,
+              4020850101,
+              4020851101,
+              4020852101,
+              4020882101
+            ],
+            "parent_id": 4020820101
+          }
+        ],
+        "offices": [
+          {
+            "id": 4014955101,
+            "name": "Moniepoint GB",
+            "location": "London, England, United Kingdom",
+            "child_ids": [],
+            "parent_id": null
+          }
+        ],
+        "ai_disclaimer": null,
+        "include_ai_disclaimer": null,
+        "ai_opt_out_request_url": null
+      },
+      "expected": "exclude"
+    }
+  ]
+}

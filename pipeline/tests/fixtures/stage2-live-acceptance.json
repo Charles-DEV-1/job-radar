@@ -1,0 +1,123 @@
+{
+  "verified_at": "2026-10-06T14:50:47.663035+00:00",
+  "migration": "20261006000100_stage2_fetch_storage.sql",
+  "stored_jobs": 205,
+  "backfilled_and_notification_suppressed": 205,
+  "pending_notifiable_jobs": 0,
+  "filter_counts": {
+    "include": 6,
+    "maybe": 86,
+    "exclude": 113
+  },
+  "unauthenticated_jobs_http_status": 401,
+  "sources": [
+    {
+      "company": "FairMoney",
+      "ats": "workable",
+      "slug": "fairmoney",
+      "first_success": {
+        "backfill": true,
+        "new_jobs": 0,
+        "duplicates": 0,
+        "jobs_found": 19,
+        "closed_jobs": 0,
+        "updated_jobs": 0,
+        "inserted_jobs": 19
+      },
+      "last_two_successes": [
+        {
+          "backfill": true,
+          "new_jobs": 0,
+          "duplicates": 0,
+          "jobs_found": 19,
+          "closed_jobs": 0,
+          "updated_jobs": 0,
+          "inserted_jobs": 19
+        },
+        {
+          "backfill": false,
+          "new_jobs": 0,
+          "duplicates": 0,
+          "jobs_found": 19,
+          "closed_jobs": 0,
+          "updated_jobs": 0,
+          "inserted_jobs": 0
+        }
+      ],
+      "recorded_errors_before_fix": 2,
+      "consecutive_failures": 0
+    },
+    {
+      "company": "Moniepoint",
+      "ats": "greenhouse",
+      "slug": "moniepoint",
+      "first_success": {
+        "backfill": true,
+        "new_jobs": 0,
+        "duplicates": 0,
+        "jobs_found": 150,
+        "closed_jobs": 0,
+        "updated_jobs": 0,
+        "inserted_jobs": 150
+      },
+      "last_two_successes": [
+        {
+          "backfill": false,
+          "new_jobs": 0,
+          "duplicates": 0,
+          "jobs_found": 150,
+          "closed_jobs": 0,
+          "updated_jobs": 0,
+          "inserted_jobs": 0
+        },
+        {
+          "backfill": false,
+          "new_jobs": 0,
+          "duplicates": 0,
+          "jobs_found": 150,
+          "closed_jobs": 0,
+          "updated_jobs": 0,
+          "inserted_jobs": 0
+        }
+      ],
+      "recorded_errors_before_fix": 0,
+      "consecutive_failures": 0
+    },
+    {
+      "company": "M-KOPA",
+      "ats": "ashby",
+      "slug": "M-KOPA",
+      "first_success": {
+        "backfill": true,
+        "new_jobs": 0,
+        "duplicates": 0,
+        "jobs_found": 36,
+        "closed_jobs": 0,
+        "updated_jobs": 0,
+        "inserted_jobs": 36
+      },
+      "last_two_successes": [
+        {
+          "backfill": false,
+          "new_jobs": 0,
+          "duplicates": 0,
+          "jobs_found": 36,
+          "closed_jobs": 0,
+          "updated_jobs": 0,
+          "inserted_jobs": 0
+        },
+        {
+          "backfill": false,
+          "new_jobs": 0,
+          "duplicates": 0,
+          "jobs_found": 36,
+          "closed_jobs": 0,
+          "updated_jobs": 0,
+          "inserted_jobs": 0
+        }
+      ],
+      "recorded_errors_before_fix": 0,
+      "consecutive_failures": 0
+    }
+  ]
+}

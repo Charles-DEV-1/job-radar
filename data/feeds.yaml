@@ -1,0 +1,6 @@
+# Only add URLs you supply and verify against a real job-feed response.
+# Required fields: name, company, domain, url, enabled (boolean), verified (boolean),
+# scope (nigeria or africa). JSON: jobs/items array or root array with title,
+# apply_url/url, nullable location and description_text/content_text/content_html.
+# TechCabal and Techpoint Africa: no verified job-only feed; remain disabled.
+feeds: []

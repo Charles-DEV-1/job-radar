@@ -1,6 +1,7 @@
 """Isolate sources and record every attempt without storing job descriptions."""
 
 import json
+import threading
 import time
 from dataclasses import asdict
 from datetime import UTC, datetime
@@ -26,6 +27,7 @@ class RunRecorder:
         path.parent.mkdir(parents=True, exist_ok=True)
         self.path = path
         self.run_id = str(uuid4())
+        self._lock = threading.Lock()
 
     def write(self, record: dict[str, Any]) -> None:
         record = {
@@ -33,7 +35,7 @@ class RunRecorder:
             "recorded_at": datetime.now(UTC).isoformat(),
             **record,
         }
-        with self.path.open("a", encoding="utf-8") as handle:
+        with self._lock, self.path.open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(record, ensure_ascii=False) + "\n")
 
 

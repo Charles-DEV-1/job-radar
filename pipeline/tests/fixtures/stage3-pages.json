@@ -1,0 +1,22 @@
+{
+  "base": "<html><body><nav>Home About</nav><main><h1>Careers</h1><p>Join our teams to build products for customers throughout Africa.</p><p>Updated: 2026-10-10</p><article><h2>Customer Experience (CX) Optimization Specialist</h2><p>Lagos, Nigeria</p><p>Software engineering opportunities across our teams in Africa.</p><a href=\"https://apply.workable.com/j/10C22B282F?utm_source=weekly\">View role</a></article><div class=\"cookie-banner\">Accept cookies</div><div class=\"banner\">Weekly banner</div></main><footer>Copyright 2026</footer></body></html>",
+  "changed": "<html><body><nav>Home About</nav><main><h1>Careers</h1><p>Join our teams to build products for customers throughout Africa.</p><p>Updated: 2026-10-10</p><article><h2>Customer Experience (CX) Optimization Specialist</h2><p>Lagos, Nigeria</p><p>Software engineering opportunities across our teams in Africa.</p><a href=\"https://apply.workable.com/j/10C22B282F?utm_source=weekly\">View role</a></article><article><h2>Engineering Manager (Identity)</h2><p>Lagos, Nigeria</p><p>Software engineering opportunities across our teams in Africa.</p><a href=\"https://apply.workable.com/j/F297960A25?utm_source=weekly\">View role</a></article><div class=\"cookie-banner\">Accept cookies</div><div class=\"banner\">Weekly banner</div></main><footer>Copyright 2026</footer></body></html>",
+  "shell": "<html><body><main><div id=\"app\">Loading...</div></main><script src=\"/app.js\"></script></body></html>",
+  "empty": "<html><body><main></main></body></html>",
+  "robots_allow": "User-agent: *\nAllow: /\n",
+  "robots_disallow": "User-agent: *\nDisallow: /careers\n",
+  "postings": [
+    {
+      "title": "Customer Experience (CX) Optimization Specialist",
+      "location": "Lagos, Nigeria",
+      "apply_url": "https://apply.workable.com/j/10C22B282F",
+      "description_snippet": null
+    },
+    {
+      "title": "Engineering Manager (Identity)",
+      "location": "Lagos, Nigeria",
+      "apply_url": "https://apply.workable.com/j/F297960A25",
+      "description_snippet": null
+    }
+  ]
+}

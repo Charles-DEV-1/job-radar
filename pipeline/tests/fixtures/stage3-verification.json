@@ -1,0 +1,72 @@
+{
+  "checked_at": "2026-10-10",
+  "pages": [
+    {
+      "url": "https://techcabal.com/jobs/",
+      "status": "ok",
+      "final_url": "https://techcabal.com/jobs/",
+      "advertised_feeds": [
+        "https://techcabal.com/feed/",
+        "https://techcabal.com/comments/feed/"
+      ],
+      "iframes": [
+        "https://www.googletagmanager.com/ns.html?id=GTM-W6JKC35",
+        "https://airtable.com/embed/appDvWcKaWHi0Eykv/shrCLGQ5Sm8gk08e7"
+      ],
+      "general_feed": {
+        "url": "https://techcabal.com/feed/",
+        "response_bytes": 186440,
+        "sample_titles": [
+          "TechCabal",
+          "TechCabal",
+          "Five months after running out of capital, Chimoney gets a new owner",
+          "\u201cYou already had your chance\u201d: The silent shame of online dating after divorce in Africa\u00a0"
+        ],
+        "job_feed_verified": false
+      }
+    },
+    {
+      "url": "https://techpoint.africa/",
+      "status": "ok",
+      "final_url": "https://techpoint.africa/",
+      "advertised_feeds": [
+        "https://techpoint.africa/feed/",
+        "https://techpoint.africa/comments/feed/"
+      ],
+      "iframes": [
+        "https://www.googletagmanager.com/ns.html?id=GTM-ND5JHHWT"
+      ],
+      "general_feed": {
+        "url": "https://techpoint.africa/feed/",
+        "response_bytes": 14307,
+        "sample_titles": [
+          "Techpoint Africa",
+          "Techpoint Africa",
+          "Grampets Brings Pet Care, Social Networking, e-Commerce Into One Platform",
+          "Google opens its AI content detector to everyone"
+        ],
+        "job_feed_verified": false
+      }
+    },
+    {
+      "url": "https://fairmoney.io/",
+      "status": "ok",
+      "final_url": "https://fairmoney.io/",
+      "advertised_feeds": [],
+      "iframes": [],
+      "careers_links": []
+    }
+  ],
+  "llm_endpoints": [
+    {
+      "url": "https://api.openai.com/v1/chat/completions",
+      "status": 401,
+      "authenticated_generation_verified": false
+    },
+    {
+      "url": "https://api.anthropic.com/v1/messages",
+      "status": 401,
+      "authenticated_generation_verified": false
+    }
+  ]
+}

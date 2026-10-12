@@ -1,5 +1,7 @@
 # Live verification fixtures
 
+Stage 2 descriptions, field mappings, and real-job filtering checks are documented in [STAGE2.md](STAGE2.md).
+
 All six public, unauthenticated endpoint patterns were verified with HTTP 200 JSON responses on 2026-10-05, before their adapters were implemented. No requested endpoint remains unverified or disabled.
 
 | ATS | Verified request | Response shape |

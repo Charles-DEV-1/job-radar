@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 
 from pipeline.http import USER_AGENT, HTTPClient, checked_url
 from pipeline.models import BoardLink, Company, DiscoveryResult
+from pipeline.robots import RobotsPolicy
 
 
 def owns_url(company: Company, url: str) -> bool:
@@ -100,7 +101,7 @@ class CareersDiscovery:
         self.http = http
         self.robots: dict[str, RobotFileParser | bool] = {}
 
-    def _allowed(self, url: str) -> bool:
+    def _allowed(self, url: str, deadline: float | None = None) -> bool:
         checked_url(url)
         parsed = urlsplit(url)
         origin = f"{parsed.scheme}://{parsed.netloc}"
@@ -108,7 +109,7 @@ class CareersDiscovery:
             robots_url = origin + "/robots.txt"
             # Follow robots redirects with host pacing; fail closed on errors.
             for _ in range(5):
-                response = self.http.get(robots_url)
+                response = self.http.get(robots_url, deadline=deadline)
                 if response.is_redirect:
                     robots_url = urljoin(robots_url, response.headers["location"])
                     checked_url(robots_url)
@@ -126,13 +127,9 @@ class CareersDiscovery:
                         raise ValueError(
                             "robots.txt returned HTML; page access not attempted"
                         )
-                    parser = RobotFileParser(origin + "/robots.txt")
+                    parser = RobotsPolicy(origin + "/robots.txt")
                     parser.parse(response.text.splitlines())
-                    delay = parser.crawl_delay(USER_AGENT) or parser.crawl_delay("*")
-                    rate = parser.request_rate(USER_AGENT) or parser.request_rate("*")
-                    interval = max(
-                        1, delay or 1, rate.seconds / rate.requests if rate else 1
-                    )
+                    interval = parser.polite_interval(USER_AGENT)
                     self.http.set_host_interval(url, interval)
                     self.robots[origin] = parser
                 break

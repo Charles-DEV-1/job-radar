@@ -1,15 +1,18 @@
 import json
+import shutil
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
 import httpx
 import pytest
+from postgres_helpers import PostgresEngine, PostgresStore
 
 from pipeline.http import HTTPClient
 from pipeline.models import Company
 
 FIXTURES = Path(__file__).parent / "fixtures"
+REPO = Path(__file__).resolve().parents[2]
 
 
 class FakeClock:
@@ -63,3 +66,33 @@ def make_http() -> Any:
     yield factory
     for client in clients:
         client.close()
+
+
+@pytest.fixture(scope="session")
+def pg_engine() -> Any:
+    node = shutil.which("node")
+    module = REPO / ".tools/pglite"
+    if not node or not (module / "node_modules/@electric-sql/pglite").exists():
+        pytest.skip(
+            "Install the documented PGlite test dependency "
+            "to run SQL integration checks"
+        )
+    db = PostgresEngine(
+        node,
+        Path(__file__).with_name("db_bridge.mjs"),
+        module,
+        REPO / "supabase/migrations/20261006000100_stage2_fetch_storage.sql",
+    )
+    yield db
+    db.close()
+
+
+@pytest.fixture
+def pg_store(pg_engine: PostgresEngine) -> PostgresStore:
+    pg_engine.query("reset role")
+    pg_engine.query(
+        "truncate public.source_monitor_state,public.job_sources,public.jobs,"
+        "public.source_runs,public.sources"
+    )
+    pg_engine.query("set role service_role")
+    return PostgresStore(pg_engine)

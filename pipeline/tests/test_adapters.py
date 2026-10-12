@@ -7,6 +7,7 @@ import pytest
 from pipeline.sources.ats import ADAPTER_CLASSES
 from pipeline.sources.ats.base import ATSAdapter, BoardNotFound
 from pipeline.sources.ats.smartrecruiters import SmartRecruitersAdapter
+from pipeline.sources.ats.workable import WorkableAdapter
 
 
 @pytest.mark.parametrize("adapter_class", ADAPTER_CLASSES)
@@ -72,8 +73,22 @@ def test_raw_fetch_is_unmodified(
     adapter_class: type[ATSAdapter], recorded: dict[str, Any], make_http: Any
 ) -> None:
     payload = deepcopy(recorded[adapter_class.name])
+    if adapter_class.name == "greenhouse":
+        payload["meta"]["total"] = len(payload["jobs"])
     if adapter_class.name == "smartrecruiters":
-        payload["totalFound"] = len(payload["content"])
+        payload["content"] = payload["content"][:1]
+        payload["totalFound"] = 1
+        detail = recorded["smartrecruiters-detail"]
+        adapter = adapter_class(
+            make_http(
+                lambda request: httpx.Response(
+                    200,
+                    json=payload if request.url.path.endswith("/postings") else detail,
+                )
+            )
+        )
+        assert adapter.fetch_jobs("StandardBankGroup") == [detail]
+        return
     adapter = adapter_class(make_http(lambda _: httpx.Response(200, json=payload)))
     expected = (
         payload if adapter.collection_key is None else payload[adapter.collection_key]
@@ -114,6 +129,11 @@ def test_smartrecruiters_paginates_raw_jobs(
 
     def handler(request: httpx.Request) -> httpx.Response:
         seen.append(str(request.url))
+        if not request.url.path.endswith("/postings"):
+            # The second detail is an explicitly constructed pagination scenario.
+            detail = deepcopy(recorded["smartrecruiters-detail"])
+            detail["id"] = request.url.path.rsplit("/", 1)[-1]
+            return httpx.Response(200, json=detail)
         offset = int(request.url.params.get("offset", 0))
         return httpx.Response(
             200,
@@ -126,8 +146,10 @@ def test_smartrecruiters_paginates_raw_jobs(
         )
 
     adapter = SmartRecruitersAdapter(make_http(handler))
-    assert adapter.fetch_jobs("StandardBankGroup") == original["content"]
-    assert seen[-1].endswith("?offset=1&limit=100")
+    fetched = adapter.fetch_jobs("StandardBankGroup")
+    assert [job["id"] for job in fetched] == [job["id"] for job in original["content"]]
+    assert all("jobAd" in job for job in fetched)
+    assert seen[1].endswith("?offset=1&limit=100")
 
 
 def test_smartrecruiters_incomplete_page_fails(make_http: Any) -> None:
@@ -186,3 +208,17 @@ def test_slug_cannot_inject_paths(
 ) -> None:
     adapter = adapter_class(make_http(lambda _: httpx.Response(200, json={})))
     assert adapter.probe("../wrong?token=secret").status == "error"
+
+
+def test_workable_uses_verified_final_details_url(
+    recorded: dict[str, Any], make_http: Any
+) -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert (
+            str(request.url)
+            == "https://apply.workable.com/api/v1/widget/accounts/fairmoney?details=true"
+        )
+        return httpx.Response(200, json=recorded["workable-full"])
+
+    jobs = WorkableAdapter(make_http(handler)).fetch_jobs("fairmoney")
+    assert jobs[0]["description"]

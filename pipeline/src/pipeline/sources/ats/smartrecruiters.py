@@ -1,4 +1,5 @@
 from typing import Any
+from urllib.parse import urlsplit
 
 from pipeline.models import RawJob
 from pipeline.sources.ats.base import ATSAdapter
@@ -39,4 +40,26 @@ class SmartRecruitersAdapter(ATSAdapter):
             jobs.extend(batch)
             if len(jobs) >= 10000 and len(jobs) < total:
                 raise ValueError("SmartRecruiters pagination limit exceeded")
-        return jobs
+        full_jobs: list[RawJob] = []
+        for job in jobs:
+            ref = job.get("ref")
+            expected_path = urlsplit(url).path + "/" + str(job.get("id", ""))
+            if not isinstance(ref, str):
+                raise ValueError("SmartRecruiters posting has no detail reference")
+            parsed = urlsplit(ref)
+            if (
+                parsed.scheme != "https"
+                or parsed.netloc != "api.smartrecruiters.com"
+                or parsed.path != expected_path
+                or parsed.query
+            ):
+                raise ValueError("Unexpected SmartRecruiters detail reference")
+            detail = self._payload(ref)
+            if not isinstance(detail, dict) or str(detail.get("id")) != str(
+                job.get("id")
+            ):
+                raise ValueError("SmartRecruiters detail does not match posting")
+            if not isinstance(detail.get("jobAd"), dict):
+                raise ValueError("SmartRecruiters detail lacks jobAd")
+            full_jobs.append(detail)
+        return full_jobs

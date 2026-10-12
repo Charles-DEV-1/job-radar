@@ -1,0 +1,98 @@
+{
+  "greenhouse-content": {
+    "verified_on": "2026-10-06",
+    "url": "https://boards-api.greenhouse.io/v1/boards/moniepoint/jobs?content=true",
+    "http_status": 200,
+    "keys": [
+      "jobs",
+      "meta"
+    ],
+    "job_keys": [
+      "absolute_url",
+      "data_compliance",
+      "internal_job_id",
+      "location",
+      "metadata",
+      "id",
+      "updated_at",
+      "requisition_id",
+      "title",
+      "company_name",
+      "first_published",
+      "language",
+      "application_deadline",
+      "content",
+      "departments",
+      "offices",
+      "ai_disclaimer",
+      "include_ai_disclaimer",
+      "ai_opt_out_request_url"
+    ],
+    "observed_jobs": 146
+  },
+  "workable-full": {
+    "verified_on": "2026-10-06",
+    "url": "https://www.workable.com/api/accounts/fairmoney?details=true",
+    "http_status": 200,
+    "keys": [
+      "name",
+      "description",
+      "jobs"
+    ],
+    "job_keys": [
+      "title",
+      "shortcode",
+      "code",
+      "employment_type",
+      "telecommuting",
+      "department",
+      "url",
+      "shortlink",
+      "application_url",
+      "published_on",
+      "created_at",
+      "country",
+      "city",
+      "state",
+      "education",
+      "experience",
+      "function",
+      "industry",
+      "locations",
+      "description"
+    ],
+    "observed_jobs": 45,
+    "initial_http_status": 302,
+    "effective_url": "https://apply.workable.com/api/v1/widget/accounts/fairmoney?details=true"
+  },
+  "smartrecruiters-detail": {
+    "verified_on": "2026-10-06",
+    "url": "https://api.smartrecruiters.com/v1/companies/StandardBankGroup/postings/744000153508782",
+    "http_status": 200,
+    "keys": [
+      "id",
+      "name",
+      "uuid",
+      "jobId",
+      "jobAdId",
+      "defaultJobAd",
+      "refNumber",
+      "company",
+      "location",
+      "customField",
+      "releasedDate",
+      "creator",
+      "postingUrl",
+      "applyUrl",
+      "referralUrl",
+      "jobAd",
+      "active",
+      "visibility",
+      "industry",
+      "function",
+      "experienceLevel",
+      "typeOfEmployment",
+      "language"
+    ]
+  }
+}

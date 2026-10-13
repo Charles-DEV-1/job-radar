@@ -59,6 +59,18 @@ intact. A wrapped bullet cannot be removed automatically; unsupported selection,
 protected controls or noncontiguous project blocks cause a visible validation
 failure and master fallback. Reordering requires the template's safe mappings.
 
+Tailoring requests contain only summary wording (including approved alternatives),
+grouped skills, experience bullet IDs/text, projects, and the job's title, company
+and description. Contact details, role headers/dates, education, certifications
+and project URLs stay local. A contact redactor also removes known contact values
+repeated in allowed text, job text or retry feedback, including raw contact lines
+from PDF imports. Emails and web URLs embedded in prose are redacted too. The
+original local facts still govern validation; if redaction makes an output
+unusable, the normal failed-status/master-document fallback applies. Contact
+placeholders render from `master_resume.json`, preserving their original runs and
+formatting. Existing templates remain compatible; inline hyperlink targets remain
+in the hash-checked local document and are never sent to the LLM.
+
 The LLM may select and reorder skills and role bullets and reorder whole project
 blocks. It may use original wording or **owner-approved** alternatives in
 `approved_rephrasings`/`approved_summary_rephrasings`. Add alternatives only after
@@ -71,8 +83,8 @@ work. Summary paragraph count and original bullet/character limits are retained.
 
 `match_notes` is structured as `matched: [{requirement, evidence_ids}], gaps:
 [requirement]`. Requirements quote the job; matched phrases must appear in their
-cited original fact (bullet ID, `skill:<exact skill>`, `education:<index>:degree`,
-or another ID in the supplied evidence map). A claimed gap cannot contradict
+cited original fact (bullet ID, `skill:<exact skill>`, or project fact ID
+in the supplied evidence map). A claimed gap cannot contradict
 existing source evidence. These are conservative phrase-level evidence notes,
 not an inferred skills score or a claim of meeting broader unstated requirements.
 

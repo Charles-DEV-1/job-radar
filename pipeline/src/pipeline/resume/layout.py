@@ -387,6 +387,15 @@ def create_template(
                     else package.read(item.filename)
                 )
                 target.writestr(item, blob)
+    # Contact placeholders are filled only from the local master JSON. Existing
+    # inline/hyperlink runs stay in their original positions and retain formatting.
+    for block in blocks:
+        if block["binding"]["kind"] != "static" or block.get("regions"):
+            continue
+        for field, index, value in _contact_fields(master):
+            if value and block["text"] == value:
+                block["binding"] = {"kind": "contact", "field": field, "index": index}
+                break
     unbound = sum(len(values) for values in bindings.values())
     if unbound:
         template.unlink(missing_ok=True)
@@ -422,6 +431,16 @@ def load_layout(
     return data
 
 
+def _contact_fields(master: MasterResume) -> list[tuple[str, int | None, str]]:
+    fields = []
+    for field, value in master.contact.model_dump().items():
+        if isinstance(value, str):
+            fields.append((field, None, value))
+        elif isinstance(value, list):
+            fields.extend((field, i, text) for i, text in enumerate(value))
+    return fields
+
+
 def _replacement(
     block: dict[str, Any], master: MasterResume, edit: Tailoring
 ) -> str | None:
@@ -443,6 +462,9 @@ def _replacement(
             value = value[: region["start"]] + replacement + value[region["end"] :]
         return value
     binding = block["binding"]
+    if binding["kind"] == "contact":
+        value = getattr(master.contact, binding["field"])
+        return value if binding["index"] is None else value[binding["index"]]
     if binding["kind"] == "summary":
         parts = edit.summary.split("\n")
         if len(parts) != binding["count"]:
@@ -464,6 +486,11 @@ def _replacement(
             return None
         source_id = tailored.bullet_order[position]
         return next(b.text for b in tailored.bullets if b.id == source_id)
+    # Backwards compatibility for contact paragraphs in existing templates.
+    # Inline hyperlinks stay immutable in the hash-checked original package.
+    for _, _, contact_value in _contact_fields(master):
+        if contact_value and contact_value == block["text"]:
+            return contact_value
     return block["text"]
 
 

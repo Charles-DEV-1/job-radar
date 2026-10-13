@@ -1,6 +1,6 @@
 # Job Radar
 
-Private, single-user job monitoring for Nigerian and African software engineering roles. Stages 1–3 cover ATS discovery, fetching, careers-page monitoring, verified job feeds, filtering, dedupe, and private Supabase storage. Project rules are in [AGENTS.md](AGENTS.md).
+Private, single-user job monitoring for Nigerian and African software engineering roles. Stages 1–4 cover discovery, fetching, careers monitoring, filtering, private storage and validated resume tailoring. Project rules are in [AGENTS.md](AGENTS.md).
 
 ## Setup
 
@@ -12,7 +12,7 @@ py -3.12 -m venv .venv
 Copy-Item .env.example .env
 ```
 
-Stage 1 needs no API keys. Stage 2 reads `SUPABASE_URL` and `SUPABASE_SERVICE_KEY` from environment variables or `.env`. Keep private resumes under `data/resumes/`; only nonprivate templates belong in `data/resumes/templates/`.
+Stage 1 and offline resume setup need no API keys. Stage 2 reads `SUPABASE_URL` and `SUPABASE_SERVICE_KEY` from environment variables or `.env`. Real master resumes, extracted JSON, templates and output documents are gitignored. See [Stage 4 resume setup](data/RESUMES.md).
 
 ## Detect ATS boards
 

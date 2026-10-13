@@ -27,4 +27,12 @@ Apply [20261010000100_stage3_careers_monitor.sql](migrations/20261010000100_stag
 
 The new `radar_monitor_state`, `radar_commit_monitor`, and `radar_run_metadata` RPCs are invoker functions executable only by `service_role`. Monitor state has RLS enabled with no anonymous/authenticated grants. Snapshot text, links, method, and cached canonical jobs remain private. `radar_commit_monitor` checks the expected previous hash and commits jobs/state/metadata in one transaction. Replay returns the saved result; a failed or stale commit keeps the previous state.
 
-Registry sync now mirrors the entire ATS/page/feed configuration. Careers pages use a stable hash of the official domain and cleaned careers URL as their slug; feeds use a hash of the supplied URL. Missing monitored listings are retained rather than closed from an incremental diff. The owner reported applying the Stage 3 migration on 2026-10-12; hosted database state has not been independently rechecked here.
+Registry sync now mirrors the entire ATS/page/feed configuration. Careers pages use a stable hash of the official domain and cleaned careers URL as their slug; feeds use a hash of the supplied URL. Missing monitored listings are retained rather than closed from an incremental diff. Also apply [20261012000100_stage3_sync_safe_updates.sql](migrations/20261012000100_stage3_sync_safe_updates.sql), which fixes source sync for the hosted safe-update guard.
+
+## Stage 4 private resume tailoring
+
+Apply [20261012000200_stage4_resume_tailoring.sql](migrations/20261012000200_stage4_resume_tailoring.sql) after the prior migrations. It adds private per-job resume runs, claims, filenames, errors and match notes. `radar_claim_tailor` claims one eligible pending/open job with a 15-minute lease; `radar_finish_tailor` validates the claim and original content hash before accepting its file. Both RPCs remain service-role-only invoker functions. Existing job, notification and ingestion behavior is preserved.
+
+The migration creates the private `radar-resumes` bucket with an 8 MiB DOCX/PDF limit. A restrictive Storage objects policy blocks direct anonymous/authenticated access even if another permissive policy exists. The pipeline service issues short-lived signed download URLs. No dashboard policies or email are implemented. Follow [the resume guide](../data/RESUMES.md) for offline facts review, template checks and later LLM configuration.
+
+The Stage 4 migration and bucket/RPC behavior are tested locally with PGlite and the SDK. The migration must still be applied to the project configured by `SUPABASE_URL`; local checks do not establish hosted deployment or visual acceptance with the owner's PDF/DOCX.

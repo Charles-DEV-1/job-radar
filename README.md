@@ -55,6 +55,17 @@ Set-Location pipeline
 
 Apply [the Supabase migration](supabase/README.md), configure your service key, and enable your real companies with confirmed ATS/slug fields. Edit role and location lists in `data/filters.yaml` as needed.
 
+The student profile includes internships and junior engineering roles. Editable `seniority.exclude` title terms (manager, head of, director, VP, vice president, principal, staff, chief, CTO) always exclude a job with an explicit reason. `seniority.maybe` terms (senior, lead) require review; unrelated roles and ineligible locations still exclude. Matching is case-insensitive and uses word boundaries.
+
+Reclassify existing jobs after changing these rules:
+
+```powershell
+.\.venv\Scripts\python.exe -m pipeline.run_filter
+.\.venv\Scripts\python.exe -m pipeline.run_filter --apply
+```
+
+The first command previews category transitions. `--apply` updates only `filter_result` and `filter_reason`, guards against concurrent job changes, and reports category changes separately from reason-only updates. Full descriptions, resumes, statuses and notifications are preserved. The private audit log is gitignored `data/filter-runs.jsonl`; rerunning unchanged rules makes no updates.
+
 ```powershell
 .\.venv\Scripts\python.exe -m pipeline.run_fetch --concurrency 4
 .\.venv\Scripts\python.exe -m pipeline.run_fetch --concurrency 4
@@ -94,7 +105,9 @@ LLM_MAX_TOKENS_PER_MINUTE=6000
 
 The provider/model pairing is configurable; check your account's model permissions and [current Groq models](https://console.groq.com/docs/models). Provider support is tested with mocked HTTP for `openai/gpt-oss-20b` and `openai/gpt-oss-120b`; authenticated generation has not been tested. The Pydantic JSON schemas, URL checks, and resume truthfulness validators remain unchanged.
 
-Resume requests use compact JSON and evidence references to avoid repeating facts. They require space for a full response (at least 2048 tokens), and fail before HTTP if the configured TPM budget cannot fit both input and this minimum. Set the budget to your account's supported quota; a confirmed 8K quota uses `LLM_MAX_TOKENS_PER_MINUTE=8000`. Groq GPT-OSS 20B/120B uses low reasoning effort, supported by the [Groq Chat API](https://console.groq.com/docs/api-reference). Explicit output-limit failures retain the master fallback without identical retries. See [resume setup and recovery](data/RESUMES.md).
+Resume requests use compact JSON and evidence references to avoid repeating facts. Deterministic heading rules retain the job title, responsibilities, requirements, qualifications and tech stack while dropping company, benefits, equal-opportunity and application-process sections. Unknown prose is kept conservatively. If the complete redacted request plus reserved response still exceeds the configured budget, section tails are truncated in this order: unknown prose, overview, responsibilities, requirements/qualifications/tech stack, then an embedded title. The separate job title is always retained. Truncation is reported in the private run log and artifact report. Note options are regenerated after trimming; gap quotes must occur in the exact compacted, redacted description sent to the model. Full database descriptions are unchanged.
+
+Requests require space for a full response (at least 2048 tokens), and fail before HTTP if master facts and the minimum response cannot fit even after description compaction. Set the budget to your account's supported quota; a confirmed 8K quota uses `LLM_MAX_TOKENS_PER_MINUTE=8000`. Groq GPT-OSS 20B/120B uses low reasoning effort, supported by the [Groq Chat API](https://console.groq.com/docs/api-reference). Explicit output-limit failures retain the master fallback without identical retries. See [resume setup and recovery](data/RESUMES.md).
 
 All provider SDK calls share a thread-safe token budget within the run's HTTP session, including concurrent page sources and retries. `LLM_MAX_TOKENS_PER_MINUTE` defaults to 6000 and must be a positive integer. A rolling 60-second window reserves estimated prompt tokens (UTF-8 bytes/3 plus 256 tokens of framing headroom) and the full allowed completion, then reconciles against actual returned usage. The completion cap is at most 4096 and is reduced when necessary to fit the configured budget; a prompt exceeding that budget fails visibly without truncating source facts. Missing usage or transport failures retain the reservation. Estimates are not exact model tokenization; separate processes and other applications sharing the organization quota need their own coordination.
 

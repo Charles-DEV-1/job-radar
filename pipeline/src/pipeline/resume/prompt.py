@@ -1,9 +1,10 @@
-"""Compact, lossless tailoring input and a conservative response reservation."""
+"""Compact tailoring facts and a conservative response reservation."""
 
 import json
 from typing import Any
 
 from pipeline.llm.pacing import prompt_tokens
+from pipeline.resume.description import compact_description
 from pipeline.resume.privacy import tailoring_facts
 from pipeline.resume.requirements import options
 from pipeline.resume.schema import MasterResume, Tailoring
@@ -28,10 +29,12 @@ def compact_schema(value: Any) -> Any:
 
 
 def request(
-    master: MasterResume, job: dict[str, Any]
+    master: MasterResume, job: dict[str, Any], *, description: str | None = None
 ) -> tuple[str, dict[str, Any], int]:
+    if description is None:
+        description = compact_description(job["description_text"], job["company"]).text
     facts, evidence = tailoring_facts(master)
-    note_options = options(master, job["description_text"], set(evidence))
+    note_options = options(master, description, set(evidence))
     used_ids = {key for note in note_options["matched"] for key in note["evidence_ids"]}
     # Skills remain fully present in master and in the closed output schema.
     # Only pointers actually used by note options need repeating as evidence.
@@ -89,8 +92,7 @@ def request(
         "job": {
             "title": job["title"],
             "company": job["company"],
-            # Whitespace normalization preserves every word, including gaps.
-            "description_text": " ".join(job["description_text"].split()),
+            "description_text": " ".join(description.split()),
         },
         "validator_errors": [],
         "match_note_options": note_options,

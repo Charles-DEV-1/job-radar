@@ -12,7 +12,6 @@ from test_groq import MODELS, groq_reply, mock_provider
 from pipeline.llm.client import SDKBackend, Usage
 from pipeline.llm.pacing import prompt_tokens
 from pipeline.resume.pdf import Pagination
-from pipeline.resume.privacy import ContactRedactor
 from pipeline.resume.prompt import compact_json, request
 from pipeline.resume.tailor import TailoringClient, tailor_job
 from pipeline.resume.validate import unchanged
@@ -87,20 +86,15 @@ def test_8000_budget_renders_complete_resume_with_reserved_output(
     assert len(calls) == 1
 
 
-def test_prompt_that_leaves_tiny_output_space_is_rejected_without_http(
+def test_master_facts_alone_exceed_budget_without_http(
     tmp_path: Path, make_http: Any, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     master, original, template, layout = synthetic_resume(tmp_path)
     current_job = job()
     current_job["description_text"] = "x" * 12_000
-    system, payload, minimum = request(master, current_job)
-    redactor = ContactRedactor(master.contact)
-    estimated = prompt_tokens(
-        redactor.text(system), compact_json(redactor.payload(payload))
-    )
-    # Old behavior would send a request with just 565 output tokens remaining.
-    limit = estimated + 565
-    assert minimum > 565
+    _, _, minimum = request(master, current_job)
+    # Job compaction cannot remove master facts or the reserved full response.
+    limit = minimum - 1
     mock_provider(monkeypatch, lambda _: pytest.fail("Insufficient response capacity"))
     backend = SDKBackend(
         "groq", "test-groq-key", MODELS[1], make_http(lambda _: None), limit

@@ -50,6 +50,7 @@ class Reply:
     complete: bool = True
     usage_known: bool = True
     rate_limit_retries: int = 0
+    finish_reason: str | None = None
 
 
 class ProviderRateLimitError(ValueError):
@@ -110,7 +111,9 @@ def account_reply(
 
 
 class Backend(Protocol):
-    def complete(self, system: str, content: str) -> Reply: ...
+    def complete(
+        self, system: str, content: str, *, min_output_tokens: int = 1
+    ) -> Reply: ...
 
 
 class SDKBackend:
@@ -126,13 +129,22 @@ class SDKBackend:
         self.limiter = limiter
         self.budget = shared_budget(limiter, max_tokens_per_minute)
 
-    def complete(self, system: str, content: str) -> Reply:
+    def complete(
+        self, system: str, content: str, *, min_output_tokens: int = 1
+    ) -> Reply:
         estimated_input = prompt_tokens(system, content)
         capacity = min(4096, self.budget.limit - estimated_input)
         if capacity < 1:
             raise ProviderBudgetError(
                 "LLM prompt exceeds LLM_MAX_TOKENS_PER_MINUTE; "
                 "reduce input or configure a larger supported budget"
+            )
+        if capacity < min_output_tokens:
+            raise ProviderBudgetError(
+                f"LLM budget cannot fit estimated input ({estimated_input}) plus "
+                f"minimum response ({min_output_tokens}) tokens within "
+                f"LLM_MAX_TOKENS_PER_MINUTE={self.budget.limit}; compact input "
+                "or use a larger budget supported by your account"
             )
         for attempt in range(4):
             reservation = self.budget.reserve(estimated_input + capacity)
@@ -164,6 +176,7 @@ class SDKBackend:
                 reply.complete,
                 reply.usage_known,
                 attempt,
+                reply.finish_reason,
             )
         raise ProviderRateLimitError(4)
 
@@ -195,6 +208,12 @@ class SDKBackend:
                         {"role": "user", "content": content},
                     ],
                     max_completion_tokens=capacity,
+                    **(
+                        {"reasoning_effort": "low"}
+                        if self.provider == "groq"
+                        and self.model in {"openai/gpt-oss-20b", "openai/gpt-oss-120b"}
+                        else {}
+                    ),
                 )
             return Reply(
                 result.choices[0].message.content or "",
@@ -202,6 +221,7 @@ class SDKBackend:
                 result.usage.completion_tokens if result.usage else 0,
                 complete=result.choices[0].finish_reason == "stop",
                 usage_known=result.usage is not None,
+                finish_reason=result.choices[0].finish_reason,
             )
         if self.provider == "anthropic":
             from anthropic import Anthropic
@@ -232,6 +252,7 @@ class SDKBackend:
                 message.usage.input_tokens,
                 message.usage.output_tokens,
                 complete=message.stop_reason == "end_turn",
+                finish_reason=message.stop_reason,
             )
         raise ValueError("Unsupported LLM_PROVIDER; extraction is disabled")
 

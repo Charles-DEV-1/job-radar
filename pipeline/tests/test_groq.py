@@ -66,6 +66,7 @@ def test_groq_environment_chat_payload_strict_schema_usage_and_key_isolation(
         assert payload["messages"][0]["role"] == "system"
         assert "JSON array" in payload["messages"][0]["content"]
         assert payload["max_completion_tokens"] == 4096
+        assert payload["reasoning_effort"] == "low"
         return httpx.Response(200, json=groq_reply(recorded, model=model))
 
     mock_provider(monkeypatch, handler)

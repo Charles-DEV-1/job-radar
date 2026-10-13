@@ -209,5 +209,5 @@ def test_allowlisted_evidence_cannot_leak_education_through_colliding_ids(
     master, _, _, _ = synthetic_resume(tmp_path)
     master.experience[0].bullets[0].id = "education:0:degree"
     _, evidence = tailoring_facts(master)
-    assert evidence["education:0:degree"] == master.experience[0].bullets[0].text
+    assert evidence["education:0:degree"] == "/experience/0/bullets/0/text"
     assert master.education[0].degree not in evidence.values()

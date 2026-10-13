@@ -26,19 +26,32 @@ def tailoring_facts(master: MasterResume) -> tuple[dict[str, Any], dict[str, str
             for p in master.projects
         ],
     }
-    evidence = {"summary": master.summary}
-    evidence.update({"skill:" + s: s for g in master.skills for s in g.items})
-    evidence.update(
-        {b.id: b.text for r in master.experience + master.projects for b in r.bullets}
-    )
-    for project in master.projects:
-        evidence[f"project:{project.id}:name"] = project.name
-        if project.description:
-            evidence[f"project:{project.id}:description"] = project.description
+    # JSON pointers relative to master avoid repeating every fact in the prompt.
+    # Local truth validation still resolves evidence against the full master.
+    evidence = {"summary": "/summary"}
+    for i, group in enumerate(master.skills):
         evidence.update(
             {
-                f"project:{project.id}:detail:{i}": text
-                for i, text in enumerate(project.detail_lines)
+                "skill:" + skill: f"/skills/{i}/items/{j}"
+                for j, skill in enumerate(group.items)
+            }
+        )
+    for section in ("experience", "projects"):
+        for i, entry in enumerate(getattr(master, section)):
+            evidence.update(
+                {
+                    b.id: f"/{section}/{i}/bullets/{j}/text"
+                    for j, b in enumerate(entry.bullets)
+                }
+            )
+    for i, project in enumerate(master.projects):
+        evidence[f"project:{project.id}:name"] = f"/projects/{i}/name"
+        if project.description:
+            evidence[f"project:{project.id}:description"] = f"/projects/{i}/description"
+        evidence.update(
+            {
+                f"project:{project.id}:detail:{j}": f"/projects/{i}/detail_lines/{j}"
+                for j in range(len(project.detail_lines))
             }
         )
     return facts, evidence

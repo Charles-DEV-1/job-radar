@@ -88,6 +88,23 @@ in the supplied evidence map). A claimed gap cannot contradict
 existing source evidence. These are conservative phrase-level evidence notes,
 not an inferred skills score or a claim of meeting broader unstated requirements.
 
+Evidence in the request uses JSON pointers into the supplied master facts rather
+than repeating their text. Compact JSON/schema formatting and job whitespace
+normalization retain all facts and every word of the description. Each request
+reserves at least 2048 output tokens, or the estimated full unchanged result plus
+768 tokens for brief notes/reasoning if larger. A request that cannot fit input
+and this response reservation within `LLM_MAX_TOKENS_PER_MINUTE` fails before HTTP;
+facts and descriptions are never truncated to fit. Estimates remain conservative
+and are not exact tokenization. Groq GPT-OSS 20B/120B requests use `reasoning_effort=low`
+to leave more capacity for final JSON, as supported by the
+[Groq Chat API](https://console.groq.com/docs/api-reference).
+
+If the provider explicitly stops at its output token limit, the run records that
+specific error and retains the master fallback after one attempt rather than
+repeating a known truncated request. Missing token usage remains a separate
+failure. Match the configured TPM budget to your own account quota (for example,
+8000 for a confirmed 8K quota); increasing it beyond that quota is not a workaround.
+
 Install LibreOffice to verify changed resumes' page count; optionally set
 `LIBREOFFICE_EXECUTABLE`. Its headless conversion runs with a private temporary
 profile, a hard timeout, and discarded console output. It compares candidate
@@ -133,6 +150,14 @@ and stale claims; confirmed stale uploads are cleaned up. An ambiguous database
 response keeps the uploaded object because the commit may have succeeded.
 Downloads use service-issued signed URLs with at most 300 seconds of validity.
 No dashboard or email is added in this stage.
+
+To retry a completed failed job after fixing its cause, use the Supabase SQL
+editor to set only that job's `resume_status` back to `pending` and clear its
+`resume_error`. Scope the update to explicit job UUIDs, `resume_status='failed'`,
+`closed_at is null`, `filter_result in ('include','maybe')` and
+`resume_claim_id is null`. Keep `resume_runs` history and existing fallback paths;
+the next accepted run supplies a new private path. Then rerun with `--limit 1`
+(and `--include-maybe` when appropriate) to check one result before processing more.
 
 Acceptance remains manual: open three real generated resumes beside your
 original, check fonts/spacing/section order/page count, verify every statement,

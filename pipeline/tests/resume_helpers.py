@@ -119,7 +119,9 @@ class ControlledBackend:
         self.outputs = list(outputs)
         self.calls: list[dict[str, Any]] = []
 
-    def complete(self, system: str, content: str) -> Reply:
+    def complete(
+        self, system: str, content: str, *, min_output_tokens: int = 1
+    ) -> Reply:
         assert "untrusted" in system and "JSON" in system
         self.calls.append(json.loads(content))
         value = self.outputs.pop(0)

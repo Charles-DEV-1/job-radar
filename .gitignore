@@ -11,6 +11,13 @@ data/resumes/*
 !data/resumes/templates/**
 data/detection-runs*.jsonl
 data/fetch-runs*.jsonl
+data/master_resume.json
+data/master_resume.pdf
+data/resume_pdf_text.txt
+data/resume_layout.json
+data/resume_review.json
+data/output/
+data/tailor-runs*.jsonl
 
 # Python environments, build output, and caches
 .venv/

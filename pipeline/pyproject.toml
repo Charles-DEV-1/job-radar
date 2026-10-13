@@ -17,11 +17,15 @@ dependencies = [
     "pydantic>=2,<3",
     "playwright>=1.48,<2",
     "defusedxml>=0.7,<1",
+    "python-docx>=1.1,<2",
+    "docxtpl>=0.20,<1",
+    "pypdf>=5,<7",
 ]
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.6"]
 llm = ["openai>=1.50,<3", "anthropic>=0.40,<1"]
+pdf-import = ["pdf2docx>=0.5.8,<0.6"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

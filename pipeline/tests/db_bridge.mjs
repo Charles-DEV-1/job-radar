@@ -14,6 +14,19 @@ await db.exec(`
   CREATE ROLE authenticated;
   CREATE ROLE service_role BYPASSRLS;
   GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
+  -- Supabase provides this schema; PGlite tests supply its relevant metadata
+  -- tables so the real Stage 4 bucket migration and RLS policy can execute.
+  CREATE SCHEMA storage;
+  CREATE TABLE storage.buckets (
+    id text PRIMARY KEY, name text NOT NULL, public boolean NOT NULL DEFAULT false,
+    file_size_limit bigint, allowed_mime_types text[]
+  );
+  CREATE TABLE storage.objects (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(), bucket_id text REFERENCES storage.buckets(id)
+  );
+  ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+  GRANT USAGE ON SCHEMA storage TO anon, authenticated, service_role;
+  GRANT SELECT,INSERT,UPDATE,DELETE ON storage.buckets,storage.objects TO service_role;
 `);
 for (const migration of process.argv.slice(3)) {
   await db.exec(await readFile(migration, 'utf8'));

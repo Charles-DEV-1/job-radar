@@ -6,7 +6,7 @@ import os
 import time
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
-from typing import Protocol
+from typing import Protocol, Self
 
 import httpx
 from pydantic import BaseModel, ConfigDict, RootModel, ValidationError
@@ -46,6 +46,25 @@ class Reply:
     output_tokens: int
     complete: bool = True
     usage_known: bool = True
+
+
+def account_reply(
+    reply: Reply, usage: Usage, input_price: float | None, output_price: float | None
+) -> None:
+    usage.input_tokens += reply.input_tokens
+    usage.output_tokens += reply.output_tokens
+    if not reply.usage_known:
+        usage.uncounted_attempts += 1
+    if (
+        input_price is not None
+        and output_price is not None
+        and not usage.uncounted_attempts
+    ):
+        usage.cost_usd = (
+            usage.input_tokens * input_price + usage.output_tokens * output_price
+        ) / 1_000_000
+    else:
+        usage.cost_usd = None
 
 
 class Backend(Protocol):
@@ -134,7 +153,7 @@ class ExtractionClient:
         self.input_price, self.output_price = input_price, output_price
 
     @classmethod
-    def from_environment(cls, limiter: HTTPClient) -> "ExtractionClient":
+    def from_environment(cls, limiter: HTTPClient) -> Self:
         provider, key, model = (
             os.environ.get(name, "")
             for name in ("LLM_PROVIDER", "LLM_API_KEY", "LLM_MODEL")
@@ -169,21 +188,7 @@ class ExtractionClient:
             try:
                 reply = self.backend.complete(system, content)
                 received = True
-                usage.input_tokens += reply.input_tokens
-                usage.output_tokens += reply.output_tokens
-                if not reply.usage_known:
-                    usage.uncounted_attempts += 1
-                if (
-                    self.input_price is not None
-                    and self.output_price is not None
-                    and not usage.uncounted_attempts
-                ):
-                    usage.cost_usd = (
-                        usage.input_tokens * self.input_price
-                        + usage.output_tokens * self.output_price
-                    ) / 1_000_000
-                else:
-                    usage.cost_usd = None
+                account_reply(reply, usage, self.input_price, self.output_price)
                 if not reply.complete or not reply.usage_known:
                     raise ValueError("LLM returned incomplete output or missing usage")
                 try:

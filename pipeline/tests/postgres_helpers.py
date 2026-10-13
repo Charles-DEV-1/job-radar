@@ -23,6 +23,7 @@ class PostgresEngine:
                 str(migration),
                 str(migration.with_name("20261010000100_stage3_careers_monitor.sql")),
                 str(migration.with_name("20261012000100_stage3_sync_safe_updates.sql")),
+                str(migration.with_name("20261012000200_stage4_resume_tailoring.sql")),
             ],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,

@@ -1,0 +1,424 @@
+{
+  "$defs": {
+    "Bullet": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "approved_rephrasings": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Approved Rephrasings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "text"
+      ],
+      "title": "Bullet",
+      "type": "object"
+    },
+    "Certification": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "issuer": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Issuer"
+        },
+        "dates": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Dates"
+        },
+        "raw": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Raw"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "Certification",
+      "type": "object"
+    },
+    "Contact": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "lines": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Lines",
+          "type": "array"
+        },
+        "email": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Email"
+        },
+        "phone": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Phone"
+        },
+        "location": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Location"
+        },
+        "links": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Links",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "Contact",
+      "type": "object"
+    },
+    "Education": {
+      "additionalProperties": false,
+      "properties": {
+        "institution": {
+          "title": "Institution",
+          "type": "string"
+        },
+        "degree": {
+          "title": "Degree",
+          "type": "string"
+        },
+        "dates": {
+          "title": "Dates",
+          "type": "string"
+        },
+        "location": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Location"
+        },
+        "raw": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Raw"
+        }
+      },
+      "required": [
+        "institution",
+        "degree",
+        "dates"
+      ],
+      "title": "Education",
+      "type": "object"
+    },
+    "Experience": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "employer": {
+          "title": "Employer",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "location": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Location"
+        },
+        "dates": {
+          "title": "Dates",
+          "type": "string"
+        },
+        "bullets": {
+          "items": {
+            "$ref": "#/$defs/Bullet"
+          },
+          "title": "Bullets",
+          "type": "array"
+        },
+        "heading": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Heading"
+        }
+      },
+      "required": [
+        "id",
+        "employer",
+        "title",
+        "dates",
+        "bullets"
+      ],
+      "title": "Experience",
+      "type": "object"
+    },
+    "Project": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Url"
+        },
+        "dates": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Dates"
+        },
+        "detail_lines": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Detail Lines",
+          "type": "array"
+        },
+        "bullets": {
+          "items": {
+            "$ref": "#/$defs/Bullet"
+          },
+          "title": "Bullets",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "title": "Project",
+      "type": "object"
+    },
+    "SkillGroup": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "items": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Items",
+          "type": "array"
+        },
+        "raw": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Raw"
+        }
+      },
+      "required": [
+        "name",
+        "items"
+      ],
+      "title": "SkillGroup",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "contact": {
+      "$ref": "#/$defs/Contact"
+    },
+    "summary": {
+      "title": "Summary",
+      "type": "string"
+    },
+    "skills": {
+      "items": {
+        "$ref": "#/$defs/SkillGroup"
+      },
+      "title": "Skills",
+      "type": "array"
+    },
+    "experience": {
+      "items": {
+        "$ref": "#/$defs/Experience"
+      },
+      "title": "Experience",
+      "type": "array"
+    },
+    "projects": {
+      "items": {
+        "$ref": "#/$defs/Project"
+      },
+      "title": "Projects",
+      "type": "array"
+    },
+    "education": {
+      "items": {
+        "$ref": "#/$defs/Education"
+      },
+      "title": "Education",
+      "type": "array"
+    },
+    "certifications": {
+      "items": {
+        "$ref": "#/$defs/Certification"
+      },
+      "title": "Certifications",
+      "type": "array"
+    },
+    "reviewed": {
+      "default": false,
+      "title": "Reviewed",
+      "type": "boolean"
+    },
+    "approved_summary_rephrasings": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Approved Summary Rephrasings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "contact",
+    "summary",
+    "skills",
+    "experience",
+    "projects",
+    "education",
+    "certifications"
+  ],
+  "title": "MasterResume",
+  "type": "object"
+}

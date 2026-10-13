@@ -91,7 +91,8 @@ def pg_engine() -> Any:
 def pg_store(pg_engine: PostgresEngine) -> PostgresStore:
     pg_engine.query("reset role")
     pg_engine.query(
-        "truncate public.source_monitor_state,public.job_sources,public.jobs,"
+        "truncate public.resume_runs,public.source_monitor_state,"
+        "public.job_sources,public.jobs,"
         "public.source_runs,public.sources"
     )
     pg_engine.query("set role service_role")

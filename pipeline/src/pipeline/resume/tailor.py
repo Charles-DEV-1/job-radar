@@ -12,7 +12,14 @@ from uuid import UUID
 
 from pydantic import ValidationError
 
-from pipeline.llm.client import ExtractionClient, Usage, account_reply
+from pipeline.llm.client import (
+    ExtractionClient,
+    ProviderBudgetError,
+    ProviderRateLimitError,
+    Usage,
+    account_rate_limit,
+    account_reply,
+)
 from pipeline.resume.layout import LayoutError, load_layout, render
 from pipeline.resume.pdf import Pagination
 from pipeline.resume.schema import MasterResume, Tailoring
@@ -88,6 +95,13 @@ class TailoringClient(ExtractionClient):
                 proposed = validate_tailoring(master, proposed, job["description_text"])
                 check(proposed)
                 return proposed
+            except ProviderRateLimitError as exc:
+                account_rate_limit(exc, usage)
+                raise TailoringFailure(str(exc)) from None
+            except ProviderBudgetError as exc:
+                usage.uncounted_attempts += 1
+                usage.cost_usd = None
+                raise TailoringFailure(str(exc)) from None
             except (TruthError, LayoutError, TailoringFailure) as exc:
                 last_error = str(exc)
             except Exception as exc:

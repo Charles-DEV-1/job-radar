@@ -81,7 +81,22 @@ After Stage 3, apply [the source-sync fix](supabase/migrations/20261012000100_st
 
 For this existing uv-managed environment without pip, use `.tools\uv\uv.exe pip install --python .venv\Scripts\python.exe --cache-dir .tools\cache -e "./pipeline[dev,llm]"`. If Chromium's download is unavailable, set `PLAYWRIGHT_CHROMIUM_EXECUTABLE` to an installed Chromium-based browser executable. It runs headlessly in an isolated process.
 
-Configure `LLM_PROVIDER` (`openai` or `anthropic`), `LLM_API_KEY`, and `LLM_MODEL`. Missing configuration causes a recorded extraction error on changed pages; ATS and feed sources continue. Unchanged pages need no LLM credentials or calls. Optional `LLM_INPUT_USD_PER_MILLION` and `LLM_OUTPUT_USD_PER_MILLION` enable a cost estimate without guessing model prices. Each run records attempts, known tokens, cost (null if unknown), and uncounted attempts.
+Configure `LLM_PROVIDER` (`openai`, `anthropic`, or `groq`), `LLM_API_KEY`, and `LLM_MODEL`. Missing configuration causes a recorded extraction error on changed pages; ATS and feed sources continue. Unchanged pages need no LLM credentials or calls. Optional `LLM_INPUT_USD_PER_MILLION` and `LLM_OUTPUT_USD_PER_MILLION` enable a cost estimate without guessing model prices. Each run records attempts, known tokens, cost (null if unknown), and uncounted attempts.
+
+Groq uses the existing OpenAI SDK's **Chat Completions** endpoint at `https://api.groq.com/openai/v1/chat/completions`, as documented in [Groq's OpenAI compatibility guide](https://console.groq.com/docs/openai) and [Chat API reference](https://console.groq.com/docs/api-reference). No base-URL variable or additional SDK is needed. Example configuration:
+
+```dotenv
+LLM_PROVIDER=groq
+LLM_API_KEY=your_groq_key
+LLM_MODEL=openai/gpt-oss-20b
+LLM_MAX_TOKENS_PER_MINUTE=6000
+```
+
+The provider/model pairing is configurable; check your account's model permissions and [current Groq models](https://console.groq.com/docs/models). Provider support is tested with mocked HTTP for `openai/gpt-oss-20b` and `openai/gpt-oss-120b`; authenticated generation has not been tested. The Pydantic JSON schemas, URL checks, and resume truthfulness validators remain unchanged.
+
+All provider SDK calls share a thread-safe token budget within the run's HTTP session, including concurrent page sources and retries. `LLM_MAX_TOKENS_PER_MINUTE` defaults to 6000 and must be a positive integer. A rolling 60-second window reserves estimated prompt tokens (UTF-8 bytes/3 plus 256 tokens of framing headroom) and the full allowed completion, then reconciles against actual returned usage. The completion cap is at most 4096 and is reduced when necessary to fit the configured budget; a prompt exceeding that budget fails visibly without truncating source facts. Missing usage or transport failures retain the reservation. Estimates are not exact model tokenization; separate processes and other applications sharing the organization quota need their own coordination.
+
+HTTP 429 has at most **three retries** (four HTTP attempts). Retries wait for the greater of exponential backoff (1, 2, 4 seconds) and `Retry-After`, including fractional seconds or an HTTP date, without shortening the server's delay. SDK automatic retries are disabled; exhausted rate limits stop outer JSON-validation retries as well. [Groq's rate-limit documentation](https://console.groq.com/docs/rate-limits) describes the server headers and organization-level quotas. An exhausted page extraction records an error and retains the previous baseline so the same change is retried on the next run. Resume tailoring instead follows its existing failed-status/master-file fallback path. Retry attempts are recorded; their unavailable usage makes the cost estimate null.
 
 Enabled companies with a `careers_url` and `detection_status: not_found` or `ats: unknown` automatically get a `careers_page` source. Confirmed ATS sources keep their existing adapter. Run the same `pipeline.run_fetch` command; `--feeds-file PATH` defaults to [data/feeds.yaml](data/feeds.yaml).
 
@@ -97,4 +112,4 @@ Empty/failed pages, unfinished shells, and snapshots below 40% of a previous sna
 
 On 2026-10-10, TechCabal's jobs page embedded Airtable; its advertised feed and Techpoint Africa's advertised feed returned general news, not job-only postings. No job-specific RSS/JSON feed was verified for either, so both remain disabled. [Recorded verification](pipeline/tests/fixtures/stage3-verification.json) includes the real responses checked. Documented LLM endpoints returned 401 without credentials; authenticated generation remains to be verified with your configuration. The owner reported applying the Stage 3 migration on 2026-10-12; hosted database state has not been independently rechecked here.
 
-Tests include controlled changes built from recorded job facts, recorded public HTML, mock Playwright, real PostgreSQL transactions/RLS, and optional actual Chromium rendering over mocked HTTP. To include the browser check, set `RUN_CHROMIUM_TESTS=1` before running pytest with an installed browser. Email, resumes, health-alert emails, and dashboard work belong to later stages.
+Tests include controlled changes built from recorded job facts, recorded public HTML, mock Playwright, real PostgreSQL transactions/RLS, and optional actual Chromium rendering over mocked HTTP. To include the browser check, set `RUN_CHROMIUM_TESTS=1` before running pytest with an installed browser. Resume setup/tailoring is covered in [Stage 4](data/RESUMES.md); email, health-alert emails, and dashboard work belong to later stages.

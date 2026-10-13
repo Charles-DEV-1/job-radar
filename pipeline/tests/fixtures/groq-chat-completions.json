@@ -1,0 +1,13 @@
+{
+  "provenance": "Synthetic HTTP conformance fixture based on https://console.groq.com/docs/api-reference; no authenticated model calls made",
+  "models": ["openai/gpt-oss-20b", "openai/gpt-oss-120b"],
+  "reply": {
+    "id": "fixture-chat",
+    "object": "chat.completion",
+    "created": 1,
+    "model": "openai/gpt-oss-20b",
+    "choices": [{"index": 0, "message": {"role": "assistant", "content": "[]"}, "finish_reason": "stop"}],
+    "usage": {"prompt_tokens": 10, "completion_tokens": 5, "total_tokens": 15}
+  },
+  "rate_limit": {"error": {"message": "sensitive-provider-body", "type": "tokens", "code": "rate_limit_exceeded"}}
+}

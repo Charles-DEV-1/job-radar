@@ -6,12 +6,15 @@ import os
 import time
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
+from datetime import UTC, datetime
+from email.utils import parsedate_to_datetime
 from typing import Protocol, Self
 
 import httpx
 from pydantic import BaseModel, ConfigDict, RootModel, ValidationError
 
 from pipeline.http import USER_AGENT, HTTPClient
+from pipeline.llm.pacing import prompt_tokens, shared_budget
 from pipeline.storage import PacedTransport
 
 
@@ -46,11 +49,50 @@ class Reply:
     output_tokens: int
     complete: bool = True
     usage_known: bool = True
+    rate_limit_retries: int = 0
+
+
+class ProviderRateLimitError(ValueError):
+    """Transport retries exhausted; outer schema/validation loops must stop."""
+
+    def __init__(self, attempts: int) -> None:
+        self.attempts = attempts
+        super().__init__("LLM provider rate limited (HTTP 429) after 3 retries")
+
+
+class ProviderBudgetError(ValueError):
+    """The request cannot fit; retries would send the same oversized input."""
+
+
+def account_rate_limit(error: ProviderRateLimitError, usage: Usage) -> None:
+    usage.attempts += error.attempts - 1
+    usage.uncounted_attempts += error.attempts
+    usage.cost_usd = None
+
+
+def retry_after_delay(value: str | None, now: float | None = None) -> float:
+    if not value:
+        return 0.0
+    try:
+        seconds = float(value)
+        return max(0.0, seconds) if math.isfinite(seconds) else 0.0
+    except ValueError:
+        pass
+    try:
+        deadline = parsedate_to_datetime(value)
+        if deadline.tzinfo is None:
+            deadline = deadline.replace(tzinfo=UTC)
+        current = datetime.fromtimestamp(time.time() if now is None else now, UTC)
+        return max(0.0, (deadline - current).total_seconds())
+    except (ValueError, TypeError, OverflowError):
+        return 0.0
 
 
 def account_reply(
     reply: Reply, usage: Usage, input_price: float | None, output_price: float | None
 ) -> None:
+    usage.attempts += reply.rate_limit_retries
+    usage.uncounted_attempts += reply.rate_limit_retries
     usage.input_tokens += reply.input_tokens
     usage.output_tokens += reply.output_tokens
     if not reply.usage_known:
@@ -73,19 +115,71 @@ class Backend(Protocol):
 
 class SDKBackend:
     def __init__(
-        self, provider: str, key: str, model: str, limiter: HTTPClient
+        self,
+        provider: str,
+        key: str,
+        model: str,
+        limiter: HTTPClient,
+        max_tokens_per_minute: int = 6000,
     ) -> None:
         self.provider, self.key, self.model = provider, key, model
         self.limiter = limiter
+        self.budget = shared_budget(limiter, max_tokens_per_minute)
 
     def complete(self, system: str, content: str) -> Reply:
+        estimated_input = prompt_tokens(system, content)
+        capacity = min(4096, self.budget.limit - estimated_input)
+        if capacity < 1:
+            raise ProviderBudgetError(
+                "LLM prompt exceeds LLM_MAX_TOKENS_PER_MINUTE; "
+                "reduce input or configure a larger supported budget"
+            )
+        for attempt in range(4):
+            reservation = self.budget.reserve(estimated_input + capacity)
+            try:
+                reply = self._complete_once(system, content, capacity)
+            except Exception as exc:
+                if getattr(exc, "status_code", None) == 429:
+                    response = getattr(exc, "response", None)
+                    header = (
+                        response.headers.get("Retry-After")
+                        if isinstance(response, httpx.Response)
+                        else None
+                    )
+                    delay = max(2**attempt, retry_after_delay(header))
+                    self.budget.reject(reservation, delay)
+                    if attempt == 3:
+                        raise ProviderRateLimitError(attempt + 1) from None
+                    continue
+                self.budget.finish(reservation, None)
+                raise
+            self.budget.finish(
+                reservation,
+                reply.input_tokens + reply.output_tokens if reply.usage_known else None,
+            )
+            return Reply(
+                reply.content,
+                reply.input_tokens,
+                reply.output_tokens,
+                reply.complete,
+                reply.usage_known,
+                attempt,
+            )
+        raise ProviderRateLimitError(4)
+
+    def _complete_once(self, system: str, content: str, capacity: int) -> Reply:
         # SDKs own the provider's documented endpoints, no guessed base URLs.
-        if self.provider == "openai":
+        if self.provider in {"openai", "groq"}:
             from openai import OpenAI
 
             with OpenAI(
                 api_key=self.key,
-                base_url="https://api.openai.com/v1",
+                default_headers={"User-Agent": USER_AGENT},
+                base_url=(
+                    "https://api.groq.com/openai/v1"
+                    if self.provider == "groq"
+                    else "https://api.openai.com/v1"
+                ),
                 timeout=30,
                 max_retries=0,
                 http_client=httpx.Client(
@@ -100,7 +194,7 @@ class SDKBackend:
                         {"role": "system", "content": system},
                         {"role": "user", "content": content},
                     ],
-                    max_completion_tokens=4096,
+                    max_completion_tokens=capacity,
                 )
             return Reply(
                 result.choices[0].message.content or "",
@@ -114,6 +208,7 @@ class SDKBackend:
 
             with Anthropic(
                 api_key=self.key,
+                default_headers={"User-Agent": USER_AGENT},
                 base_url="https://api.anthropic.com",
                 timeout=30,
                 max_retries=0,
@@ -126,7 +221,7 @@ class SDKBackend:
                 message = client.messages.create(
                     model=self.model,
                     system=system,
-                    max_tokens=4096,
+                    max_tokens=capacity,
                     messages=[{"role": "user", "content": content}],
                 )
             text = "".join(
@@ -158,8 +253,16 @@ class ExtractionClient:
             os.environ.get(name, "")
             for name in ("LLM_PROVIDER", "LLM_API_KEY", "LLM_MODEL")
         )
-        if provider not in {"openai", "anthropic"} or not key or not model:
+        if provider not in {"openai", "anthropic", "groq"} or not key or not model:
             raise ValueError("Configure LLM_PROVIDER, LLM_API_KEY and LLM_MODEL")
+        try:
+            budget = int(os.environ.get("LLM_MAX_TOKENS_PER_MINUTE", "6000"))
+        except ValueError:
+            raise ValueError(
+                "LLM_MAX_TOKENS_PER_MINUTE must be a positive integer"
+            ) from None
+        if budget <= 0:
+            raise ValueError("LLM_MAX_TOKENS_PER_MINUTE must be a positive integer")
         prices: list[float | None] = []
         for name in ("LLM_INPUT_USD_PER_MILLION", "LLM_OUTPUT_USD_PER_MILLION"):
             raw = os.environ.get(name)
@@ -170,7 +273,7 @@ class ExtractionClient:
             if value is not None and (not math.isfinite(value) or value < 0):
                 raise ValueError("LLM token prices must be finite and nonnegative")
             prices.append(value)
-        return cls(SDKBackend(provider, key, model, limiter), *prices)
+        return cls(SDKBackend(provider, key, model, limiter, budget), *prices)
 
     def extract(self, content: str, usage: Usage) -> list[Posting]:
         system = (
@@ -197,6 +300,13 @@ class ExtractionClient:
                     raise ValueError(
                         "LLM output failed strict posting schema"
                     ) from None
+            except ProviderRateLimitError as exc:
+                account_rate_limit(exc, usage)
+                raise ValueError(str(exc)) from None
+            except ProviderBudgetError as exc:
+                usage.uncounted_attempts += 1
+                usage.cost_usd = None
+                raise ValueError(str(exc)) from None
             except Exception as exc:
                 if not received:
                     usage.uncounted_attempts += 1

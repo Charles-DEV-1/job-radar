@@ -182,8 +182,12 @@ def validate_tailoring(
         errors.append("master: review required before tailoring")
     all_skills = {s.casefold(): s for g in master.skills for s in g.items}
     selected = [s.casefold() for s in output.skills_order]
-    if any(s not in all_skills for s in selected):
-        errors.append("skills_order: invented skill")
+    for i, skill in enumerate(selected):
+        if skill not in all_skills:
+            errors.append(
+                f"skills_order: invented skill at index {i}; "
+                "copy one exact master skill item, never a group name or synonym"
+            )
     if len(selected) != len(set(selected)):
         errors.append("skills_order: duplicate skill")
     roles = {e.id: e for e in master.experience}
@@ -238,27 +242,31 @@ def validate_tailoring(
         errors.append("match_notes: too many requirements")
     normalized_job = plain(description).casefold()
     matched: set[str] = set()
-    for match in notes.matched:
+    for i, match in enumerate(notes.matched):
         requirement = plain(match.requirement).casefold()
         if (
             not requirement
             or len(match.requirement) > 240
             or requirement not in normalized_job
         ):
-            errors.append("match_notes: requirement must quote the job")
+            errors.append(f"match_notes: requirement must quote the job (matched[{i}])")
         if not match.evidence_ids or any(i not in evidence for i in match.evidence_ids):
-            errors.append("match_notes: invalid evidence ID")
+            errors.append(f"match_notes: invalid evidence ID (matched[{i}])")
         elif not all(
             requirement in plain(evidence[i]).casefold() for i in match.evidence_ids
         ):
             errors.append(
-                "match_notes: matched requirement not supported by cited evidence"
+                "match_notes: matched requirement not supported by cited evidence "
+                f"(matched[{i}]); select an exact supplied note option"
             )
         matched.add(requirement)
-    for gap in notes.gaps:
+    for i, gap in enumerate(notes.gaps):
         requirement = plain(gap).casefold()
         if not requirement or len(gap) > 240 or requirement not in normalized_job:
-            errors.append("match_notes: gap must quote the job")
+            errors.append(
+                f"match_notes: gap must quote the job (gaps[{i}]); "
+                "copy a supplied gap option without paraphrasing"
+            )
         if requirement in matched or any(
             requirement in plain(v).casefold() for v in evidence.values()
         ):

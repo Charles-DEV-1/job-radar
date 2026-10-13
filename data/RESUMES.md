@@ -88,6 +88,16 @@ in the supplied evidence map). A claimed gap cannot contradict
 existing source evidence. These are conservative phrase-level evidence notes,
 not an inferred skills score or a claim of meeting broader unstated requirements.
 
+The prompt's skill schema lists only individual master skill items. Group labels,
+combined strings and synonyms are not valid replacements. It also provides
+`match_note_options`: short, exact technology/skill phrases quoted from the job,
+with checked evidence IDs or conservative spelling-based gaps. The model selects
+these entries without expanding/paraphrasing them, and may leave an uncertain
+array empty. Common aliases suppress uncertain gap options; they never authorize
+new skills or matched claims. These limited options are not an exhaustive review
+of every job requirement. Notes and all resume fields still pass the full local
+truth validator; retries identify the failing item index without logging values.
+
 Evidence in the request uses JSON pointers into the supplied master facts rather
 than repeating their text. Compact JSON/schema formatting and job whitespace
 normalization retain all facts and every word of the description. Each request

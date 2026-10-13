@@ -27,6 +27,9 @@ class JobFilter:
             raise ValueError("Filter configuration must be a mapping")
         self.roles = self.config["roles"]
         self.geo = self.config["locations"]
+        self.seniority = self.config["seniority"]
+        for key in ("exclude", "maybe"):
+            self._terms(self.seniority, key)
         for key in (
             "engineering_titles",
             "include",
@@ -148,6 +151,20 @@ class JobFilter:
 
     def classify(self, job: Job) -> Job:
         role, role_reason = self._role(job)
+        excluded = matches(job.title, self.seniority["exclude"])
+        review = matches(job.title, self.seniority["maybe"])
+        if excluded:
+            role = "exclude"
+            role_reason = (
+                "outside student/junior profile; excluded seniority: "
+                + ", ".join(excluded)
+            )
+        elif review and role != "exclude":
+            role = "maybe"
+            role_reason = (
+                "seniority requires review for student/junior profile: "
+                + ", ".join(review)
+            )
         location, location_reason = self._location(job)
         job.filter_result = (
             "exclude"

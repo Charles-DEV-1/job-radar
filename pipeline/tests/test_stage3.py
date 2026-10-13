@@ -114,7 +114,8 @@ def test_static_change_backfill_diff_new_job_and_replay(
     current["html"] = fixture["changed"]
     added = run_page(adapter, pg_store, tmp_path)
     assert added.status == "ok", added.error
-    assert added.counts.new_jobs == added.counts.inserted_jobs == 1
+    assert added.counts.inserted_jobs == 1
+    assert added.counts.new_jobs == 0  # Recorded Engineering Manager is excluded.
     assert added.counts.closed_jobs == 0
     assert len(backend.calls) == 2
     payload = json.loads(backend.calls[-1])
@@ -124,6 +125,12 @@ def test_static_change_backfill_diff_new_job_and_replay(
     assert len(backend.calls) == 2
     rows = pg_store.db.query("select * from public.jobs")
     assert len(rows) == 2 and all(row["source_type"] == "careers_page" for row in rows)
+    assert (
+        next(row for row in rows if row["title"] == "Engineering Manager (Identity)")[
+            "filter_result"
+        ]
+        == "exclude"
+    )
     assert (
         rows[1]["external_id"]
         == hashlib.sha256(rows[1]["apply_url"].encode()).hexdigest()

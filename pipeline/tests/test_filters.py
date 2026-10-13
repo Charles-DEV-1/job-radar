@@ -145,3 +145,67 @@ def test_manually_reviewed_real_jobs() -> None:
             job.location_raw,
             job.filter_reason,
         )
+
+
+@pytest.mark.parametrize(
+    "title,term",
+    [
+        ("Engineering Manager", "manager"),
+        ("Senior Engineering Manager", "manager"),
+        ("Head of Backend Engineering", "head of"),
+        ("Director of Software Engineering", "director"),
+        ("VP Engineering", "VP"),
+        ("Vice President of Engineering", "vice president"),
+        ("Principal Backend Engineer", "principal"),
+        ("Staff Software Engineer", "staff"),
+        ("Chief Software Engineer", "chief"),
+        ("CTO", "CTO"),
+    ],
+)
+def test_seniority_excluded_before_engineering_evidence(title: str, term: str) -> None:
+    classified = JobFilter(FILTERS).classify(
+        example_job(title, description="Python software development")
+    )
+    assert classified.filter_result == "exclude"
+    assert term in classified.filter_reason
+    assert "student/junior" in classified.filter_reason
+
+
+@pytest.mark.parametrize(
+    "title,expected",
+    [
+        ("Senior Backend Engineer", "maybe"),
+        ("Lead Software Developer", "maybe"),
+        ("Junior Backend Engineer", "include"),
+        ("Software Engineering Intern", "include"),
+        ("Backend Developer for Staffing Tools", "include"),
+        ("Backend Developer for Leadership Tools", "include"),
+        ("Senior Sales Executive", "exclude"),
+    ],
+)
+def test_student_seniority_and_word_boundaries(title: str, expected: str) -> None:
+    assert JobFilter(FILTERS).classify(example_job(title)).filter_result == expected
+
+
+def test_seniority_lists_are_editable(tmp_path: Path) -> None:
+    from ruamel.yaml import YAML
+
+    yaml = YAML(typ="safe")
+    config = yaml.load(FILTERS.read_text(encoding="utf-8"))
+    config["seniority"] = {"exclude": ["fellow"], "maybe": ["experienced"]}
+    path = tmp_path / "filters.yaml"
+    with path.open("w", encoding="utf-8") as handle:
+        yaml.dump(config, handle)
+    filters = JobFilter(path)
+    assert (
+        filters.classify(example_job("Fellow Backend Engineer")).filter_result
+        == "exclude"
+    )
+    assert (
+        filters.classify(example_job("Experienced Backend Engineer")).filter_result
+        == "maybe"
+    )
+    assert (
+        filters.classify(example_job("Senior Backend Engineer")).filter_result
+        == "include"
+    )

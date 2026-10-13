@@ -250,7 +250,13 @@ def test_rate_limit_failure_records_error_keeps_baseline_and_retries_next_run(
     assert "test-groq-key" not in (tmp_path / "runs.jsonl").read_text(encoding="utf-8")
     current["rate_limited"] = False
     recovered = run_page(adapter, pg_store, tmp_path)
-    assert recovered.status == "ok" and recovered.counts.new_jobs == 1
+    assert recovered.status == "ok" and recovered.counts.inserted_jobs == 1
+    assert recovered.counts.new_jobs == 0  # Recorded Engineering Manager is excluded.
+    manager = pg_store.db.query(
+        "select filter_result from public.jobs where title=$1",
+        ["Engineering Manager (Identity)"],
+    )[0]
+    assert manager["filter_result"] == "exclude"
     assert (
         len(provider_calls) == 6
         and pg_store.monitor_state(source_id)["hash"] != before["hash"]

@@ -1,4 +1,8 @@
 # Stage 2 rules. No salary, compensation, paid, or unpaid checks.
+# Student profile: internships and junior roles; title rules only.
+seniority:
+  exclude: [manager, head of, director, VP, vice president, principal, staff, chief, CTO]
+  maybe: [senior, lead]
 roles:
   # Explicit engineering titles take priority over product areas such as "Asset Sales".
   engineering_titles: [backend engineer, backend developer, back-end engineer, software engineer, software developer, frontend engineer, full stack engineer, platform engineer, python developer, java developer, go engineer, node.js engineer]
@@ -28,7 +32,6 @@ roles:
     - frontend
     - front-end
     - mobile engineer
-    - engineering manager
   maybe: [devops, sre, site reliability, data engineer, data engineering]
   training: [intern, internship, graduate, trainee]
   exclude:

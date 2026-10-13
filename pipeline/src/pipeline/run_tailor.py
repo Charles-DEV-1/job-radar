@@ -3,7 +3,7 @@
 import argparse
 import os
 import shutil
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from uuid import uuid4
 
@@ -18,7 +18,12 @@ from pipeline.resume.layout import LayoutError, load_layout
 from pipeline.resume.pdf import Pagination
 from pipeline.resume.schema import MasterResume, load_master
 from pipeline.resume.store import ResumeStore, SupabaseResumeStore
-from pipeline.resume.tailor import TailoringClient, TailorResult, tailor_job
+from pipeline.resume.tailor import (
+    TailoringClient,
+    TailorResult,
+    tailor_job,
+    write_report,
+)
 from pipeline.storage import StoreError, SupabaseStore
 
 
@@ -28,6 +33,35 @@ class Outcome:
     status: str
     usage: Usage
     error: str | None = None
+    path: Path | None = None
+    report_path: Path | None = None
+    changes: dict[str, int | bool] = field(default_factory=dict)
+    warnings: list[str] = field(default_factory=list)
+
+
+def print_outcome(outcome: Outcome) -> None:
+    label = outcome.status
+    if label == "ready":
+        if outcome.changes.get("tailoring_changed"):
+            label += " (tailored)"
+        elif outcome.changes.get("document_changed"):
+            label += " (formatting only)"
+        elif outcome.changes.get("document_changed") is False:
+            label += " (unchanged master)"
+    print(
+        f"{outcome.job_id}: {label}" + ("; " + outcome.error if outcome.error else "")
+    )
+    if outcome.path:
+        print(f"DOCX: {outcome.path.resolve()}")
+    if outcome.report_path:
+        print(f"Change report: {outcome.report_path.resolve()}")
+    if outcome.changes:
+        print(
+            "Changes: "
+            + ", ".join(f"{key}={value}" for key, value in outcome.changes.items())
+        )
+    for warning in outcome.warnings:
+        print("Note: " + warning)
 
 
 def safe_error(exc: Exception) -> str:
@@ -52,6 +86,14 @@ def record_total(
             "event": "tailor_run",
             "jobs": len(outcomes),
             "ready": sum(o.status == "ready" for o in outcomes),
+            "tailored": sum(
+                o.status == "ready" and bool(o.changes.get("tailoring_changed"))
+                for o in outcomes
+            ),
+            "unchanged": sum(
+                o.status == "ready" and o.changes.get("document_changed") is False
+                for o in outcomes
+            ),
             "failed": sum(o.status == "failed" for o in outcomes),
             "llm": total.record(),
             "error": error,
@@ -107,6 +149,7 @@ def run_jobs(
                 client,
                 usage,
                 pagination,
+                attempt_id=claim_id,
             )
             remote_path = f"{job['id']}/{claim_id}/{result.filename}"
             store.upload(remote_path, result.path)
@@ -119,12 +162,17 @@ def run_jobs(
                 # leave an exact master locally rather than a questionable file.
                 try:
                     shutil.copyfile(original, result.path)
+                    result.status, result.error = "failed", error
+                    result.match_notes = None
+                    result.changes = {}
+                    write_report(result)
                 except OSError:
                     error += "; local master fallback unavailable"
         metadata = {
             "llm": usage.record(),
             "warnings": result.warnings if result else [],
             "fallback": status == "failed",
+            "changes": result.changes if result else {},
         }
         try:
             accepted = store.finish(
@@ -145,7 +193,16 @@ def run_jobs(
             status, error = "failed", safe_error(exc)
             # Keep an uploaded object after an ambiguous RPC response: the RPC may
             # have committed. Never delete a file that a completed job references.
-        outcome = Outcome(job["id"], status, usage, error)
+        outcome = Outcome(
+            job["id"],
+            status,
+            usage,
+            error,
+            result.path if result else None,
+            result.report_path if result else None,
+            result.changes if result else {},
+            result.warnings if result else [],
+        )
         outcomes.append(outcome)
         recorder.write(
             {
@@ -206,16 +263,18 @@ def main(argv: list[str] | None = None) -> int:
                 args.limit,
                 args.include_maybe,
             )
+        tailored_count = sum(
+            o.status == "ready" and bool(o.changes.get("tailoring_changed"))
+            for o in outcomes
+        )
         print(
             f"Tailoring run: {len(outcomes)} jobs; "
             f"{sum(o.status == 'ready' for o in outcomes)} ready; "
-            f"{sum(o.status == 'failed' for o in outcomes)} failed"
+            f"{sum(o.status == 'failed' for o in outcomes)} failed; "
+            f"{tailored_count} tailored"
         )
         for outcome in outcomes:
-            print(
-                f"{outcome.job_id}: {outcome.status}"
-                + ("; " + outcome.error if outcome.error else "")
-            )
+            print_outcome(outcome)
         print("Usage/cost recorded in the private tailoring run log")
         return 1 if any(o.status == "failed" for o in outcomes) else 0
     except ValidationError:

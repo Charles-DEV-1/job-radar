@@ -4,7 +4,7 @@ import re
 import shutil
 import unicodedata
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Literal
 from uuid import UUID
@@ -19,6 +19,7 @@ from pipeline.llm.client import (
     account_rate_limit,
     account_reply,
 )
+from pipeline.resume.changes import summarize
 from pipeline.resume.layout import LayoutError, load_layout, render
 from pipeline.resume.pdf import Pagination
 from pipeline.resume.privacy import ContactRedactor
@@ -119,6 +120,30 @@ class TailorResult:
     match_notes: dict[str, Any] | None
     error: str | None
     warnings: list[str]
+    changes: dict[str, int | bool] = field(default_factory=dict)
+    report_path: Path | None = None
+
+
+def write_report(result: TailorResult) -> None:
+    """Keep counts next to this private artifact; never log resume wording."""
+    path = result.path.with_suffix(".report.json")
+    try:
+        path.write_text(
+            compact_json(
+                {
+                    "status": result.status,
+                    "error": result.error,
+                    "changes": result.changes,
+                    "match_notes": result.match_notes,
+                    "warnings": result.warnings,
+                }
+            ),
+            encoding="utf-8",
+        )
+        result.report_path = path
+    except OSError:
+        result.report_path = None
+        result.warnings.append("Local change report could not be written")
 
 
 def filename(master: MasterResume, company: str, title: str) -> str:
@@ -140,9 +165,13 @@ def tailor_job(
     client: TailoringClient,
     usage: Usage,
     pagination: Pagination | None = None,
+    attempt_id: str | None = None,
 ) -> TailorResult:
     job_id = str(UUID(job["id"]))
-    destination = output / job_id / filename(master, job["company"], job["title"])
+    name = filename(master, job["company"], job["title"])
+    if attempt_id:
+        name = Path(name).stem + "_" + str(UUID(attempt_id))[:8] + ".docx"
+    destination = output / job_id / name
     warnings: list[str] = []
     pagination = pagination or Pagination()
     layout = load_layout(layout_path, master, original, template)
@@ -157,13 +186,19 @@ def tailor_job(
 
     try:
         proposed = client.propose(master, job, usage, check)
-        return TailorResult(
+        changes = summarize(master, proposed, original, destination)
+        if not changes["document_changed"]:
+            warnings.append("No document changes selected; master content retained")
+        elif not changes["tailoring_changed"]:
+            warnings.append("Only document formatting changed; master content retained")
+        result = TailorResult(
             destination,
             destination.name,
             "ready",
             proposed.match_notes.model_dump(),
             None,
             warnings,
+            changes,
         )
     except TailoringFailure as exc:
         destination.parent.mkdir(parents=True, exist_ok=True)
@@ -171,6 +206,8 @@ def tailor_job(
         # Byte-identical master fallback is always available locally and is uploaded
         # as the downloadable file while the job remains visibly failed.
         shutil.copyfile(original, destination)
-        return TailorResult(
+        result = TailorResult(
             destination, destination.name, "failed", None, str(exc), warnings
         )
+    write_report(result)
+    return result

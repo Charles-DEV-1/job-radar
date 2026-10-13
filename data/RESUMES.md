@@ -100,8 +100,11 @@ truth validator; retries identify the failing item index without logging values.
 
 Evidence in the request uses JSON pointers into the supplied master facts rather
 than repeating their text. Compact JSON/schema formatting and job whitespace
-normalization retain all facts and every word of the description. Each request
-reserves at least 2048 output tokens, or the estimated full unchanged result plus
+normalization retain all facts and every word of the description. Empty approved
+alternative lists are omitted, and redundant skill pointers are retained only
+when used by note options; the complete skill list remains in the request. These
+reductions save space without discarding resume facts or job requirements. Each
+request reserves at least 2048 output tokens, or the estimated full unchanged result plus
 768 tokens for brief notes/reasoning if larger. A request that cannot fit input
 and this response reservation within `LLM_MAX_TOKENS_PER_MINUTE` fails before HTTP;
 facts and descriptions are never truncated to fit. Estimates remain conservative
@@ -144,7 +147,17 @@ initial generation; validation errors are supplied on retries. Logs contain
 IDs, operational errors, usage/cost and warning flags, not resume/job bodies.
 
 DOCX files live below `data/output/<claim_id>/<job_id>/` with sanitized descriptive
-filenames. Uploads use a dedicated private `radar-resumes` bucket and unique
+filenames and a short attempt ID suffix, so retries have distinct names. The CLI
+prints each exact DOCX/report path and labels ready files as `tailored`,
+`unchanged master`, or `formatting only`. A ready file can retain original content;
+the private `*.report.json` sidecar records visible change counts, matched/gap
+notes and warnings. Counts also appear in run metadata, without resume wording.
+Tailoring ranks skills within existing groups and selects/reorders original
+bullets when approved alternative wording is absent. Wording changes still need
+owner-approved alternatives; no cosmetic rewrite is forced to produce a change.
+LibreOffice remains required for page-count verification of changed documents.
+
+Uploads use a dedicated private `radar-resumes` bucket and unique
 `<job_id>/<claim_id>/<filename>` paths. Accepted results set `resume_status=ready`
 and save `resume_path`, `resume_filename` and `match_notes`. A validation/provider
 failure uploads a byte-identical master, records `resume_status=failed` and

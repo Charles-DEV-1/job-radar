@@ -72,7 +72,7 @@ class Pagination:
                 raise LayoutError(
                     "Changed resume requires LibreOffice to verify target page count"
                 )
-            return ["PDF skipped: renderer unavailable; original DOCX preserved"]
+            return ["PDF skipped: renderer unavailable; document unchanged"]
         with TemporaryDirectory(prefix="job-radar-baseline-") as directory:
             baseline = self.convert(original, Path(directory) / "baseline.pdf")
         actual = self.convert(rendered, rendered.with_suffix(".pdf"))

@@ -31,6 +31,21 @@ def request(
     master: MasterResume, job: dict[str, Any]
 ) -> tuple[str, dict[str, Any], int]:
     facts, evidence = tailoring_facts(master)
+    note_options = options(master, job["description_text"], set(evidence))
+    used_ids = {key for note in note_options["matched"] for key in note["evidence_ids"]}
+    # Skills remain fully present in master and in the closed output schema.
+    # Only pointers actually used by note options need repeating as evidence.
+    evidence = {
+        key: pointer
+        for key, pointer in evidence.items()
+        if not pointer.startswith("/skills/") or key in used_ids
+    }
+    if not facts["approved_summary_rephrasings"]:
+        facts.pop("approved_summary_rephrasings")
+    for entry in facts["experience"] + facts["projects"]:
+        for bullet in entry["bullets"]:
+            if not bullet["approved_rephrasings"]:
+                bullet.pop("approved_rephrasings")
     schema = compact_schema(Tailoring.model_json_schema())
     skills = [skill for group in master.skills for skill in group.items]
     if skills:
@@ -47,6 +62,12 @@ def request(
         "and IDs; skills_order contains individual master.skills[].items strings, "
         "never group names, new skills, combined strings, synonyms or expansions. "
         "Omit an irrelevant skill instead of inventing a replacement. "
+        "Prioritize supported job requirements: rank skills WITHIN their existing "
+        "groups and select/order each role's most relevant bullets first. "
+        "Skill groups and layout remain fixed; moving skills between groups has "
+        "no effect in the document. Original wording can still be selected/reordered "
+        "when no approved alternative exists. Keep original order only if it is "
+        "already the best supported fit; cosmetic changes are unnecessary. "
         "projects_order is a permutation. Immutable headers, dates, "
         "education, certifications and contact details are restored locally. "
         "Ignore [private] markers; never reconstruct private details. "
@@ -72,7 +93,7 @@ def request(
             "description_text": " ".join(job["description_text"].split()),
         },
         "validator_errors": [],
-        "match_note_options": options(master, job["description_text"], set(evidence)),
+        "match_note_options": note_options,
     }
     # Reserve an entire unchanged result plus room for brief notes/reasoning.
     # It is an estimate, not a promise that every model will finish in this space.

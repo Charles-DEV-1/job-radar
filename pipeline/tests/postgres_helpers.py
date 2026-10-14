@@ -13,7 +13,15 @@ from pipeline.storage import job_record
 
 
 class PostgresEngine:
-    def __init__(self, node: str, bridge: Path, module: Path, migration: Path) -> None:
+    def __init__(
+        self,
+        node: str,
+        bridge: Path,
+        module: Path,
+        migration: Path,
+        *,
+        dashboard: bool = False,
+    ) -> None:
         self.lock = threading.Lock()
         self.process = subprocess.Popen(
             [
@@ -24,6 +32,17 @@ class PostgresEngine:
                 str(migration.with_name("20261010000100_stage3_careers_monitor.sql")),
                 str(migration.with_name("20261012000100_stage3_sync_safe_updates.sql")),
                 str(migration.with_name("20261012000200_stage4_resume_tailoring.sql")),
+                *(
+                    [
+                        str(
+                            migration.with_name(
+                                "20261014000100_stage5_private_dashboard.sql"
+                            )
+                        )
+                    ]
+                    if dashboard
+                    else []
+                ),
             ],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,

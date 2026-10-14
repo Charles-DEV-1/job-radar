@@ -36,3 +36,9 @@ Apply [20261012000200_stage4_resume_tailoring.sql](migrations/20261012000200_sta
 The migration creates the private `radar-resumes` bucket with an 8 MiB DOCX/PDF limit. A restrictive Storage objects policy blocks direct anonymous/authenticated access even if another permissive policy exists. The pipeline service issues short-lived signed download URLs. No dashboard policies or email are implemented. Follow [the resume guide](../data/RESUMES.md) for offline facts review, template checks and later LLM configuration.
 
 The Stage 4 migration and bucket/RPC behavior are tested locally with PGlite and the SDK. The migration must still be applied to the project configured by `SUPABASE_URL`; local checks do not establish hosted deployment or visual acceptance with the owner's PDF/DOCX.
+
+## Stage 5 private dashboard
+
+Apply [20261014000100_stage5_private_dashboard.sql](migrations/20261014000100_stage5_private_dashboard.sql) after Stage 4. It adds a private owner allowlist, owner-only job/source-run/history policies, column-limited `status`/`notes` updates, atomic status history and explicit future notification membership. Existing ingestion RPCs and restrictive private Storage access are retained.
+
+Until the allowlist is configured, authenticated clients see no dashboard data. Follow [dashboard setup](../dashboard/README.md): configure `ALLOWED_EMAIL`, create the sole confirmed Auth user, disable public signups, then run `npm.cmd run setup` from `dashboard`. That service-role helper calls `radar_configure_dashboard` from the environment and uploads the untailored master DOCX privately. No email provider or scheduling is added. Hosted migration application, account setup and Vercel/phone acceptance must be verified separately from local migration tests.

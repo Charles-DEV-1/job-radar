@@ -38,6 +38,8 @@ dist/
 # Node and Next.js
 node_modules/
 .next/
+.vercel/
+*.tsbuildinfo
 out/
 
 # Playwright artifacts

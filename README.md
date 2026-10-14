@@ -1,6 +1,6 @@
 # Job Radar
 
-Private, single-user job monitoring for Nigerian and African software engineering roles. Stages 1–4 cover discovery, fetching, careers monitoring, filtering, private storage and validated resume tailoring. Project rules are in [AGENTS.md](AGENTS.md).
+Private, single-user job monitoring for Nigerian and African software engineering roles. Stages 1–5 cover discovery, fetching, careers monitoring, filtering, private storage, validated resume tailoring and the private dashboard. Project rules are in [AGENTS.md](AGENTS.md).
 
 ## Setup
 
@@ -75,7 +75,7 @@ The first successful fetch backfills existing jobs with notifications suppressed
 
 `pipeline/src/pipeline/` contains the CLIs and six isolated adapters. Fetches return complete provider JSON, including verified description requests and SmartRecruiters pagination/details. Tests mock all external HTTP using recorded ATS fixtures; storage semantics execute against local PostgreSQL. [Fixture notes](pipeline/tests/fixtures/README.md) list verified endpoints and real-job filter samples.
 
-`dashboard/` and `.github/workflows/` remain reserved for later stages.
+The [Stage 5 private dashboard](dashboard/README.md) is a Next.js app in `dashboard/`. Apply its forward migration and configure the single owner before signing in. Email and scheduled workflows remain later stages.
 
 ## Stage 3 careers pages and supplied feeds
 

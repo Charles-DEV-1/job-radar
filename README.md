@@ -57,6 +57,8 @@ Apply [the Supabase migration](supabase/README.md), configure your service key, 
 
 The student profile includes internships and junior engineering roles. Editable `seniority.exclude` title terms (manager, head of, director, VP, vice president, principal, staff, chief, CTO) always exclude a job with an explicit reason. `seniority.maybe` terms (senior, lead) require review; unrelated roles and ineligible locations still exclude. Matching is case-insensitive and uses word boundaries.
 
+Unknown titles are excluded unless they have technical role evidence. `roles.description_titles` gates description-only matches, so company boilerplate about software cannot qualify an unrelated business role. `roles.maybe` retains adjacent Android/iOS, testing, DevOps and data-engineering roles for manual review; it does not automatically select them for tailoring. Default tailoring processes open, pending `include` jobs. After reviewing a check-fit role, `python -m pipeline.run_tailor --include-maybe --limit 1` also allows pending `maybe` jobs, selecting the oldest eligible one; the limit does not select a particular job. Filtering and tailoring run separately from the dashboard; scheduled orchestration is a later stage.
+
 Reclassify existing jobs after changing these rules:
 
 ```powershell

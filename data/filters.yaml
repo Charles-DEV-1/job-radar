@@ -15,24 +15,26 @@ roles:
     - software developer
     - developer
     - platform engineer
-    - platform
-    - api
+    - platform developer
+    - api engineer
+    - api developer
     - python
     - java
     - golang
-    - go
-    - node
+    - go engineer
+    - go developer
+    - node engineer
+    - node developer
     - nodejs
     - node.js
     - distributed systems
     - infrastructure engineer
-    - infrastructure
     - full stack
     - full-stack
     - frontend
     - front-end
     - mobile engineer
-  maybe: [devops, sre, site reliability, data engineer, data engineering]
+  maybe: [devops, sre, site reliability, data engineer, data engineering, android engineer, ios engineer, software development engineer in test, sdet, qa engineer, test engineer]
   training: [intern, internship, graduate, trainee]
   exclude:
     - sales
@@ -63,6 +65,21 @@ roles:
     - medical
     - nurse
     - graphic designer
+    - people partner
+    - underwriter
+    - internal audit
+    - risk analyst
+    - data entry
+    - executive assistant
+    - growth analyst
+    - growth associate
+    - reconciliation
+    - settlement officer
+    - scrum master
+    - talent network
+  # Description keywords alone cannot make business/administrative roles relevant.
+  # Generic technical titles still need the software evidence listed below.
+  description_titles: [engineer, engineering, developer, development, technical, programmer, programming]
   # Safer description fallback: avoid ordinary uses of words such as "go" or "node".
   description_include:
     - software engineering

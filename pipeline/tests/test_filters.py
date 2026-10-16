@@ -209,3 +209,87 @@ def test_seniority_lists_are_editable(tmp_path: Path) -> None:
         filters.classify(example_job("Senior Backend Engineer")).filter_result
         == "include"
     )
+
+
+@pytest.mark.parametrize(
+    "title",
+    [
+        "Senior People Partner",
+        "Internal Audit Senior",
+        "Junior Underwriter",
+        "Growth Analyst",
+        "Senior Risk Analyst - Android Lending",
+        "Reconciliation & Settlement Officer",
+        "Data Entry Officer (Enugu)",
+        "Executive Assistant (Growth)",
+        "Growth Associate (Kano State)",
+        "Clinical/Health Informatics Consultant",
+        "Research & Evidence Professional",
+        "Public Health Implementation Officer (Oyo state)",
+        "Join our Talent Network",
+        "Scrum Master",
+        "Portfolio Analysis & Reporting - Lead",
+        "Unrecognised Business Role",
+        "Go To Market Associate",
+        "Platform Operations Associate",
+    ],
+)
+def test_non_engineering_titles_do_not_leak_into_check_fit(title: str) -> None:
+    # Company boilerplate can mention software without describing this role.
+    job = JobFilter(FILTERS).classify(
+        example_job(
+            title,
+            description="Our software engineering team builds software tools.",
+        )
+    )
+    assert job.filter_result == "exclude"
+    assert "Role:" in job.filter_reason
+
+
+@pytest.mark.parametrize(
+    "title",
+    [
+        "Android Engineer",
+        "Senior iOS Engineer - Lagos",
+        "Software Development Engineer in Test (SDET)",
+        "Devops Engineer",
+        "Senior Backend Engineer",
+    ],
+)
+def test_technical_review_roles_remain_available(title: str) -> None:
+    assert JobFilter(FILTERS).classify(example_job(title)).filter_result == "maybe"
+
+
+def test_ambiguous_technical_titles_require_software_evidence() -> None:
+    filters = JobFilter(FILTERS)
+    assert (
+        filters.classify(example_job("Member of Technical Team")).filter_result
+        == "exclude"
+    )
+    assert (
+        filters.classify(
+            example_job(
+                "Member of Technical Team",
+                description="Build APIs with backend development.",
+            )
+        ).filter_result
+        == "maybe"
+    )
+
+
+def test_description_title_gate_is_editable(tmp_path: Path) -> None:
+    from ruamel.yaml import YAML
+
+    yaml = YAML(typ="safe")
+    config = yaml.load(FILTERS.read_text(encoding="utf-8"))
+    config["roles"]["description_titles"] = ["apprentice"]
+    path = tmp_path / "filters.yaml"
+    with path.open("w", encoding="utf-8") as handle:
+        yaml.dump(config, handle)
+    filters = JobFilter(path)
+    assert (
+        filters.classify(
+            example_job("Apprentice", description="Learn software development.")
+        ).filter_result
+        == "maybe"
+    )

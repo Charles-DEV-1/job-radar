@@ -37,6 +37,7 @@ class JobFilter:
             "exclude",
             "training",
             "description_include",
+            "description_titles",
         ):
             self._terms(self.roles, key)
         for key in (
@@ -102,11 +103,11 @@ class JobFilter:
                 "maybe",
                 "internship/graduate title without clear engineering context",
             )
-        if technical:
+        if technical and matches(job.title, self.roles["description_titles"]):
             return "maybe", "technical description but ambiguous title: " + ", ".join(
                 technical
             )
-        return "maybe", "role is not clearly engineering or clearly unrelated"
+        return "exclude", "no software-engineering role evidence in title"
 
     def _location(self, job: Job) -> tuple[FilterResult, str]:
         raw = job.location_raw

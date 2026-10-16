@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const config: NextConfig = {
+  distDir: process.env.JOB_RADAR_SEPARATE_DEV === "1" ? ".next-radar" : ".next",
   poweredByHeader: false,
   async headers() {
     return [

@@ -38,6 +38,7 @@ dist/
 # Node and Next.js
 node_modules/
 .next/
+.next-radar/
 .vercel/
 *.tsbuildinfo
 out/

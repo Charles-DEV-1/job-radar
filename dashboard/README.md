@@ -18,6 +18,15 @@ npm.cmd run dev
 
 Open `http://localhost:3000/login`. On your phone, use the deployed HTTPS URL rather than the computer's localhost address.
 
+If another project uses port 3000, start a separate development instance from `dashboard`:
+
+```powershell
+$env:JOB_RADAR_SEPARATE_DEV = '1'
+npm.cmd run dev -- --hostname 127.0.0.1 --port 3010
+```
+
+Open `http://127.0.0.1:3010/login`. This instance uses its own ignored `.next-radar` build directory to avoid a development-server lock conflict.
+
 | Variable                   | Purpose                                                                                                                                           |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `SUPABASE_URL`             | Existing project's HTTPS URL.                                                                                                                     |

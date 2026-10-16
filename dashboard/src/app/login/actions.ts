@@ -19,6 +19,18 @@ export async function signIn(
       return { error: "Unable to sign in. Check your email and password." };
     const client = await sessionClient();
     const result = await client.auth.signInWithPassword({ email, password });
+    if (
+      result.error &&
+      (result.error.status === 0 ||
+        (result.error.status ?? 0) >= 500 ||
+        result.error.name === "AuthRetryableFetchError")
+    ) {
+      console.error("Dashboard cannot reach the authentication service", {
+        code: result.error.code,
+        status: result.error.status,
+      });
+      return { error: "Sign-in is unavailable. Please try again later." };
+    }
     if (result.error || !result.data.user?.email_confirmed_at)
       return { error: "Unable to sign in. Check your email and password." };
     const owner = await client.rpc("radar_dashboard_is_owner");
@@ -27,6 +39,7 @@ export async function signIn(
       return { error: "Dashboard access is not configured for this account." };
     }
   } catch {
+    console.error("Dashboard sign-in could not be completed");
     return { error: "Sign-in is unavailable. Please try again later." };
   }
   redirect("/jobs");

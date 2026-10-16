@@ -6,6 +6,21 @@ import { job } from "./fixtures";
 const refresh = vi.hoisted(() => vi.fn());
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh }) }));
 describe("JobCard status persistence", () => {
+  it("shows that a pending resume is not tailored and offers the master", () => {
+    render(
+      <JobCard
+        initial={job({ resume_status: "pending" })}
+        now="2026-10-14T12:00:00Z"
+        silentAfter={21}
+      />,
+    );
+    expect(
+      screen.getByText(/Master resume \(not tailored yet\)/),
+    ).toBeVisible();
+    expect(
+      screen.getByRole("button", { name: "Download master" }),
+    ).toBeVisible();
+  });
   it("saves Applied immediately, updates the visible state and refreshes server counts", async () => {
     const fetcher = vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(

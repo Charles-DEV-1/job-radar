@@ -77,7 +77,7 @@ export function JobCard({
               ? "Resume ready"
               : job.resume_status === "failed"
                 ? "Master resume (tailoring failed)"
-                : "Master resume (tailoring pending)"}
+                : "Master resume (not tailored yet)"}
           </div>
         </div>
         <div className="job-actions">

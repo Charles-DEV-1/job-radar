@@ -46,6 +46,13 @@ export default async function JobsPage({
         ))}
       </nav>
       <JobFilters filters={filters} companies={names} />
+      {(filters.fit === "relevant" || filters.fit === "maybe") && (
+        <p className="notice">
+          Check-fit roles may require more experience or a different engineering
+          specialty. Review their requirements before applying. Default resume
+          tailoring processes included jobs only.
+        </p>
+      )}
       <div className="toolbar">
         <span>
           {filters.notification ? "Most recent notification" : "Your job radar"}

@@ -49,5 +49,19 @@ export function privateHeaders(): Record<string, string> {
 }
 export function sameOrigin(request: Request): boolean {
   const origin = request.headers.get("origin");
-  return !!origin && origin === new URL(request.url).origin;
+  if (!origin || origin === "null") return false;
+  try {
+    const url = new URL(request.url);
+    // Next.js may use its internal listening hostname in request.url. The Host
+    // header identifies the browser-facing authority, including its port.
+    // Do not trust arbitrary X-Forwarded-Host values as an additional allowlist.
+    const host = request.headers.get("host");
+    if (host && !/^[a-z\d.:[\]-]+$/i.test(host)) return false;
+    const expected = host
+      ? new URL(`${url.protocol}//${host}`).origin
+      : url.origin;
+    return origin === expected;
+  } catch {
+    return false;
+  }
 }

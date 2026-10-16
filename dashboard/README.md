@@ -64,6 +64,7 @@ All pages except `/login` verify authentication; protected API routes also verif
 
 - Jobs are ordered by `first_seen_at` descending with stable ID ties; pages contain 20 rows.
 - Defaults show **include**, open, non-backfill jobs. Select “Include check fit roles” to explicitly review `maybe`; excluded roles are available only through their filter. Inclusion means role/location rules, not a guaranteed resume match. With today's dataset, an empty default view is possible.
+- “Master resume (not tailored yet)” means Stage 4 has not produced a tailored file for that job. The dashboard does not start tailoring on page load or download. Default `pipeline.run_tailor` processes open, pending `include` jobs; `maybe` requires explicitly opting into `--include-maybe`, which processes the oldest eligible jobs up to the limit. Review fit first. Scheduled pipeline orchestration remains a later stage.
 - Company, status, title/company search, first-seen dates, closed and backfill toggles persist in the URL. Search punctuation that could alter a PostgREST expression is removed.
 - Top counts use the current visibility/company/search/date/fit filters but ignore the selected status, so status navigation remains useful. Skipped is available in the status filter and every job's buttons.
 - Posted age uses `posted_at` when available; the first-seen timestamp is also shown. Detail/history dates use Africa/Lagos.

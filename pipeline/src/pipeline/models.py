@@ -37,6 +37,8 @@ class ProbeResult:
     error: str | None = None
     duration_ms: float = 0
     not_found_reason: str | None = None
+    # Transient Lever ownership evidence. Never serialize into run logs.
+    job_identity_texts: list[str] = field(default_factory=list, repr=False)
 
 
 @dataclass(frozen=True)

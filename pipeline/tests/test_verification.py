@@ -33,14 +33,20 @@ def test_domain_root_uses_public_suffix_and_ignores_subdomains(
 
 @pytest.mark.parametrize("name", ["FairMoney", "Fair Money", "FairMoney Limited"])
 def test_company_name_verification(company: Company, name: str) -> None:
-    probe = ProbeResult("workable", "fairmoney", "found", company_names=[name])
+    probe = ProbeResult(
+        "workable", "fairmoney", "found", job_count=1, company_names=[name]
+    )
     assert verify_match(company, probe).status == "confirmed"
 
 
 def test_long_name_allows_a_small_spelling_difference(company: Company) -> None:
     entry = replace(company, name="FairMoney Technologies", aliases=())
     probe = ProbeResult(
-        "workable", "fairmoney", "found", company_names=["FairMoney Technologie"]
+        "workable",
+        "fairmoney",
+        "found",
+        job_count=1,
+        company_names=["FairMoney Technologie"],
     )
     assert verify_match(entry, probe).status == "confirmed"
 
@@ -64,10 +70,10 @@ def test_same_slug_without_identity_needs_review(company: Company) -> None:
     assert verify_match(company, probe).status == "needs_review"
 
 
-def test_official_link_cannot_verify_an_anonymous_empty_board(company: Company) -> None:
+def test_official_link_verifies_an_empty_successful_board(company: Company) -> None:
     probe = ProbeResult("ashby", "unexpected-slug", "found", job_count=0)
     match = verify_match(company, probe, "https://careers.fairmoney.io/jobs")
-    assert match.status == "not_found"
+    assert match.status == "confirmed" and "empty, verify" in match.reason
     assert match.evidence_url
 
 
@@ -90,7 +96,11 @@ def test_external_link_cannot_supply_official_proof(company: Company, url: str) 
 
 def test_domain_match_and_conflict(company: Company) -> None:
     probe = ProbeResult(
-        "workable", "fairmoney", "found", company_domains=["www.fairmoney.io"]
+        "workable",
+        "fairmoney",
+        "found",
+        job_count=1,
+        company_domains=["www.fairmoney.io"],
     )
     assert verify_match(company, probe).status == "confirmed"
     probe.company_domains = ["wrong-company.com"]

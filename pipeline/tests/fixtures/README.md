@@ -1,5 +1,9 @@
 # Live verification fixtures
 
+## October 16 ownership and coverage correction
+
+The historical results below describe the rules at the time. Current detection does **not** confirm an empty board from company-name metadata alone: these matches require review. Empty confirmation requires a successful collection response and a link from the company's own site. `lever-tala.json` preserves the first complete posting from the October 16 public Tala response (10 jobs); `lever-tala-verification.json` records the verified URL and counts. It has no company-name field; the actual apply URL and description supply ownership evidence. Tests also cover an identifying fourth posting, conflicting brands, anonymous empty versus HTTP-404 responses, careers-page fallback and description-free run logs.
+
 Stage 2 descriptions, field mappings, and real-job filtering checks are documented in [STAGE2.md](STAGE2.md).
 
 All six public, unauthenticated endpoint patterns were verified with HTTP 200 JSON responses on 2026-10-05, before their adapters were implemented. No requested endpoint remains unverified or disabled.

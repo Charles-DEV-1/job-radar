@@ -89,6 +89,15 @@ def print_report(results: list[DetectionResult]) -> None:
         for result in failures:
             for error in result.errors:
                 print(f"- {readable(result.company.name)}: {readable(error)}")
+    live = sum(r.detection_status == "confirmed" and bool(r.job_count) for r in results)
+    empty = sum(r.detection_status == "confirmed" and r.job_count == 0 for r in results)
+    print(
+        "\nDetection summary: "
+        f"confirmed with jobs: {live}; "
+        f"confirmed but empty: {empty}; "
+        f"needs review: {sum(r.detection_status == 'needs_review' for r in results)}; "
+        f"not found: {sum(r.detection_status == 'not_found' for r in results)}"
+    )
 
 
 def main(argv: list[str] | None = None) -> int:

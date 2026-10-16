@@ -3,13 +3,13 @@
 import json
 import threading
 import time
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
-from pipeline.discovery import CareersDiscovery
+from pipeline.discovery import CareersDiscovery, owns_url
 from pipeline.models import (
     Company,
     DetectionResult,
@@ -69,12 +69,14 @@ class Detector:
                 )
             self.cache[key] = probe
         probe = self.cache[key]
+        record = asdict(probe)
+        record.pop("job_identity_texts", None)
         self.recorder.write(
             {
                 "event": "probe",
                 "company": company.name,
                 "cached": cached,
-                **asdict(probe),
+                **record,
             }
         )
         return probe
@@ -111,6 +113,17 @@ class Detector:
             probe = self._probe(company, adapter, slug)
             if probe.status == "found":
                 matches.append(verify_match(company, probe, evidence))
+            elif (
+                probe.status == "not_found"
+                and probe.not_found_reason == "Empty response has no company identity"
+                and evidence
+                and owns_url(company, evidence)
+            ):
+                # An HTTP-200 empty collection linked by the company itself is
+                # distinct from a missing board (404/410) or a guessed empty slug.
+                matches.append(
+                    verify_match(company, replace(probe, status="found"), evidence)
+                )
             elif probe.status == "not_found" and probe.not_found_reason:
                 matches.append(
                     Match(probe, "not_found", probe.not_found_reason, evidence)

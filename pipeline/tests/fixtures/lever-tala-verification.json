@@ -1,0 +1,8 @@
+{
+  "verified_on": "2026-10-16",
+  "url": "https://api.lever.co/v0/postings/tala?mode=json",
+  "http_status": 200,
+  "live_job_count": 10,
+  "fixture_jobs": 1,
+  "notes": "First posting preserved from the real public response. No company identity field; applyUrl and descriptionPlain identify Tala."
+}

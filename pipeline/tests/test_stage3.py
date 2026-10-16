@@ -348,7 +348,7 @@ def test_company_source_selection(tmp_path: Path, make_http: Any) -> None:
         a.name: a for a in create_adapters(make_http(lambda _: httpx.Response(404)))
     }
     result = load_sources(path, adapters)
-    assert [s.company_name for s in result] == ["Unknown", "Not found"]
+    assert [s.company_name for s in result] == ["Unknown", "Not found", "Review ATS"]
     assert (
         all(s.source_type == "careers_page" for s in result) and not result[1].enabled
     )

@@ -74,10 +74,11 @@ def test_all_providers_probed_and_active_board_wins(
     assert len(probes) == len({(row["ats"], row["slug"]) for row in probes})
     assert probes[0]["ats"] == ("workable" if empty_first else "greenhouse")
     empty_matches = [m for m in result.matches if m.probe.ats == "workable"]
-    assert empty_matches and all("empty, verify" in m.reason for m in empty_matches)
-    assert any("empty, verify" in m["reason"] for m in rows[-1]["matches"])
+    expected_reason = "empty, name match only" if empty_first else "empty, verify"
+    assert empty_matches and all(expected_reason in m.reason for m in empty_matches)
+    assert any(expected_reason in m["reason"] for m in rows[-1]["matches"])
     print_report([result])
-    assert "workable/moniepoint: empty, verify" in capsys.readouterr().out
+    assert expected_reason in capsys.readouterr().out
 
 
 def test_empty_board_does_not_stop_other_slugs_in_same_provider(
@@ -148,7 +149,12 @@ def test_empty_unverified_boards_never_confirm(
     entry = replace(company, careers_url="https://apply.workable.com/fairmoney/")
     probe = ProbeResult("workable", "fairmoney", "found", job_count=0, **identity)
     for evidence in (None, "https://fairmoney.io/careers", entry.careers_url):
-        assert verify_match(entry, probe, evidence).status == "not_found"
+        expected = (
+            "confirmed"
+            if not identity and evidence == "https://fairmoney.io/careers"
+            else "not_found"
+        )
+        assert verify_match(entry, probe, evidence).status == expected
 
 
 @pytest.mark.parametrize(
@@ -164,7 +170,9 @@ def test_recorded_parenthesized_company_name_matches_alias(
         )
     )
     match = verify_match(entry, WorkableAdapter(http).probe("piggyvest"))
-    assert match.status == "confirmed" and "empty, verify" in match.reason
+    assert match.status == "needs_review" and match.reason == "empty, name match only"
+    match.probe.job_count = 1
+    assert verify_match(entry, match.probe).status == "confirmed"
     wrong = ProbeResult(
         "workable",
         "piggyvest",

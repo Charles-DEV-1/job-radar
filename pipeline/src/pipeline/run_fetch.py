@@ -38,10 +38,12 @@ def load_sources(path: Path, adapters: dict[str, ATSAdapter]) -> list[SourceConf
     for company, entry in zip(
         company_file.companies, company_file.document["companies"], strict=True
     ):
-        if company.careers_url and (
-            entry.get("detection_status") == "not_found"
-            or entry.get("ats", "unknown") == "unknown"
-        ):
+        confirmed_with_jobs = (
+            entry.get("detection_status") == "confirmed"
+            and entry.get("ats") in adapters
+            and (entry.get("ats_job_count") or 0) > 0
+        )
+        if company.careers_url and not confirmed_with_jobs:
             url = clean_url(company.careers_url)
             sources.append(
                 SourceConfig(
@@ -54,7 +56,6 @@ def load_sources(path: Path, adapters: dict[str, ATSAdapter]) -> list[SourceConf
                     "careers_page",
                 )
             )
-            continue
         if entry.get("detection_status") != "confirmed":
             continue
         ats, slug = entry.get("ats"), entry.get("ats_slug")

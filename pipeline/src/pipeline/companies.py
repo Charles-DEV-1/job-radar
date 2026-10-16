@@ -78,6 +78,13 @@ class CompanyFile:
             raise ValueError(f"{name}: invalid detection_status")
         if entry.get("ats_slug") is not None and not isinstance(entry["ats_slug"], str):
             raise ValueError(f"{name}: ats_slug must be a string or null")
+        count = entry.get("ats_job_count")
+        if count is not None and (
+            not isinstance(count, int) or isinstance(count, bool) or count < 0
+        ):
+            raise ValueError(
+                f"{name}: ats_job_count must be a nonnegative integer or null"
+            )
         return Company(
             name,
             tuple(alias.strip() for alias in aliases),
@@ -96,6 +103,7 @@ class CompanyFile:
                 entry["ats"] = result.ats
                 entry["ats_slug"] = result.ats_slug
                 entry["detection_status"] = result.detection_status
+                entry["ats_job_count"] = result.job_count
         # Serialize fully before replacing the original; failures leave it intact.
         temporary = self.path.with_name(self.path.name + ".tmp")
         try:

@@ -1,39 +1,541 @@
-# EXAMPLES ONLY: fictional companies, reserved example domains, disabled by default.
-# Replace these entries with your real companies and their official domains.
-# Detector fields are ats, ats_slug, and detection_status; --write updates only those.
+# Real company list. Detector fields are ats, ats_slug, detection_status, and ats_job_count; --write updates only those.
+# Tier A: ATS known or confirmed. Tier B: verified hiring, ATS to be detected.
+# Tier C: NOT verified (from memory), disabled. Turn on one at a time.
 companies:
-  # Example 1: Nigerian fintech (fictional).
-  - name: Example Payments
-    aliases: [Example Pay]
-    domain: payments.example.com
-    careers_url: null # Optional public careers page on the official domain.
-    category: fintech # fintech | bank | ai | saas | telecom | other
+  # ===== TIER A =====
+  # Paystack: Greenhouse (seen on live board pages)
+  - name: Paystack
+    aliases: []
+    domain: paystack.com
+    careers_url: https://paystack.com/careers
+    category: fintech
     country: NG
-    enabled: false
-    ats: unknown # greenhouse | lever | ashby | workable | recruitee | smartrecruiters | none | unknown
-    ats_slug: null
-    detection_status: needs_review # confirmed | needs_review | not_found
-
-  # Example 2: Kenyan SaaS company (fictional).
-  - name: Example Cloud
-    aliases: [Example Cloud Kenya]
-    domain: cloud.example.org
-    careers_url: https://cloud.example.org/careers
-    category: saas
-    country: KE
-    enabled: false
-    ats: unknown
-    ats_slug: null
+    enabled: true
+    ats: workable
+    ats_slug: paystack
     detection_status: needs_review
 
-  # Example 3: South African AI company (fictional).
-  - name: Example Intelligence
-    aliases: [Example AI]
-    domain: intelligence.example.net
-    careers_url: null
+  # Moniepoint: Greenhouse EU board (also worked in your Stage 2 run)
+    ats_job_count: 0
+  - name: Moniepoint
+    aliases: [Moniepoint Inc]
+    domain: moniepoint.com
+    careers_url: https://job-boards.eu.greenhouse.io/moniepoint
+    category: fintech
+    country: NG
+    enabled: true
+    ats: greenhouse
+    ats_slug: moniepoint
+    detection_status: confirmed
+
+  # FairMoney: worked in your Stage 2 run
+    ats_job_count: 154
+  - name: FairMoney
+    aliases: []
+    domain: fairmoney.io
+    careers_url:
+    category: fintech
+    country: NG
+    enabled: true
+    ats: workable
+    ats_slug: fairmoney
+    detection_status: confirmed
+
+  # M-KOPA: worked in your Stage 2 run
+    ats_job_count: 48
+  - name: M-KOPA
+    aliases: [MKOPA]
+    domain: m-kopa.com
+    careers_url:
+    category: fintech
+    country: KE
+    enabled: true
+    ats: ashby
+    ats_slug: M-KOPA
+    detection_status: confirmed
+
+  # ===== TIER B =====
+  # Kuda: applies via Workable (slug unconfirmed); domain not re-verified
+    ats_job_count: 40
+  - name: Kuda
+    aliases: [Kuda Technologies Ltd]
+    domain: kuda.com
+    careers_url:
+    category: fintech
+    country: NG
+    enabled: true
+    ats: workable
+    ats_slug: kuda
+    detection_status: confirmed
+
+  # PiggyVest: Workable board exists (0 openings when seen); older Breezy
+    ats_job_count: 15
+  - name: PiggyVest
+    aliases: [PiggyTech Global Limited]
+    domain: piggyvest.com
+    careers_url: https://apply.workable.com/piggyvest/
+    category: fintech
+    country: NG
+    enabled: true
+    ats: workable
+    ats_slug: piggyvest
+    detection_status: needs_review
+
+  # Cowrywise: Breezy, so it goes to the careers-page monitor
+    ats_job_count: 0
+  - name: Cowrywise
+    aliases: []
+    domain: cowrywise.com
+    careers_url: https://cowrywise.breezy.hr/
+    category: fintech
+    country: NG
+    enabled: true
+    ats: none
+    ats_slug:
+    detection_status: not_found
+
+  # Mono: older Workable board; may now be part of Flutterwave
+    ats_job_count:
+  - name: Mono
+    aliases: [Mono Africa, Mono Technologies]
+    domain: mono.co
+    careers_url: https://apply.workable.com/mono/
+    category: fintech
+    country: NG
+    enabled: true
+    ats: workable
+    ats_slug: mono
+    detection_status: needs_review
+
+  # Flutterwave: hiring engineers; own ATS not found yet
+    ats_job_count: 0
+  - name: Flutterwave
+    aliases: []
+    domain: flutterwave.com
+    careers_url: https://flutterwave.com/ng/careers/vacancies
+    category: fintech
+    country: NG
+    enabled: true
+    ats: workable
+    ats_slug: flutterwave
+    detection_status: needs_review
+
+  # Fincra: hiring backend roles; applications via LinkedIn links
+    ats_job_count: 0
+  - name: Fincra
+    aliases: []
+    domain: fincra.com
+    careers_url: https://fincra.com/careers/
+    category: fintech
+    country: NG
+    enabled: true
+    ats: none
+    ats_slug:
+    detection_status: not_found
+
+  # LemFi: remote backend roles listed; ATS unknown
+    ats_job_count:
+  - name: LemFi
+    aliases: [Lemfi]
+    domain: lemfi.com
+    careers_url:
+    category: fintech
+    country: NG
+    enabled: true
+    ats: ashby
+    ats_slug: lemfi
+    detection_status: confirmed
+
+  # Helium Health: backend (Elixir) role seen
+    ats_job_count: 15
+  - name: Helium Health
+    aliases: []
+    domain: heliumhealth.com
+    careers_url:
+    category: saas
+    country: NG
+    enabled: true
+    ats: workable
+    ats_slug: helium-health
+    detection_status: confirmed
+
+  # Chipper Cash: Greenhouse evidence is 2021-2022 only; may be stale
+    ats_job_count: 8
+  - name: Chipper Cash
+    aliases: [Chipper]
+    domain: chippercash.com
+    careers_url:
+    category: fintech
+    country: NG
+    enabled: false
+    ats: unknown
+    ats_slug:
+    detection_status: needs_review
+
+  # ===== TIER C (not verified, disabled) =====
+  - name: Interswitch
+    aliases: []
+    domain: interswitchgroup.com
+    careers_url:
+    category: fintech
+    country: NG
+    enabled: false
+    ats: unknown
+    ats_slug:
+    detection_status: needs_review
+
+  - name: PalmPay
+    aliases: []
+    domain: palmpay.com
+    careers_url:
+    category: fintech
+    country: NG
+    enabled: false
+    ats: unknown
+    ats_slug:
+    detection_status: needs_review
+
+  - name: Sudo Africa
+    aliases: [Sudo]
+    domain: sudo.africa
+    careers_url:
+    category: fintech
+    country: NG
+    enabled: false
+    ats: unknown
+    ats_slug:
+    detection_status: needs_review
+
+  - name: Awarri
+    aliases: []
+    domain: awarri.com
+    careers_url:
     category: ai
+    country: NG
+    enabled: false
+    ats: unknown
+    ats_slug:
+    detection_status: needs_review
+
+  - name: Nomba
+    aliases: [Kudi]
+    domain: nomba.com
+    careers_url:
+    category: fintech
+    country: NG
+    enabled: false
+    ats: unknown
+    ats_slug:
+    detection_status: needs_review
+
+  - name: Raenest
+    aliases: [Geegpay]
+    domain: raenest.com
+    careers_url:
+    category: fintech
+    country: NG
+    enabled: false
+    ats: unknown
+    ats_slug:
+    detection_status: needs_review
+
+  - name: Paga
+    aliases: []
+    domain: mypaga.com
+    careers_url:
+    category: fintech
+    country: NG
+    enabled: false
+    ats: unknown
+    ats_slug:
+    detection_status: needs_review
+
+  - name: Carbon
+    aliases: []
+    domain: getcarbon.co
+    careers_url:
+    category: fintech
+    country: NG
+    enabled: false
+    ats: unknown
+    ats_slug:
+    detection_status: needs_review
+
+  # Andela: engineering roles go through its talent marketplace, so low value here
+  - name: Andela
+    aliases: []
+    domain: andela.com
+    careers_url:
+    category: saas
+    country: NG
+    enabled: false
+    ats: unknown
+    ats_slug:
+    detection_status: needs_review
+
+  - name: Access Bank
+    aliases: [Access Holdings]
+    domain: accessbankplc.com
+    careers_url:
+    category: bank
+    country: NG
+    enabled: false
+    ats: unknown
+    ats_slug:
+    detection_status: needs_review
+
+  - name: GTBank
+    aliases: [GTCO]
+    domain: gtbank.com
+    careers_url:
+    category: bank
+    country: NG
+    enabled: false
+    ats: unknown
+    ats_slug:
+    detection_status: needs_review
+
+  - name: Zenith Bank
+    aliases: []
+    domain: zenithbank.com
+    careers_url:
+    category: bank
+    country: NG
+    enabled: false
+    ats: unknown
+    ats_slug:
+    detection_status: needs_review
+
+  - name: MTN Nigeria
+    aliases: []
+    domain: mtn.ng
+    careers_url:
+    category: telecom
+    country: NG
+    enabled: false
+    ats: unknown
+    ats_slug:
+    detection_status: needs_review
+
+    # Yassir: Lever board seen at jobs.lever.co/Yassir (verify with the detector)
+  - name: Yassir
+    aliases: []
+    domain: yassir.com
+    careers_url: https://jobs.lever.co/Yassir
+    category: other
+    country: DZ
+    enabled: true
+    ats: lever
+    ats_slug: Yassir
+    detection_status: confirmed
+
+  # Clickatell: Greenhouse EU board seen at clickatell18 (verify with the detector)
+    ats_job_count: 126
+  - name: Clickatell
+    aliases: []
+    domain: clickatell.com
+    careers_url: https://job-boards.eu.greenhouse.io/clickatell18
+    category: saas
     country: ZA
     enabled: false
     ats: unknown
-    ats_slug: null
+    ats_slug:
     detection_status: needs_review
+
+  # Chowdeck: hiring backend roles; ATS and domain not verified
+  - name: Chowdeck
+    aliases: []
+    domain: chowdeck.com
+    careers_url: https://chowdeck.bamboohr.com/careers
+    category: other
+    country: NG
+    enabled: true
+    ats: workable
+    ats_slug: chowdeck
+    detection_status: needs_review
+
+  # Kredete: fintech hiring in Lagos; ATS and domain not verified
+    ats_job_count: 0
+  - name: Kredete
+    aliases: [Kredete Limited]
+    domain: kredete.io
+    careers_url:
+    category: fintech
+    country: NG
+    enabled: true
+    ats: none
+    ats_slug:
+    detection_status: not_found
+
+    # Wave: Greenhouse per its own job posting; mostly senior roles
+    ats_job_count:
+  - name: Wave
+    aliases: [Wave Mobile Money]
+    domain: wave.com
+    careers_url: https://www.wave.com/en/careers/job/
+    category: fintech
+    country: SN
+    enabled: true
+    # Wave: let the careers-page monitor watch it (careers_url is already set)
+    ats: workable
+    ats_slug: wave
+    detection_status: needs_review
+
+  # Luno: hiring backend roles; Nigeria careers page is luno.com.ng/careers
+    ats_job_count: 0
+  - name: Luno
+    aliases: []
+    domain: luno.com
+    careers_url:
+    category: fintech
+    country: ZA
+    enabled: true
+    ats: greenhouse
+    ats_slug: luno
+    detection_status: confirmed
+
+  # ===== NOT VERIFIED: from memory, let the detector test them =====
+    ats_job_count: 2
+  - name: Branch International
+    aliases: [Branch]
+    domain: branch.co
+    careers_url:
+    category: fintech
+    country: KE
+    enabled: true
+    ats: greenhouse
+    ats_slug: branch
+    detection_status: confirmed
+
+    ats_job_count: 2
+  - name: Tala
+    aliases: []
+    domain: tala.co
+    careers_url:
+    category: fintech
+    country: KE
+    enabled: true
+    ats: lever
+    ats_slug: tala
+    detection_status: confirmed
+
+    ats_job_count: 10
+  - name: Africa's Talking
+    aliases: [Africas Talking]
+    domain: africastalking.com
+    careers_url:
+    category: saas
+    country: KE
+    enabled: true
+    ats: none
+    ats_slug:
+    detection_status: not_found
+
+    ats_job_count:
+  - name: Sun King
+    aliases: [Greenlight Planet]
+    domain: sunking.com
+    careers_url:
+    category: other
+    country: KE
+    enabled: true
+    ats: workable
+    ats_slug: greenlight-planet
+    detection_status: needs_review
+
+    ats_job_count: 0
+  - name: Stitch
+    aliases: [Stitch Money]
+    domain: stitch.money
+    careers_url:
+    category: fintech
+    country: ZA
+    enabled: true
+    ats: workable
+    ats_slug: stitch
+    detection_status: needs_review
+
+    ats_job_count: 0
+  - name: Yoco
+    aliases: []
+    domain: yoco.com
+    careers_url:
+    category: fintech
+    country: ZA
+    enabled: true
+    ats: workable
+    ats_slug: yoco
+    detection_status: needs_review
+
+    ats_job_count: 0
+  - name: Peach Payments
+    aliases: []
+    domain: peachpayments.com
+    careers_url:
+    category: fintech
+    country: ZA
+    enabled: true
+    ats: unknown
+    ats_slug:
+    detection_status: needs_review
+
+    ats_job_count:
+  - name: Paymob
+    aliases: []
+    domain: paymob.com
+    careers_url:
+    category: fintech
+    country: EG
+    enabled: true
+    ats: workable
+    ats_slug: paymob
+    detection_status: needs_review
+
+    ats_job_count: 0
+  - name: Instabug
+    aliases: []
+    domain: instabug.com
+    careers_url:
+    category: saas
+    country: EG
+    enabled: true
+    ats: workable
+    ats_slug: instabug
+    detection_status: needs_review
+
+    ats_job_count: 0
+  - name: Hubtel
+    aliases: []
+    domain: hubtel.com
+    careers_url: https://explore.hubtel.com/careers/
+    category: fintech
+    country: GH
+    enabled: true
+    ats: none
+    ats_slug:
+    detection_status: not_found
+
+    ats_job_count:
+  - name: Risevest
+    aliases: []
+    domain: risevest.com
+    careers_url: https://risevest.bamboohr.com/careers/
+    category: fintech
+    country: NG
+    enabled: true
+    ats: unknown
+    ats_slug:
+    detection_status: needs_review
+
+    ats_job_count:
+  - name: Bamboo
+    aliases: [Bamboo Invest]
+    domain: investbamboo.com
+    careers_url: https://investbamboo.com/careers
+    category: fintech
+    country: NG
+    enabled: true
+    ats: workable
+    ats_slug: bamboo
+    detection_status: needs_review
+    ats_job_count: 0

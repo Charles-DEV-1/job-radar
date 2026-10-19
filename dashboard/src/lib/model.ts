@@ -30,7 +30,7 @@ export const jobSchema = z.object({
   posted_at: z.string().nullable(),
   filter_result: z.enum(["include", "maybe", "exclude"]),
   filter_reason: z.string(),
-  resume_status: z.enum(["pending", "ready", "failed"]),
+  resume_status: z.enum(["pending", "ready", "failed", "archived"]),
   resume_error: z.string().nullable(),
   status: z.enum(STATUSES),
   status_changed_at: z.string().nullable(),
@@ -55,7 +55,7 @@ export const notesSchema = z.object({
   gaps: z.array(z.string()),
 });
 export const detailSchema = jobSchema.extend({
-  description_text: z.string(),
+  description_text: z.string().nullable(),
   match_notes: notesSchema.nullable(),
 });
 export type JobDetail = z.infer<typeof detailSchema>;

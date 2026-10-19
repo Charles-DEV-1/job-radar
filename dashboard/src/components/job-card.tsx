@@ -73,11 +73,13 @@ export function JobCard({
             {job.company} · {job.location_raw || "Location unspecified"}
             {job.remote_flag ? " · Remote" : ""} · posted{" "}
             {relativeTime(job.posted_at ?? job.first_seen_at, now)} ·{" "}
-            {job.resume_status === "ready"
-              ? "Resume ready"
-              : job.resume_status === "failed"
-                ? "Master resume (tailoring failed)"
-                : "Master resume (not tailored yet)"}
+            {job.resume_status === "archived"
+              ? "Resume archived"
+              : job.resume_status === "ready"
+                ? "Resume ready"
+                : job.resume_status === "failed"
+                  ? "Master resume (tailoring failed)"
+                  : "Master resume (not tailored yet)"}
           </div>
         </div>
         <div className="job-actions">

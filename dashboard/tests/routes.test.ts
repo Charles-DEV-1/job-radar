@@ -80,6 +80,25 @@ describe("private signed downloads", () => {
       expect(result.headers.get("cache-control")).toContain("no-store");
     },
   );
+  it("does not offer the master file when the tailored resume has been archived", async () => {
+    stubs.single.mockResolvedValue({
+      data: {
+        resume_status: "archived",
+        resume_path: null,
+        resume_filename: null,
+      },
+      error: null,
+    });
+    const result = await GET(
+      new Request(`https://radar.test/api/jobs/${ID}/resume`),
+      context,
+    );
+    expect(result.status).toBe(410);
+    expect(await result.json()).toMatchObject({
+      error: "Resume archived after 30 days",
+    });
+    expect(stubs.sign).not.toHaveBeenCalled();
+  });
   it("uses the user-scoped job lookup and rejects cross-job paths", async () => {
     stubs.single.mockResolvedValue({
       data: {

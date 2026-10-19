@@ -60,6 +60,8 @@ All pages except `/login` verify authentication; protected API routes also verif
 
 `GET /api/jobs/{id}/resume` first reads the job through the signed-in, RLS-protected client, then issues a **60-second** Storage signed URL with download disposition. Stage 4's restrictive Storage policy stays in place; users cannot read bucket objects directly. A ready job downloads its validated DOCX path. Pending/failed jobs offer the uploaded unmodified master; a missing tailored file falls back to master when possible. Missing master storage is shown as a visible download error. See [Supabase's private download documentation](https://supabase.com/docs/guides/storage/serving/downloads).
 
+After the Stage 7 retention migration is applied, archived jobs display “Resume archived after 30 days” instead of a download action. The signed-download route also rejects archived records and never falls back to the master resume for them.
+
 ## List behavior
 
 - Jobs are ordered by `first_seen_at` descending with stable ID ties; pages contain 20 rows.

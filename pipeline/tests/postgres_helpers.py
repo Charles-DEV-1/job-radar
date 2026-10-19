@@ -22,6 +22,7 @@ class PostgresEngine:
         *,
         dashboard: bool = False,
         stage6: bool = False,
+        stage7: bool = False,
     ) -> None:
         self.lock = threading.Lock()
         self.process = subprocess.Popen(
@@ -53,6 +54,11 @@ class PostgresEngine:
                         )
                     ]
                     if stage6
+                    else []
+                ),
+                *(
+                    [str(migration.with_name("20261020000100_stage7_cleanup.sql"))]
+                    if stage7
                     else []
                 ),
                 *(

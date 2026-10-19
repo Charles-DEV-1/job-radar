@@ -104,4 +104,17 @@ describe("JobCard status persistence", () => {
     ).toBeVisible();
     expect(screen.getByText(/Applied 24 days ago/)).toBeVisible();
   });
+  it("shows the retention notice instead of a resume download for archived jobs", () => {
+    render(
+      <JobCard
+        initial={job({ resume_status: "archived" })}
+        now="2026-10-19T12:00:00Z"
+        silentAfter={21}
+      />,
+    );
+    expect(
+      screen.getAllByText("Resume archived after 30 days").length,
+    ).toBeGreaterThan(0);
+    expect(screen.queryByRole("button", { name: /Download/ })).toBeNull();
+  });
 });

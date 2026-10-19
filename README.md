@@ -79,7 +79,7 @@ The first successful fetch backfills existing jobs with notifications suppressed
 
 `pipeline/src/pipeline/` contains the CLIs and six isolated adapters. Fetches return complete provider JSON, including verified description requests and SmartRecruiters pagination/details. Tests mock all external HTTP using recorded ATS fixtures; storage semantics execute against local PostgreSQL. [Fixture notes](pipeline/tests/fixtures/README.md) list verified endpoints and real-job filter samples.
 
-The [Stage 5 private dashboard](dashboard/README.md) is a Next.js app in `dashboard/`. Apply its forward migration and configure the single owner before signing in. Stage 6 sends new-job and health emails; Stage 7 scheduling remains separate.
+The [Stage 5 private dashboard](dashboard/README.md) is a Next.js app in `dashboard/`. Apply its forward migration and configure the single owner before signing in. Stage 6 sends new-job and health emails. Stage 7 adds retention cleanup; schedule its command once per day using Windows Task Scheduler or your existing pipeline scheduler.
 
 ## Stage 6 email notifications and health alerts
 
@@ -100,6 +100,19 @@ Send notifications and evaluate source health:
 Each run sends at most one new-job email for all eligible include jobs, lists at most 15, and links to `/jobs?new=1`. It sends no new-job email when there are no eligible include jobs, even if check-fit jobs exist. A durable private attempt and Resend idempotency key make retries safe if delivery succeeds while the database acknowledgment fails. Resend retains idempotency keys for 24 hours, so automated retries after a prolonged outage beyond that window cannot guarantee deduplication. Successfully emailed include jobs and accompanying check-fit jobs are added to the dashboard's notification membership; only emailed include jobs receive `notified_at`. Failed sends remain eligible for retry. Health alerts are separate, aggregate current issues, throttle each issue for 24 hours, and send a recovery notice when an issue clears. Health checks cover repeated source failures, repeated unexpected zero-job snapshots, careers-page shrink warnings, no successful source run for three hours, and three consecutive failed tailoring attempts. Stage 7's independent heartbeat is not available yet; until then, last successful source-run completion is the heartbeat proxy.
 
 The local run log is gitignored at `data/notify-runs.jsonl`; it records counts and delivery state, never descriptions or secrets. All Resend calls are mocked in tests; live delivery requires your Resend account and verified sender.
+
+## Stage 7 retention cleanup
+
+Apply [the Stage 7 cleanup migration](supabase/migrations/20261020000100_stage7_cleanup.sql) after Stage 6. It permits archived resume state and nullable descriptions, adds private description-retention markers, and keeps source-identity tombstones so a purged closed listing cannot be inserted and emailed as new if it reappears in a later fetch.
+
+Retention ages are editable in `data/cleanup.yaml` (60 days for closed `new`/`skipped` jobs; 30 days for inactive `applied`/`rejected`/`silent` applications and open `skipped` descriptions). Preview first, then run the command daily:
+
+```powershell
+.\.venv\Scripts\python.exe -m pipeline.cleanup --dry-run
+.\.venv\Scripts\python.exe -m pipeline.cleanup
+```
+
+The cleanup command reads `.env` for Supabase credentials. In Windows Task Scheduler, create a daily task that runs the second command with the repository as its working directory. Dry-run performs no database or Storage mutations. Closed jobs are deleted only after their tailored file path is durably recorded for retry; applied/rejected/silent jobs keep their row, notes, status, and history while descriptions and tailored resume are removed and resume status becomes `archived`. Open skipped jobs keep their row and resume but have descriptions cleared after the configured age. Interview and offer jobs are left untouched. A private run log at `data/cleanup-runs.jsonl` records counts and sanitized failures.
 
 ## Stage 3 careers pages and supplied feeds
 

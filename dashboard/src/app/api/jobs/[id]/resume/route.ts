@@ -35,6 +35,11 @@ export async function GET(
         { error: "Job not found" },
         { status: 404, headers },
       );
+    if (job.data.resume_status === "archived")
+      return NextResponse.json(
+        { error: "Resume archived after 30 days" },
+        { status: 410, headers },
+      );
     const bucket = storageClient().storage.from("radar-resumes");
     let kind: "tailored" | "master" = "master";
     let filename = "Master_Resume.docx";

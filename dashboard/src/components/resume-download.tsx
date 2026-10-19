@@ -5,10 +5,12 @@ export function ResumeDownload({
   status,
 }: {
   id: string;
-  status: "pending" | "ready" | "failed";
+  status: "pending" | "ready" | "failed" | "archived";
 }) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  if (status === "archived")
+    return <span className="notice">Resume archived after 30 days</span>;
   async function download() {
     setPending(true);
     setError(null);

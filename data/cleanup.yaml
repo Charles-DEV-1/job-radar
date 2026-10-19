@@ -1,0 +1,4 @@
+retention:
+  closed_new_or_skipped_days: 60
+  applied_rejected_silent_days: 30
+  open_skipped_description_days: 30

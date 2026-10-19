@@ -15,6 +15,8 @@ from typing import Any
 import httpx
 from supabase import Client
 
+from pipeline.heartbeat import stale_heartbeat_issue
+
 
 class NotificationError(RuntimeError):
     """A safe-to-display notification setup or delivery failure."""
@@ -237,6 +239,7 @@ def discover_health_issues(
     """Evaluate current health from durable source and tailoring run records."""
     current = now or datetime.now(UTC)
     issues: dict[str, dict[str, Any]] = {}
+    issues.update(stale_heartbeat_issue(client, current))
     sources = _job_rows(
         client.table("sources")
         .select("id,company_name,source_type,consecutive_failures,last_success_at")

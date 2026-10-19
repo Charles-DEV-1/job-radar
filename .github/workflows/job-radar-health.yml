@@ -1,0 +1,32 @@
+name: Job Radar heartbeat check
+
+on:
+  schedule:
+    - cron: "17 9 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: job-radar-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  check-heartbeat:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      RESEND_FROM_EMAIL: ${{ secrets.RESEND_FROM_EMAIL }}
+      NOTIFY_EMAIL: ${{ secrets.NOTIFY_EMAIL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pipeline/pyproject.toml
+      - name: Install pipeline dependencies
+        run: python -m pip install -e ./pipeline
+      - name: Check heartbeat and alert if stale
+        run: python -m pipeline.check_health

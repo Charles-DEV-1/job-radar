@@ -14,7 +14,7 @@ import httpx
 from pydantic import BaseModel, ConfigDict, RootModel, ValidationError
 
 from pipeline.http import USER_AGENT, HTTPClient
-from pipeline.llm.pacing import prompt_tokens, shared_budget
+from pipeline.llm.pacing import prompt_tokens, shared_budget, shared_call_budget
 from pipeline.storage import PacedTransport
 
 
@@ -128,6 +128,7 @@ class SDKBackend:
         self.provider, self.key, self.model = provider, key, model
         self.limiter = limiter
         self.budget = shared_budget(limiter, max_tokens_per_minute)
+        self.call_budget = shared_call_budget(limiter)
 
     def complete(
         self, system: str, content: str, *, min_output_tokens: int = 1
@@ -149,6 +150,7 @@ class SDKBackend:
         for attempt in range(4):
             reservation = self.budget.reserve(estimated_input + capacity)
             try:
+                self.call_budget.claim()
                 reply = self._complete_once(system, content, capacity)
             except Exception as exc:
                 if getattr(exc, "status_code", None) == 429:

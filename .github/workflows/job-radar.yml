@@ -1,0 +1,91 @@
+name: Job Radar
+
+on:
+  schedule:
+    - cron: "7 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: job-radar-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+      LLM_PROVIDER: ${{ secrets.LLM_PROVIDER }}
+      LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+      LLM_MODEL: ${{ secrets.LLM_MODEL }}
+      LLM_MAX_TOKENS_PER_MINUTE: ${{ secrets.LLM_MAX_TOKENS_PER_MINUTE || '6000' }}
+      LLM_MAX_CALLS_PER_RUN: ${{ secrets.LLM_MAX_CALLS_PER_RUN || '50' }}
+      LLM_INPUT_USD_PER_MILLION: ${{ secrets.LLM_INPUT_USD_PER_MILLION }}
+      LLM_OUTPUT_USD_PER_MILLION: ${{ secrets.LLM_OUTPUT_USD_PER_MILLION }}
+      RESUME_MAX_PER_RUN: ${{ secrets.RESUME_MAX_PER_RUN || '3' }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      RESEND_FROM_EMAIL: ${{ secrets.RESEND_FROM_EMAIL }}
+      NOTIFY_EMAIL: ${{ secrets.NOTIFY_EMAIL }}
+      DASHBOARD_URL: ${{ secrets.DASHBOARD_URL }}
+      NOTIFY_RESUME_GRACE_MINUTES: ${{ secrets.NOTIFY_RESUME_GRACE_MINUTES || '30' }}
+      CAREERS_MAX_FETCHES_PER_RUN: ${{ secrets.CAREERS_MAX_FETCHES_PER_RUN || '20' }}
+      MASTER_RESUME_JSON_B64: ${{ secrets.MASTER_RESUME_JSON_B64 }}
+      MASTER_RESUME_DOCX_B64: ${{ secrets.MASTER_RESUME_DOCX_B64 }}
+      RESUME_TEMPLATE_DOCX_B64: ${{ secrets.RESUME_TEMPLATE_DOCX_B64 }}
+      RESUME_LAYOUT_JSON_B64: ${{ secrets.RESUME_LAYOUT_JSON_B64 }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pipeline/pyproject.toml
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('pipeline/pyproject.toml') }}
+      - name: Install pipeline dependencies
+        run: python -m pip install -e "./pipeline[dev,llm]"
+      - name: Restore private resume inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -n "$MASTER_RESUME_JSON_B64" ]]; then
+            mkdir -p data
+            printf '%s' "$MASTER_RESUME_JSON_B64" | base64 --decode > data/master_resume.json
+            printf '%s' "$MASTER_RESUME_DOCX_B64" | base64 --decode > data/master_resume.docx
+            printf '%s' "$RESUME_TEMPLATE_DOCX_B64" | base64 --decode > data/resume_template.docx
+            printf '%s' "$RESUME_LAYOUT_JSON_B64" | base64 --decode > data/resume_layout.json
+          fi
+      - name: Check whether Chromium is required
+        id: browser
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          from ruamel.yaml import YAML
+          yaml = YAML(typ="safe")
+          companies = yaml.load(Path("data/companies.yaml").read_text()) or {}
+          needed = any(c.get("enabled", True) and c.get("careers_url") for c in companies.get("companies", []))
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              output.write(f"required={'true' if needed else 'false'}\n")
+          PY
+      - name: Install Playwright Chromium when needed
+        if: steps.browser.outputs.required == 'true'
+        run: python -m playwright install chromium
+      - name: Run pipeline
+        run: python -m pipeline.run_all
+      - name: Upload sanitized run logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: job-radar-logs-${{ github.run_id }}
+          if-no-files-found: warn
+          path: |
+            data/fetch-runs.jsonl
+            data/tailor-runs.jsonl
+            data/notify-runs.jsonl
+            data/health-runs.jsonl
+            data/run-all-runs.jsonl
+          retention-days: 14

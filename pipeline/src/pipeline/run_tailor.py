@@ -15,6 +15,7 @@ from pipeline.detect_ats import REPO_ROOT
 from pipeline.detector import RunRecorder
 from pipeline.http import HTTPClient
 from pipeline.llm.client import Usage
+from pipeline.llm.pacing import reset_call_budget
 from pipeline.resume.layout import LayoutError, load_layout
 from pipeline.resume.pdf import Pagination
 from pipeline.resume.schema import MasterResume, load_master
@@ -258,8 +259,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--output-dir", type=Path, default=data / "output")
     parser.add_argument("--report-file", type=Path, default=data / "tailor-runs.jsonl")
     parser.add_argument(
-        "--limit", type=int, default=os.environ.get("RESUME_MAX_PER_RUN", "3")
+        "--limit", type=int, default=int(os.environ.get("RESUME_MAX_PER_RUN", "3"))
     )
+    parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--include-maybe", action="store_true")
     parser.add_argument(
         "--diagnose-job",
@@ -269,6 +271,8 @@ def main(argv: list[str] | None = None) -> int:
         ),
     )
     args = parser.parse_args(argv)
+    if not os.environ.get("PIPELINE_RUN_ALL"):
+        reset_call_budget()
     store: SupabaseStore | None = None
     try:
         if not 1 <= args.limit <= 20:
@@ -279,6 +283,13 @@ def main(argv: list[str] | None = None) -> int:
                 "Review master_resume.json and set reviewed=true before tailoring"
             )
         load_layout(args.layout, master, args.master_docx, args.template)
+        if args.dry_run:
+            print(
+                f"Tailoring dry-run: inputs validated; would tailor up to {args.limit} "
+                "eligible jobs with the configured LLM and upload resumes; "
+                "no database reads/writes or provider calls made"
+            )
+            return 0
         with HTTPClient() as http:
             # Configure before claiming any jobs: missing LLM credentials leave
             # pending jobs untouched and make no provider calls.

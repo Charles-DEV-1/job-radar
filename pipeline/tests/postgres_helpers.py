@@ -58,6 +58,17 @@ class PostgresEngine:
                     else []
                 ),
                 *(
+                    [
+                        str(
+                            migration.with_name(
+                                "20261022000100_stage7_orchestration.sql"
+                            )
+                        )
+                    ]
+                    if stage6
+                    else []
+                ),
+                *(
                     [str(migration.with_name("20261020000100_stage7_cleanup.sql"))]
                     if stage7
                     else []

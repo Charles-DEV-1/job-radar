@@ -208,8 +208,11 @@ def test_notification_sql_waits_for_resume_then_commits_exact_membership(
 
 
 class FakeQuery:
-    def __init__(self, rows: list[dict[str, Any]]) -> None:
+    def __init__(
+        self, rows: list[dict[str, Any]], table_name: str = "health_events"
+    ) -> None:
         self.rows = rows
+        self.table_name = table_name
         self.mode = "select"
         self.payload: dict[str, Any] = {}
         self.key: str | None = None
@@ -230,6 +233,15 @@ class FakeQuery:
     def eq(self, column: str, value: Any) -> FakeQuery:
         assert column == "issue_key"
         self.key = value
+        return self
+
+    def order(self, _column: str, desc: bool = False) -> FakeQuery:
+        if desc:
+            self.rows = list(reversed(self.rows))
+        return self
+
+    def limit(self, count: int) -> FakeQuery:
+        self.rows = self.rows[:count]
         return self
 
     def execute(self) -> Any:
@@ -256,8 +268,11 @@ class FakeQuery:
 class FakeClient:
     def __init__(self) -> None:
         self.events: list[dict[str, Any]] = []
+        self.heartbeats: list[dict[str, Any]] = []
 
     def table(self, name: str) -> FakeQuery:
+        if name == "heartbeats":
+            return FakeQuery(self.heartbeats, name)
         assert name == "health_events"
         return FakeQuery(self.events)
 

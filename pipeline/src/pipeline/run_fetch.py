@@ -2,6 +2,7 @@
 
 import argparse
 import hashlib
+import os
 import time
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict
@@ -21,6 +22,7 @@ from pipeline.detector import RunRecorder
 from pipeline.filters import JobFilter
 from pipeline.http import HTTPClient
 from pipeline.llm.client import Usage
+from pipeline.llm.pacing import reset_call_budget
 from pipeline.models import ATSName, SourceConfig, SourceOutcome
 from pipeline.normalize import normalize_jobs
 from pipeline.sources.ats import create_adapters
@@ -181,6 +183,7 @@ def run_sources(
     filters: JobFilter,
     recorder: RunRecorder,
     concurrency: int = 4,
+    careers_limit: int | None = None,
 ) -> list[SourceOutcome]:
     if not 1 <= concurrency <= 16:
         raise ValueError("Concurrency must be between 1 and 16")
@@ -188,6 +191,32 @@ def run_sources(
         raise ValueError("The same source is configured more than once")
     ids = store.sync_sources(sources)
     enabled = [source for source in sources if source.enabled]
+    if careers_limit is not None:
+        if careers_limit < 0:
+            raise ValueError("CAREERS_MAX_FETCHES_PER_RUN must not be negative")
+        careers = [source for source in enabled if source.source_type == "careers_page"]
+        allowed = {(source.ats, source.slug) for source in careers[:careers_limit]}
+        skipped = [
+            source for source in careers if (source.ats, source.slug) not in allowed
+        ]
+        enabled = [
+            source
+            for source in enabled
+            if source.source_type != "careers_page"
+            or (source.ats, source.slug) in allowed
+        ]
+        if skipped:
+            print(
+                f"Careers-page fetch cap reached: skipped {len(skipped)} configured "
+                "source(s); they remain enabled for the next run"
+            )
+            recorder.write(
+                {
+                    "event": "careers_fetch_cap",
+                    "limit": careers_limit,
+                    "skipped_sources": len(skipped),
+                }
+            )
     with ThreadPoolExecutor(max_workers=concurrency) as executor:
         futures = [
             executor.submit(
@@ -268,9 +297,16 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--concurrency", type=int, default=4)
     parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="list planned fetches without network or database writes",
+    )
+    parser.add_argument(
         "--feeds-file", type=Path, default=REPO_ROOT / "data/feeds.yaml"
     )
     args = parser.parse_args(argv)
+    if not os.environ.get("PIPELINE_RUN_ALL"):
+        reset_call_budget()
     store: SupabaseStore | None = None
     try:
         load_dotenv(REPO_ROOT / ".env", override=False)
@@ -281,6 +317,14 @@ def main(argv: list[str] | None = None) -> int:
             pages = PageFetcher(http)
             adapters["careers_page"] = CareersPageAdapter(pages)
             adapters["feed"] = FeedAdapter(pages)
+            if args.dry_run:
+                enabled = [source for source in sources if source.enabled]
+                print(
+                    f"Fetch dry-run: would fetch {len(enabled)} source(s) "
+                    "and write normalized results to Supabase; "
+                    "no requests or writes made"
+                )
+                return 0
             if not any(source.enabled for source in sources):
                 print(
                     "No confirmed ATS entries or eligible careers/feed sources "
@@ -289,6 +333,12 @@ def main(argv: list[str] | None = None) -> int:
                 return 0
             filters = JobFilter(args.filters_file)
             store = SupabaseStore.from_environment(http)
+            try:
+                careers_limit = int(os.environ.get("CAREERS_MAX_FETCHES_PER_RUN", "20"))
+            except ValueError as exc:
+                raise ValueError(
+                    "CAREERS_MAX_FETCHES_PER_RUN must be an integer"
+                ) from exc
             outcomes = run_sources(
                 sources,
                 adapters,
@@ -296,6 +346,7 @@ def main(argv: list[str] | None = None) -> int:
                 filters,
                 RunRecorder(args.report_file),
                 args.concurrency,
+                careers_limit,
             )
             print_summary(outcomes)
             return 1 if any(outcome.status == "error" for outcome in outcomes) else 0

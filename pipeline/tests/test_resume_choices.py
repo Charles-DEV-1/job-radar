@@ -4,10 +4,14 @@ from copy import deepcopy
 from pathlib import Path
 
 import pytest
-from resume_helpers import ControlledBackend, job, synthetic_resume
+from resume_helpers import (
+    ControlledBackend,
+    job,
+    synthetic_resume,
+    verified_pagination,
+)
 
 from pipeline.llm.client import Usage
-from pipeline.resume.pdf import Pagination
 from pipeline.resume.prompt import request
 from pipeline.resume.requirements import options
 from pipeline.resume.schema import MatchNotes, Tailoring
@@ -82,10 +86,13 @@ def test_retry_rejects_the_reported_failures_then_accepts_grounded_choices(
         tmp_path / "output",
         TailoringClient(backend, sleep=lambda _: None),
         usage,
-        Pagination(discover=False),
+        verified_pagination(),
     )
     assert result.status == "ready" and usage.attempts == 2
-    assert result.match_notes == good["match_notes"]
+    assert [match["requirement"] for match in result.match_notes["matched"]] == [
+        "Python",
+        "SQL",
+    ]
     feedback = backend.calls[1]["validator_errors"][0]
     assert "skills_order: invented skill at index 2" in feedback
     assert "matched[0]" in feedback and "gaps[0]" in feedback

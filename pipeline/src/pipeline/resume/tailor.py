@@ -20,14 +20,20 @@ from pipeline.llm.client import (
     account_reply,
 )
 from pipeline.llm.pacing import prompt_tokens
-from pipeline.resume.changes import summarize
+from pipeline.resume.changes import human_report, summarize
 from pipeline.resume.description import compact_description
 from pipeline.resume.layout import LayoutError, load_layout, render
 from pipeline.resume.pdf import Pagination
 from pipeline.resume.privacy import ContactRedactor
 from pipeline.resume.prompt import compact_json, request
+from pipeline.resume.relevance import deterministic_tailoring, matching_skills
 from pipeline.resume.schema import MasterResume, Tailoring
-from pipeline.resume.validate import TruthError, validate_tailoring
+from pipeline.resume.validate import (
+    TruthError,
+    audit_proposal,
+    unchanged,
+    validate_tailoring,
+)
 
 
 class TailoringFailure(ValueError):
@@ -39,6 +45,8 @@ class OutputLimitFailure(TailoringFailure):
 
 
 class TailoringClient(ExtractionClient):
+    last_diagnostic: dict[str, Any] | None = None
+
     def propose(
         self,
         master: MasterResume,
@@ -46,6 +54,8 @@ class TailoringClient(ExtractionClient):
         usage: Usage,
         check: Callable[[Tailoring], None],
         warnings: list[str] | None = None,
+        skill_slot_limits: list[int] | None = None,
+        capture_diagnostic: bool = False,
     ) -> Tailoring:
         if not master.reviewed:
             raise TailoringFailure("Master facts require owner review")
@@ -94,6 +104,10 @@ class TailoringClient(ExtractionClient):
                 )
                 received = True
                 account_reply(reply, usage, self.input_price, self.output_price)
+                if capture_diagnostic:
+                    self.last_diagnostic = audit_proposal(
+                        master, reply.content, sent_payload["job"]["description_text"]
+                    )
                 if not reply.usage_known:
                     raise TailoringFailure("Provider response is missing token usage")
                 if not reply.complete:
@@ -114,6 +128,15 @@ class TailoringClient(ExtractionClient):
                     ) from None
                 proposed = validate_tailoring(
                     master, proposed, sent_payload["job"]["description_text"]
+                )
+                proposed = deterministic_tailoring(
+                    master, job, proposed, skill_slot_limits
+                )
+                proposed = validate_tailoring(
+                    master,
+                    proposed,
+                    sent_payload["job"]["description_text"],
+                    generated_summary=proposed.summary,
                 )
                 check(proposed)
                 return proposed
@@ -154,12 +177,13 @@ class TailoringClient(ExtractionClient):
 class TailorResult:
     path: Path
     filename: str
-    status: Literal["ready", "failed"]
+    status: Literal["ready", "failed", "low_fit"]
     match_notes: dict[str, Any] | None
     error: str | None
     warnings: list[str]
     changes: dict[str, int | bool] = field(default_factory=dict)
     report_path: Path | None = None
+    change_report: dict[str, Any] = field(default_factory=dict)
 
 
 def write_report(result: TailorResult) -> None:
@@ -174,6 +198,7 @@ def write_report(result: TailorResult) -> None:
                     "changes": result.changes,
                     "match_notes": result.match_notes,
                     "warnings": result.warnings,
+                    "change_report": result.change_report,
                 }
             ),
             encoding="utf-8",
@@ -214,6 +239,35 @@ def tailor_job(
     input_warnings: list[str] = []
     pagination = pagination or Pagination()
     layout = load_layout(layout_path, master, original, template)
+    skill_slot_limits = [
+        len(block["text"])
+        for block in layout["blocks"]
+        if block["binding"]["kind"] == "skills"
+    ]
+    matched = matching_skills(master, job)
+
+    if not matched:
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.with_suffix(".pdf").unlink(missing_ok=True)
+        shutil.copyfile(original, destination)
+        unchanged_result = deterministic_tailoring(master, job, unchanged(master))
+        unchanged_result = validate_tailoring(
+            master,
+            unchanged_result,
+            compact_description(job["description_text"], job["company"]).text,
+        )
+        result = TailorResult(
+            destination,
+            destination.name,
+            "low_fit",
+            None,
+            None,
+            ["No job skills meaningfully overlap with the master resume"],
+            summarize(master, unchanged_result, original, destination),
+            change_report=human_report(master, unchanged_result),
+        )
+        write_report(result)
+        return result
 
     def check(candidate: Tailoring) -> None:
         destination.unlink(missing_ok=True)
@@ -224,7 +278,52 @@ def tailor_job(
         )
 
     try:
-        proposed = client.propose(master, job, usage, check, input_warnings)
+        proposed = client.propose(
+            master, job, usage, check, input_warnings, skill_slot_limits
+        )
+    except TailoringFailure as exc:
+        # Keep the deterministic, master-only match useful even if optional LLM
+        # prose or match-note generation fails. No proposed wording is accepted.
+        try:
+            proposed = deterministic_tailoring(
+                master, job, unchanged(master), skill_slot_limits
+            )
+            proposed = validate_tailoring(
+                master,
+                proposed,
+                compact_description(job["description_text"], job["company"]).text,
+                generated_summary=proposed.summary,
+            )
+            check(proposed)
+        except (LayoutError, TailoringFailure, TruthError, ValueError) as render_exc:
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.with_suffix(".pdf").unlink(missing_ok=True)
+            shutil.copyfile(original, destination)
+            result = TailorResult(
+                destination,
+                destination.name,
+                "failed",
+                None,
+                str(render_exc),
+                warnings,
+            )
+        else:
+            warnings.append(
+                "LLM proposal rejected or unavailable; applied deterministic "
+                "master-only ordering instead (" + str(exc) + ")"
+            )
+            changes = summarize(master, proposed, original, destination)
+            result = TailorResult(
+                destination,
+                destination.name,
+                "ready",
+                proposed.match_notes.model_dump(),
+                None,
+                warnings,
+                changes,
+                change_report=human_report(master, proposed),
+            )
+    else:
         changes = summarize(master, proposed, original, destination)
         if not changes["document_changed"]:
             warnings.append("No document changes selected; master content retained")
@@ -238,15 +337,7 @@ def tailor_job(
             None,
             warnings,
             changes,
-        )
-    except TailoringFailure as exc:
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        destination.with_suffix(".pdf").unlink(missing_ok=True)
-        # Byte-identical master fallback is always available locally and is uploaded
-        # as the downloadable file while the job remains visibly failed.
-        shutil.copyfile(original, destination)
-        result = TailorResult(
-            destination, destination.name, "failed", None, str(exc), warnings
+            change_report=human_report(master, proposed),
         )
     result.warnings.extend(input_warnings)
     write_report(result)

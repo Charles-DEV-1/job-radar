@@ -1,6 +1,7 @@
 """Stage 4 only: claim eligible jobs, tailor, privately upload, record outcomes."""
 
 import argparse
+import json
 import os
 import shutil
 from dataclasses import dataclass, field
@@ -37,10 +38,11 @@ class Outcome:
     report_path: Path | None = None
     changes: dict[str, int | bool] = field(default_factory=dict)
     warnings: list[str] = field(default_factory=list)
+    change_report: dict[str, object] = field(default_factory=dict)
 
 
 def print_outcome(outcome: Outcome) -> None:
-    label = outcome.status
+    label = "Low fit" if outcome.status == "low_fit" else outcome.status
     if label == "ready":
         if outcome.changes.get("tailoring_changed"):
             label += " (tailored)"
@@ -62,6 +64,25 @@ def print_outcome(outcome: Outcome) -> None:
         )
     for warning in outcome.warnings:
         print("Note: " + warning)
+    if outcome.change_report:
+        print("Summary before: " + str(outcome.change_report["summary_before"]))
+        print("Summary after:  " + str(outcome.change_report["summary_after"]))
+        for key in ("skills_before", "skills_after"):
+            groups = outcome.change_report[key]
+            text = "; ".join(
+                f"{group['group']}: {', '.join(group['skills'])}" for group in groups
+            )
+            print(
+                ("Skills before: " if key.endswith("before") else "Skills after:  ")
+                + text
+            )
+        matched = outcome.change_report["matched_requirements"]
+        gaps = outcome.change_report["gaps"]
+        print(
+            "Matched requirements: "
+            + ("; ".join(matched) if matched else "none recorded")
+        )
+        print("Gaps: " + ("; ".join(gaps) if gaps else "none recorded"))
 
 
 def safe_error(exc: Exception) -> str:
@@ -171,7 +192,11 @@ def run_jobs(
         metadata = {
             "llm": usage.record(),
             "warnings": result.warnings if result else [],
-            "fallback": status == "failed",
+            "fallback": status in {"failed", "low_fit"}
+            or any(
+                "LLM proposal rejected or unavailable" in warning
+                for warning in (result.warnings if result else [])
+            ),
             "changes": result.changes if result else {},
         }
         try:
@@ -202,6 +227,7 @@ def run_jobs(
             result.report_path if result else None,
             result.changes if result else {},
             result.warnings if result else [],
+            result.change_report if result else {},
         )
         outcomes.append(outcome)
         recorder.write(
@@ -235,6 +261,13 @@ def main(argv: list[str] | None = None) -> int:
         "--limit", type=int, default=os.environ.get("RESUME_MAX_PER_RUN", "3")
     )
     parser.add_argument("--include-maybe", action="store_true")
+    parser.add_argument(
+        "--diagnose-job",
+        help=(
+            "Make one read-only tailoring request and print raw response "
+            "plus field validation"
+        ),
+    )
     args = parser.parse_args(argv)
     store: SupabaseStore | None = None
     try:
@@ -251,6 +284,43 @@ def main(argv: list[str] | None = None) -> int:
             # pending jobs untouched and make no provider calls.
             client = TailoringClient.from_environment(http)
             store = SupabaseStore.from_environment(http)
+            if args.diagnose_job:
+                response = (
+                    store.client.table("jobs")
+                    .select("id,title,company,description_text")
+                    .eq("id", args.diagnose_job)
+                    .limit(1)
+                    .execute()
+                )
+                if not response.data:
+                    raise StoreError("Diagnostic job was not found")
+                job = response.data[0]
+                diagnostic_usage = Usage()
+                try:
+                    client.propose(
+                        master,
+                        job,
+                        diagnostic_usage,
+                        lambda _: None,
+                        capture_diagnostic=True,
+                    )
+                except Exception:
+                    pass
+                if not client.last_diagnostic:
+                    raise StoreError("No model response was received for diagnosis")
+                print(
+                    json.dumps(
+                        {
+                            "job_id": job["id"],
+                            "job_title": job["title"],
+                            "usage": diagnostic_usage.record(),
+                            **client.last_diagnostic,
+                        },
+                        ensure_ascii=False,
+                        indent=2,
+                    )
+                )
+                return 0
             outcomes = run_jobs(
                 SupabaseResumeStore(store),
                 client,
@@ -271,6 +341,7 @@ def main(argv: list[str] | None = None) -> int:
             f"Tailoring run: {len(outcomes)} jobs; "
             f"{sum(o.status == 'ready' for o in outcomes)} ready; "
             f"{sum(o.status == 'failed' for o in outcomes)} failed; "
+            f"{sum(o.status == 'low_fit' for o in outcomes)} low fit; "
             f"{tailored_count} tailored"
         )
         for outcome in outcomes:

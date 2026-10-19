@@ -5,7 +5,12 @@ from uuid import uuid4
 
 import pytest
 from postgres_helpers import PostgresStore
-from resume_helpers import ControlledBackend, PgResumeStore, synthetic_resume
+from resume_helpers import (
+    ControlledBackend,
+    PgResumeStore,
+    synthetic_resume,
+    verified_pagination,
+)
 from test_storage_sql import prepared, snapshot, source_ids
 
 from pipeline import run_tailor
@@ -21,6 +26,7 @@ def insert_jobs(pg: PostgresStore, filters: list[str]) -> list[dict[str, Any]]:
     jobs = [prepared(str(i), f"Backend Engineer {i}") for i in range(len(filters))]
     for posting, decision in zip(jobs, filters, strict=True):
         posting.filter_result = decision
+        posting.description_text = "Requirements: Python, SQL, and AWS."
     snapshot(pg, source, jobs)
     return pg.db.query("select * from public.jobs order by external_id")
 
@@ -86,7 +92,7 @@ def test_claim_outage_still_records_usage_from_completed_jobs(
             layout,
             tmp_path / "output",
             RunRecorder(report),
-            pagination=Pagination(discover=False),
+            pagination=verified_pagination(),
         )
     total = json.loads(report.read_text(encoding="utf-8").splitlines()[-1])
     assert total["event"] == "tailor_run" and total["jobs"] == 1
@@ -113,7 +119,7 @@ def test_run_cap_private_upload_notes_usage_and_repeat_idempotence(
         tmp_path / "output",
         RunRecorder(report),
     )
-    first = run_tailor.run_jobs(*args, limit=2, pagination=Pagination(discover=False))
+    first = run_tailor.run_jobs(*args, limit=2, pagination=verified_pagination())
     assert len(first) == 2 and all(result.status == "ready" for result in first)
     assert len(store.uploads) == 2
     saved = pg_store.db.query(
@@ -123,14 +129,15 @@ def test_run_cap_private_upload_notes_usage_and_repeat_idempotence(
     for row in saved:
         if row["resume_status"] == "ready":
             assert row["resume_path"] in store.uploads
-            assert row["match_notes"] == {"matched": [], "gaps": []}
+            assert [item["requirement"] for item in row["match_notes"]["matched"]] == [
+                "Python",
+                "SQL",
+            ]
+            assert row["match_notes"]["gaps"] == ["AWS"]
     assert (
-        len(run_tailor.run_jobs(*args, limit=2, pagination=Pagination(discover=False)))
-        == 1
+        len(run_tailor.run_jobs(*args, limit=2, pagination=verified_pagination())) == 1
     )
-    assert (
-        run_tailor.run_jobs(*args, limit=2, pagination=Pagination(discover=False)) == []
-    )
+    assert run_tailor.run_jobs(*args, limit=2, pagination=verified_pagination()) == []
     assert len(backend.calls) == len(store.uploads) == 3
     logs = [json.loads(line) for line in report.read_text().splitlines()]
     run = next(r for r in logs if r["event"] == "tailor_run" and r["jobs"] == 2)
@@ -145,7 +152,7 @@ def test_run_cap_private_upload_notes_usage_and_repeat_idempotence(
     )
 
 
-def test_failed_job_gets_downloadable_master_and_next_job_continues(
+def test_rejected_llm_output_uses_safe_deterministic_changes_and_continues(
     tmp_path: Path, pg_store: PostgresStore
 ) -> None:
     master, original, template, layout = synthetic_resume(tmp_path)
@@ -163,24 +170,24 @@ def test_failed_job_gets_downloadable_master_and_next_job_continues(
         layout,
         tmp_path / "output",
         RunRecorder(tmp_path / "runs"),
-        pagination=Pagination(discover=False),
+        pagination=verified_pagination(),
     )
-    assert [r.status for r in results] == ["failed", "ready"]
-    failed = pg_store.db.query(
-        "select * from public.jobs where resume_status='failed'"
-    )[0]
-    assert (
-        failed["resume_path"] in store.uploads
-        and "invented skill" in failed["resume_error"]
+    assert [r.status for r in results] == ["ready", "ready"]
+    assert all(r.changes["tailoring_changed"] for r in results)
+    saved = pg_store.db.query(
+        "select * from public.jobs where resume_status='ready' order by first_seen_at"
     )
-    assert store.uploads[failed["resume_path"]] == original.read_bytes()
-    assert failed["match_notes"] is None
+    assert len(saved) == 2
+    assert all(row["resume_path"] in store.uploads for row in saved)
+    assert all(
+        store.uploads[row["resume_path"]] != original.read_bytes() for row in saved
+    )
+    assert all(row["match_notes"] for row in saved)
     runs = pg_store.db.query(
         "select status,metadata from public.resume_runs order by started_at"
     )
-    assert (
-        runs[0]["metadata"]["fallback"] and runs[0]["metadata"]["llm"]["attempts"] == 3
-    )
+    assert runs[0]["metadata"]["llm"]["attempts"] == 3
+    assert runs[0]["metadata"]["fallback"]
 
 
 def test_upload_failure_is_recorded_and_does_not_set_ready(
@@ -199,7 +206,7 @@ def test_upload_failure_is_recorded_and_does_not_set_ready(
         layout,
         tmp_path / "output",
         RunRecorder(tmp_path / "runs"),
-        pagination=Pagination(discover=False),
+        pagination=verified_pagination(),
     )
     assert results[0].status == "failed"
     row = pg_store.db.query(
@@ -214,6 +221,45 @@ def test_upload_failure_is_recorded_and_does_not_set_ready(
         pg_store.db.query("select status from public.resume_runs")[0]["status"]
         == "failed"
     )
+
+
+def test_low_fit_is_saved_without_llm_and_keeps_master_download(
+    tmp_path: Path, stage8_store: Any, capsys: Any
+) -> None:
+    master, original, template, layout = synthetic_resume(tmp_path)
+    rows = insert_jobs(stage8_store, ["include"])
+    stage8_store.db.query(
+        "update public.jobs set title='iOS Developer', "
+        "description_text='Requirements: Swift, UIKit, and iOS development.' "
+        "where id=$1",
+        [rows[0]["id"]],
+    )
+    backend = ControlledBackend([])
+    store = PgResumeStore(stage8_store)
+    outcome = run_tailor.run_jobs(
+        store,
+        TailoringClient(backend),
+        master,
+        original,
+        template,
+        layout,
+        tmp_path / "output",
+        RunRecorder(tmp_path / "runs"),
+        limit=1,
+        pagination=Pagination(discover=False),
+    )[0]
+    row = stage8_store.db.query(
+        "select resume_status,resume_path from public.jobs where id=$1",
+        [rows[0]["id"]],
+    )[0]
+    run = stage8_store.db.query("select status from public.resume_runs")[0]
+    assert outcome.status == "low_fit"
+    run_tailor.print_outcome(outcome)
+    assert "Low fit" in capsys.readouterr().out
+    assert row["resume_status"] == run["status"] == "low_fit"
+    assert row["resume_path"] in store.uploads
+    assert store.uploads[row["resume_path"]] == original.read_bytes()
+    assert backend.calls == []
 
 
 def test_expired_claim_recovery_stale_job_rejection_and_completion_replay(

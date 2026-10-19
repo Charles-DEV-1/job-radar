@@ -4,6 +4,8 @@ import re
 from collections import Counter
 from dataclasses import dataclass
 
+from pydantic import BaseModel
+
 from pipeline.resume.schema import MasterResume, Tailoring
 
 FIGURES = re.compile(
@@ -131,6 +133,7 @@ def _wording_errors(
     label: str,
     master_words: set[str],
     max_chars: int,
+    generated: bool = False,
 ) -> list[str]:
     errors: list[str] = []
     if any(ord(c) < 32 and c not in original for c in output) or any(
@@ -143,8 +146,10 @@ def _wording_errors(
         errors.append(f"{label}: empty wording")
     if figures(output) - figures(original):
         errors.append(f"{label}: invented or changed metric")
-    if (terms(output) & SENIORITY) - terms(original):
+    if not generated and (terms(output) & SENIORITY) - terms(original):
         errors.append(f"{label}: unsupported seniority claim")
+    if generated:
+        return errors
     new_tech = (terms(output) & TECH) - master_words
     new_names = {n.casefold() for n in NAMES.findall(output)} - master_words
     # Sentence-initial ordinary words are still subject to the stronger exact
@@ -175,6 +180,7 @@ def validate_tailoring(
     output: Tailoring,
     description: str,
     limits: Limits | None = None,
+    generated_summary: str | None = None,
 ) -> Tailoring:
     limits = limits or Limits.from_master(master)
     errors: list[str] = []
@@ -205,10 +211,14 @@ def validate_tailoring(
     errors += _wording_errors(
         output.summary,
         master.summary,
-        master.approved_summary_rephrasings,
+        [
+            *master.approved_summary_rephrasings,
+            *([generated_summary] if generated_summary is not None else []),
+        ],
         "summary",
         master_words,
         limits.max_summary_chars,
+        generated_summary is not None and output.summary == generated_summary,
     )
     for edit in output.experience:
         role = roles.get(edit.id)
@@ -275,6 +285,135 @@ def validate_tailoring(
         raise TruthError(errors)
     # Canonical casing, never LLM-owned formatting or immutable facts.
     return output.model_copy(update={"skills_order": [all_skills[s] for s in selected]})
+
+
+def audit_proposal(master: MasterResume, raw_response: str, description: str) -> dict:
+    """Explain independent field validation without changing normal log privacy."""
+
+    def jsonable(value):
+        if isinstance(value, BaseModel):
+            return value.model_dump(mode="json")
+        if isinstance(value, list):
+            return [jsonable(item) for item in value]
+        if isinstance(value, dict):
+            return {key: jsonable(item) for key, item in value.items()}
+        return value
+
+    try:
+        output = Tailoring.model_validate_json(raw_response)
+    except Exception:
+        return {
+            "raw_response": raw_response,
+            "schema": {
+                "accepted": False,
+                "reason": "Strict JSON schema rejected the response",
+            },
+            "fields": {},
+        }
+
+    baseline = unchanged(master)
+    fields: dict[str, dict] = {}
+
+    def field_changed(name: str, proposed) -> bool:
+        before = getattr(baseline, name)
+        if isinstance(before, BaseModel):
+            before = before.model_dump(mode="json")
+        if isinstance(proposed, BaseModel):
+            proposed = proposed.model_dump(mode="json")
+        elif isinstance(proposed, list):
+            proposed = jsonable(proposed)
+        return proposed != before
+
+    def check(name: str, candidate: Tailoring, prefix: str | None = None) -> None:
+        proposed = getattr(output, name) if hasattr(output, name) else None
+        try:
+            validate_tailoring(master, candidate, description)
+        except TruthError as exc:
+            reasons = [
+                error
+                for error in exc.errors
+                if prefix is None or error.startswith(prefix)
+            ]
+            fields[name] = {
+                "proposed": jsonable(proposed),
+                "changed": field_changed(name, proposed),
+                "accepted": not reasons,
+                "reason": "; ".join(reasons)
+                if reasons
+                else "Accepted by field validator",
+            }
+        else:
+            fields[name] = {
+                "proposed": jsonable(proposed),
+                "changed": field_changed(name, proposed),
+                "accepted": True,
+                "reason": "Accepted by field validator",
+            }
+
+    check(
+        "summary", baseline.model_copy(update={"summary": output.summary}), "summary:"
+    )
+    check(
+        "skills_order",
+        baseline.model_copy(update={"skills_order": output.skills_order}),
+        "skills_order:",
+    )
+    check("experience", baseline.model_copy(update={"experience": output.experience}))
+    for edit in output.experience:
+        if edit.id not in {role.id for role in baseline.experience}:
+            fields[f"experience.{edit.id}"] = {
+                "proposed": edit.model_dump(mode="json"),
+                "changed": True,
+                "accepted": False,
+                "reason": "Unknown master role ID",
+            }
+            continue
+        role_edits = [
+            edit if role.id == edit.id else role for role in baseline.experience
+        ]
+        try:
+            validate_tailoring(
+                master,
+                baseline.model_copy(update={"experience": role_edits}),
+                description,
+            )
+        except TruthError as exc:
+            reasons = [error for error in exc.errors if edit.id in error]
+        else:
+            reasons = []
+        fields[f"experience.{edit.id}"] = {
+            "proposed": edit.model_dump(mode="json"),
+            "changed": edit.model_dump(mode="json")
+            != next(
+                role.model_dump(mode="json")
+                for role in baseline.experience
+                if role.id == edit.id
+            ),
+            "accepted": not reasons,
+            "reason": "; ".join(reasons) if reasons else "Accepted by field validator",
+        }
+    check(
+        "projects_order",
+        baseline.model_copy(update={"projects_order": output.projects_order}),
+        "projects_order:",
+    )
+    check(
+        "match_notes",
+        baseline.model_copy(update={"match_notes": output.match_notes}),
+        "match_notes:",
+    )
+    try:
+        validate_tailoring(master, output, description)
+        schema_reason = "All proposed fields passed together"
+        schema_accepted = True
+    except TruthError as exc:
+        schema_reason = "; ".join(exc.errors)
+        schema_accepted = False
+    return {
+        "raw_response": raw_response,
+        "schema": {"accepted": schema_accepted, "reason": schema_reason},
+        "fields": fields,
+    }
 
 
 def unchanged(master: MasterResume) -> Tailoring:

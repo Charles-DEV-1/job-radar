@@ -75,6 +75,8 @@ export function JobCard({
             {relativeTime(job.posted_at ?? job.first_seen_at, now)} ·{" "}
             {job.resume_status === "archived"
               ? "Resume archived"
+              : job.resume_status === "low_fit"
+                ? "Low fit · master resume"
               : job.resume_status === "ready"
                 ? "Resume ready"
                 : job.resume_status === "failed"

@@ -13,6 +13,7 @@ data/detection-runs*.jsonl
 data/fetch-runs*.jsonl
 data/filter-runs*.jsonl
 data/cleanup-runs*.jsonl
+data/notify-runs*.jsonl
 data/master_resume.json
 data/master_resume.pdf
 data/resume_pdf_text.txt

@@ -8,13 +8,17 @@ from typing import Any
 import httpx
 import pytest
 from docx import Document
-from resume_helpers import ControlledBackend, job, synthetic_resume
+from resume_helpers import (
+    ControlledBackend,
+    job,
+    synthetic_resume,
+    verified_pagination,
+)
 from test_groq import groq_reply
 
 from pipeline.llm import client as llm_module
 from pipeline.llm.client import SDKBackend, Usage
 from pipeline.resume.layout import LayoutError, compare, create_template, render
-from pipeline.resume.pdf import Pagination
 from pipeline.resume.privacy import ContactRedactor, tailoring_facts
 from pipeline.resume.tailor import TailoringClient, tailor_job
 from pipeline.resume.validate import unchanged
@@ -108,7 +112,7 @@ def test_no_contact_in_any_http_request_including_retries_and_local_render(
         tmp_path / "output",
         client,
         Usage(),
-        Pagination(executable=""),
+        verified_pagination(),
     )
     assert result.status == "ready", result.error
     assert len(calls) == 3
@@ -139,7 +143,7 @@ def test_no_contact_in_any_http_request_including_retries_and_local_render(
     ):
         assert immutable not in json.dumps(first)
     assert "[private]" in first["master"]["projects"][0]["detail_lines"][0]
-    assert compare(original, result.path) == []
+    assert compare(original, result.path, include_text=False) == []
     rendered = Document(result.path)
     text = "\n".join(p.text for p in rendered.paragraphs)
     text += "\n" + "\n".join(p.text for p in rendered.sections[0].header.paragraphs)

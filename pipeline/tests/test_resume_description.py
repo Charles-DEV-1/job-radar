@@ -6,13 +6,17 @@ from typing import Any
 
 import httpx
 import pytest
-from resume_helpers import ControlledBackend, job, synthetic_resume
+from resume_helpers import (
+    ControlledBackend,
+    job,
+    synthetic_resume,
+    verified_pagination,
+)
 from test_groq import MODELS, groq_reply, mock_provider
 
 from pipeline.llm.client import SDKBackend, Usage
 from pipeline.llm.pacing import prompt_tokens
 from pipeline.resume.description import compact_description
-from pipeline.resume.pdf import Pagination
 from pipeline.resume.prompt import request
 from pipeline.resume.tailor import TailoringClient, tailor_job
 from pipeline.resume.validate import unchanged
@@ -132,7 +136,7 @@ def test_long_description_fits_budget_and_logs_truncation(
         tmp_path / "output",
         TailoringClient(backend),
         Usage(),
-        Pagination(discover=False),
+        verified_pagination(),
     )
     assert result.status == "ready", result.error
     assert len(calls) == 1 and current_job["description_text"] == full

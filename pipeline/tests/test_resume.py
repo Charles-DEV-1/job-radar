@@ -6,7 +6,12 @@ from typing import Any
 import pytest
 from docx import Document
 from pydantic import ValidationError
-from resume_helpers import ControlledBackend, job, synthetic_resume
+from resume_helpers import (
+    ControlledBackend,
+    job,
+    synthetic_resume,
+    verified_pagination,
+)
 
 from pipeline.llm.client import Usage
 from pipeline.resume.import_pdf import parse_pdf_text, split_skills
@@ -232,7 +237,7 @@ def test_retry_feedback_and_cost_count_every_attempt(tmp_path: Path) -> None:
         tmp_path / "output",
         client,
         usage,
-        Pagination(discover=False),
+        verified_pagination(),
     )
     assert result.status == "ready" and usage.attempts == 2
     assert usage.input_tokens == 200 and usage.output_tokens == 60
@@ -241,7 +246,7 @@ def test_retry_feedback_and_cost_count_every_attempt(tmp_path: Path) -> None:
     assert "contact" not in backend.calls[0]["master"]
 
 
-def test_validation_failure_falls_back_to_byte_identical_master(tmp_path: Path) -> None:
+def test_rejected_model_output_uses_safe_master_only_fallback(tmp_path: Path) -> None:
     master, original, template, layout = synthetic_resume(tmp_path)
     bad = unchanged(master).model_dump()
     bad["skills_order"].append("AWS")
@@ -256,11 +261,12 @@ def test_validation_failure_falls_back_to_byte_identical_master(tmp_path: Path) 
         tmp_path / "output",
         TailoringClient(backend, sleep=lambda _: None),
         usage,
-        Pagination(discover=False),
+        verified_pagination(),
     )
-    assert result.status == "failed" and "3 attempts" in result.error
-    assert result.path.read_bytes() == original.read_bytes()
-    assert usage.attempts == 3 and result.match_notes is None
+    assert result.status == "ready" and result.changes["tailoring_changed"]
+    assert result.path.read_bytes() != original.read_bytes()
+    assert usage.attempts == 3 and result.match_notes["matched"]
+    assert any("deterministic master-only ordering" in w for w in result.warnings)
 
 
 def test_no_libreoffice_rejects_unverified_changed_layout(tmp_path: Path) -> None:

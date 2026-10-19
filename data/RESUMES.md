@@ -72,14 +72,25 @@ formatting. Existing templates remain compatible; inline hyperlink targets remai
 in the hash-checked local document and are never sent to the LLM.
 
 The LLM may select and reorder skills and role bullets and reorder whole project
-blocks. It may use original wording or **owner-approved** alternatives in
+blocks. Deterministic code then ranks existing skill groups/items and original
+bullets against the job title and description; it can only reorder or omit those
+master items. For a matching job, it composes a short target-role summary from
+the job's role wording and exact matching master skills. The summary stays within
+the original character limit and passes the metric/markup checks. Other model
+wording must match original wording or **owner-approved** alternatives in
 `approved_rephrasings`/`approved_summary_rephrasings`. Add alternatives only after
-you have checked that they say the same thing. Deterministic spelling/metric
-checks cannot prove arbitrary semantic equivalence, so unrestricted paraphrases
-are rejected. Alternatives still cannot add metrics, unsupported proper nouns,
+you have checked that they say the same thing. Arbitrary paraphrases remain
+rejected. Alternatives cannot add metrics, unsupported proper nouns,
 technologies or seniority, and cannot exceed the original slot length. Bullet
 IDs are scoped to their original role; planned work must never become shipped
 work. Summary paragraph count and original bullet/character limits are retained.
+
+If the title and description have no matching master skill (for example, an iOS
+role requiring Swift when Swift is absent), no LLM call is made. The unchanged
+master is stored as a download and the job is marked `resume_status=low_fit`; the
+dashboard labels it **Low fit**. For a matching job, invalid/unavailable model
+proposals do not discard safe changes: deterministic master-only ordering and
+the target summary are applied after the normal validator rejects the proposal.
 
 `match_notes` is structured as `matched: [{requirement, evidence_ids}], gaps:
 [requirement]`. Requirements quote the job; matched phrases must appear in their
@@ -128,7 +139,8 @@ is skipped with a note; changed layouts cannot be verified, so they retry and
 ultimately fall back to the exact master DOCX. A Word visual comparison remains
 necessary because fonts and renderers can differ.
 
-After applying `supabase/migrations/20261012000200_stage4_resume_tailoring.sql`,
+After applying `supabase/migrations/20261012000200_stage4_resume_tailoring.sql`
+and the forward migration `supabase/migrations/20261021000100_resume_low_fit.sql`,
 configure `LLM_PROVIDER`, `LLM_API_KEY`, and `LLM_MODEL` only when ready for live
 tailoring. The OpenAI/Anthropic/Groq clients and optional per-million token
 prices are reused; unknown prices/usage produce a null estimate, never a made-up
@@ -138,6 +150,17 @@ cost. Missing credentials fail before any job is claimed.
 .\.venv\Scripts\python.exe -m pipeline.run_tailor --limit 3
 .\.venv\Scripts\python.exe -m pipeline.run_tailor --limit 3 --include-maybe
 ```
+
+To inspect one provider proposal without claiming or changing a job, run:
+
+```powershell
+.\.venv\Scripts\python.exe -m pipeline.run_tailor --diagnose-job <job-uuid>
+```
+
+This makes one fresh read-only LLM request and prints its raw JSON response plus
+field-by-field schema/validator decisions. Earlier runs did not retain raw
+responses, so this cannot recover a historical response. The diagnostic output
+contains resume wording; keep it private and do not paste it into public logs.
 
 Only pending, open, included jobs are claimed; `--include-maybe` adds maybe jobs.
 Backfill jobs are eligible for tailoring under Stage 4's explicit selection
@@ -149,19 +172,20 @@ IDs, operational errors, usage/cost and warning flags, not resume/job bodies.
 DOCX files live below `data/output/<claim_id>/<job_id>/` with sanitized descriptive
 filenames and a short attempt ID suffix, so retries have distinct names. The CLI
 prints each exact DOCX/report path and labels ready files as `tailored`,
-`unchanged master`, or `formatting only`. A ready file can retain original content;
-the private `*.report.json` sidecar records visible change counts, matched/gap
-notes and warnings. Counts also appear in run metadata, without resume wording.
-Tailoring ranks skills within existing groups and selects/reorders original
-bullets when approved alternative wording is absent. Wording changes still need
-owner-approved alternatives; no cosmetic rewrite is forced to produce a change.
-LibreOffice remains required for page-count verification of changed documents.
+`unchanged master`, or `formatting only`; low-fit jobs are labeled `Low fit` and
+use the master file. The private `*.report.json` sidecar and CLI output show the
+summary before/after, ordered skill groups, matched requirements and gaps. The
+report includes those requested resume phrases and must stay private. Counts also
+appear in run metadata. LibreOffice remains required for page-count verification
+of changed documents.
 
 Uploads use a dedicated private `radar-resumes` bucket and unique
 `<job_id>/<claim_id>/<filename>` paths. Accepted results set `resume_status=ready`
 and save `resume_path`, `resume_filename` and `match_notes`. A validation/provider
-failure uploads a byte-identical master, records `resume_status=failed` and
-`resume_error`, and leaves a downloadable fallback. Upload/database outages are
+failure with a meaningful skill match attempts the safe deterministic result; if
+it cannot pass layout/page-count checks, the byte-identical master is uploaded
+with `resume_status=failed` and `resume_error`. Low-fit jobs upload a
+byte-identical master with `resume_status=low_fit`. Upload/database outages are
 visible failures; they cannot guarantee a cloud file, but retain a local master
 when possible. Each claimed job is isolated and recorded in private
 `resume_runs`, with a local JSONL fallback.

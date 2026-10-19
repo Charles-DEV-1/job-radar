@@ -5,7 +5,7 @@ export function ResumeDownload({
   status,
 }: {
   id: string;
-  status: "pending" | "ready" | "failed" | "archived";
+  status: "pending" | "ready" | "failed" | "archived" | "low_fit";
 }) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);

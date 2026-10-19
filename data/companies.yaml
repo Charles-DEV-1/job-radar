@@ -7,13 +7,13 @@ companies:
   - name: Paystack
     aliases: []
     domain: paystack.com
-    careers_url: https://paystack.com/careers
+    careers_url: null
     category: fintech
     country: NG
     enabled: true
     ats: workable
     ats_slug: paystack
-    detection_status: needs_review
+    detection_status: confirmed
 
   # Moniepoint: Greenhouse EU board (also worked in your Stage 2 run)
     ats_job_count: 0
@@ -73,13 +73,13 @@ companies:
   - name: PiggyVest
     aliases: [PiggyTech Global Limited]
     domain: piggyvest.com
-    careers_url: https://apply.workable.com/piggyvest/
+    careers_url: null
     category: fintech
     country: NG
     enabled: true
     ats: workable
     ats_slug: piggyvest
-    detection_status: needs_review
+    detection_status: confirmed
 
   # Cowrywise: Breezy, so it goes to the careers-page monitor
     ats_job_count: 0

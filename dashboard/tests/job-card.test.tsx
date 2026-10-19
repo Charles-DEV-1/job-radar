@@ -117,4 +117,15 @@ describe("JobCard status persistence", () => {
     ).toBeGreaterThan(0);
     expect(screen.queryByRole("button", { name: /Download/ })).toBeNull();
   });
+  it("clearly labels a low-fit job and keeps the master resume available", () => {
+    render(
+      <JobCard
+        initial={job({ resume_status: "low_fit" })}
+        now="2026-10-19T12:00:00Z"
+        silentAfter={21}
+      />,
+    );
+    expect(screen.getByText(/Low fit/)).toBeVisible();
+    expect(screen.getByRole("button", { name: "Download master" })).toBeVisible();
+  });
 });

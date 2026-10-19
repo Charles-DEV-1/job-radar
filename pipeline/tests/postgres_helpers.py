@@ -23,6 +23,7 @@ class PostgresEngine:
         dashboard: bool = False,
         stage6: bool = False,
         stage7: bool = False,
+        low_fit: bool = False,
     ) -> None:
         self.lock = threading.Lock()
         self.process = subprocess.Popen(
@@ -70,6 +71,11 @@ class PostgresEngine:
                         )
                     ]
                     if stage6
+                    else []
+                ),
+                *(
+                    [str(migration.with_name("20261021000100_resume_low_fit.sql"))]
+                    if low_fit
                     else []
                 ),
             ],

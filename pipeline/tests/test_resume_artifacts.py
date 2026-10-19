@@ -7,7 +7,13 @@ from uuid import uuid4
 
 import pytest
 from postgres_helpers import PostgresStore
-from resume_helpers import ControlledBackend, PgResumeStore, job, synthetic_resume
+from resume_helpers import (
+    ControlledBackend,
+    PgResumeStore,
+    job,
+    synthetic_resume,
+    verified_pagination,
+)
 from test_run_tailor import insert_jobs
 
 from pipeline import run_tailor
@@ -20,7 +26,7 @@ from pipeline.resume.tailor import TailoringClient, tailor_job
 from pipeline.resume.validate import unchanged
 
 
-def test_unchanged_success_prints_actual_path_and_honest_change_report(
+def test_deterministic_changes_print_actual_path_and_human_report(
     tmp_path: Path, pg_store: PostgresStore, capsys: Any
 ) -> None:
     master, original, template, layout = synthetic_resume(tmp_path)
@@ -35,23 +41,24 @@ def test_unchanged_success_prints_actual_path_and_honest_change_report(
         tmp_path / "output",
         RunRecorder(tmp_path / "runs.jsonl"),
         limit=1,
-        pagination=Pagination(discover=False),
+        pagination=verified_pagination(),
     )
     outcome = outcomes[0]
-    assert outcome.status == "ready" and outcome.path.is_file()
-    assert outcome.changes["document_changed"] is False
+    assert outcome.status == "ready" and outcome.path.is_file(), outcome.error
+    assert outcome.changes["document_changed"] is True
     report = json.loads(outcome.report_path.read_text())
     assert report["status"] == "ready" and report["changes"] == outcome.changes
-    assert master.summary not in outcome.report_path.read_text()
+    assert master.summary in outcome.report_path.read_text()
     run = pg_store.db.query("select metadata from public.resume_runs")[0]
-    assert run["metadata"]["changes"]["document_changed"] is False
+    assert run["metadata"]["changes"]["document_changed"] is True
     assert run["metadata"]["fallback"] is False
     run_tailor.print_outcome(outcome)
     printed = capsys.readouterr().out
-    assert "ready (unchanged master)" in printed
+    assert "ready (tailored)" in printed
+    assert "Summary before:" in printed and "Summary after:" in printed
+    assert "Skills before:" in printed and "Skills after:" in printed
     assert str(outcome.path.resolve()) in printed
     assert str(outcome.report_path.resolve()) in printed
-    assert "PDF skipped" in printed
 
 
 def test_valid_skill_reordering_is_reported_as_tailored(
@@ -64,7 +71,7 @@ def test_valid_skill_reordering_is_reported_as_tailored(
     monkeypatch.setattr(pagination, "convert", lambda *_: 1)
     result = tailor_job(
         master,
-        job(),
+        {**job(), "title": "Backend SQL Engineer"},
         original,
         template,
         layout,
@@ -77,7 +84,7 @@ def test_valid_skill_reordering_is_reported_as_tailored(
     assert result.changes["tailoring_changed"] is True
     assert result.changes["skill_groups_changed"] == 1
     assert result.changes["skills_omitted"] == 0
-    assert result.changes["summary_changed"] is False
+    assert result.changes["summary_changed"] is True
     outcome = run_tailor.Outcome(
         "synthetic-job",
         result.status,
@@ -105,7 +112,7 @@ def test_same_job_retry_gets_new_filename_and_retains_previous_file(
             tmp_path / "output",
             TailoringClient(ControlledBackend([unchanged(master).model_dump()])),
             Usage(),
-            Pagination(discover=False),
+            verified_pagination(),
             attempt_id=str(uuid4()),
         )
         for _ in range(2)
@@ -131,7 +138,7 @@ def test_upload_failure_reports_master_fallback_not_earlier_tailoring(
         tmp_path / "output",
         RunRecorder(tmp_path / "runs.jsonl"),
         limit=1,
-        pagination=Pagination(discover=False),
+        pagination=verified_pagination(),
     )[0]
     assert (
         outcome.status == "failed"

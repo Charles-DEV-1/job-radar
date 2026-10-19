@@ -7,6 +7,39 @@ from pipeline.resume.schema import MasterResume, Tailoring
 from pipeline.resume.validate import plain
 
 
+def _skill_groups(master: MasterResume, edit: Tailoring) -> list[dict[str, object]]:
+    positions = {skill: index for index, skill in enumerate(edit.skills_order)}
+    groups = sorted(
+        master.skills,
+        key=lambda group: min(
+            (positions.get(skill, len(positions)) for skill in group.items),
+            default=len(positions),
+        ),
+    )
+    return [
+        {
+            "group": group.name,
+            "skills": [skill for skill in edit.skills_order if skill in group.items],
+        }
+        for group in groups
+    ]
+
+
+def human_report(master: MasterResume, edit: Tailoring) -> dict[str, object]:
+    return {
+        "summary_before": master.summary,
+        "summary_after": edit.summary,
+        "skills_before": [
+            {"group": group.name, "skills": group.items} for group in master.skills
+        ],
+        "skills_after": _skill_groups(master, edit),
+        "matched_requirements": [
+            match.requirement for match in edit.match_notes.matched
+        ],
+        "gaps": edit.match_notes.gaps,
+    }
+
+
 def summarize(
     master: MasterResume, edit: Tailoring, original: Path, rendered: Path
 ) -> dict[str, int | bool]:
@@ -18,9 +51,14 @@ def summarize(
         "document_changed": bool(compare(original, rendered)),
         "summary_changed": plain(master.summary) != plain(edit.summary),
         "skill_groups_changed": sum(
-            [skill for skill in edit.skills_order if skill in group.items]
-            != group.items
-            for group in master.skills
+            (before["group"], before["skills"]) != (after["group"], after["skills"])
+            for before, after in zip(
+                [
+                    {"group": group.name, "skills": group.items}
+                    for group in master.skills
+                ],
+                _skill_groups(master, edit),
+            )
         ),
         "skills_omitted": sum(len(group.items) for group in master.skills)
         - len(edit.skills_order),

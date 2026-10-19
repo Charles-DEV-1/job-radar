@@ -6,12 +6,11 @@ from typing import Any
 
 import httpx
 import pytest
-from resume_helpers import job, synthetic_resume
+from resume_helpers import job, synthetic_resume, verified_pagination
 from test_groq import MODELS, groq_reply, mock_provider
 
 from pipeline.llm.client import SDKBackend, Usage
 from pipeline.llm.pacing import prompt_tokens
-from pipeline.resume.pdf import Pagination
 from pipeline.resume.prompt import compact_json, request
 from pipeline.resume.tailor import TailoringClient, tailor_job
 from pipeline.resume.validate import unchanged
@@ -80,7 +79,7 @@ def test_8000_budget_renders_complete_resume_with_reserved_output(
         tmp_path / "output",
         TailoringClient(backend),
         Usage(),
-        Pagination(discover=False),
+        verified_pagination(),
     )
     assert result.status == "ready", result.error
     assert len(calls) == 1
@@ -91,7 +90,7 @@ def test_master_facts_alone_exceed_budget_without_http(
 ) -> None:
     master, original, template, layout = synthetic_resume(tmp_path)
     current_job = job()
-    current_job["description_text"] = "x" * 12_000
+    current_job["description_text"] = "Required: Python. " + "x" * 12_000
     _, _, minimum = request(master, current_job)
     # Job compaction cannot remove master facts or the reserved full response.
     limit = minimum - 1
@@ -109,11 +108,12 @@ def test_master_facts_alone_exceed_budget_without_http(
         tmp_path / "output",
         TailoringClient(backend, sleep=lambda _: pytest.fail("No futile retry")),
         usage,
-        Pagination(discover=False),
+        verified_pagination(),
     )
-    assert result.status == "failed" and "minimum response" in result.error
+    assert result.status == "ready" and result.error is None
+    assert any("minimum response" in warning for warning in result.warnings)
     assert usage.attempts == 1 and usage.input_tokens == usage.output_tokens == 0
-    assert result.path.read_bytes() == original.read_bytes()
+    assert result.path.read_bytes() != original.read_bytes()
 
 
 @pytest.mark.parametrize("missing_usage", [False, True])
@@ -150,12 +150,14 @@ def test_truncation_and_missing_usage_have_distinct_errors(
         tmp_path / "output",
         TailoringClient(backend, sleep=lambda _: None),
         usage,
-        Pagination(discover=False),
+        verified_pagination(),
     )
-    assert result.status == "failed"
+    assert result.status == "ready" and result.error is None
     if missing_usage:
-        assert "missing token usage" in result.error and calls == 3
+        assert calls == 3
+        assert any("missing token usage" in warning for warning in result.warnings)
     else:
-        assert "output token limit" in result.error and calls == 1
+        assert calls == 1
+        assert any("output token limit" in warning for warning in result.warnings)
         assert usage.input_tokens == 10 and usage.output_tokens == 5
-    assert result.path.read_bytes() == original.read_bytes()
+    assert result.path.read_bytes() != original.read_bytes()

@@ -471,20 +471,51 @@ def _replacement(
             raise LayoutError("Summary paragraph count changed")
         return parts[binding["segment"]]
     if binding["kind"] == "skills":
-        group = master.skills[binding["group"]]
+        skill_positions = {skill: i for i, skill in enumerate(edit.skills_order)}
+        groups = sorted(
+            enumerate(master.skills),
+            key=lambda item: min(
+                (
+                    skill_positions.get(skill, len(skill_positions))
+                    for skill in item[1].items
+                ),
+                default=len(skill_positions),
+            ),
+        )
+        group_index = binding["group"]
+        if group_index >= len(groups):
+            return block["text"]
+        group = groups[group_index][1]
         selected = [s for s in edit.skills_order if s in group.items]
-        if selected == group.items:
+        if not selected:
+            return None
+        if selected == group.items and group.name == block["text"].partition(":")[0]:
             return block["text"]
         prefix, separator, _ = block["text"].partition(":")
         delimiter = "; " if ";" in block["text"] and "," not in block["text"] else ", "
-        return (prefix + ": " if separator else "") + delimiter.join(selected)
+        return (group.name + ": " if separator else "") + delimiter.join(selected)
     if binding["kind"] == "bullet":
         role = next(r for r in master.experience if r.id == binding["role"])
         tailored = next(r for r in edit.experience if r.id == role.id)
         position = [b.id for b in role.bullets].index(binding["id"])
-        if position >= len(tailored.bullet_order):
+        texts = {bullet.id: bullet.text for bullet in tailored.bullets}
+        remaining = list(tailored.bullet_order)
+        assignment: list[str | None] = []
+        for slot in role.bullets:
+            chosen = next(
+                (
+                    bullet_id
+                    for bullet_id in remaining
+                    if len(texts[bullet_id]) <= len(slot.text)
+                ),
+                None,
+            )
+            assignment.append(chosen)
+            if chosen is not None:
+                remaining.remove(chosen)
+        if assignment[position] is None:
             return None
-        source_id = tailored.bullet_order[position]
+        source_id = assignment[position]
         return next(b.text for b in tailored.bullets if b.id == source_id)
     # Backwards compatibility for contact paragraphs in existing templates.
     # Inline hyperlinks stay immutable in the hash-checked original package.
@@ -548,7 +579,9 @@ def render(
         else:
             if block["controls"] or len(value) > len(block["text"]):
                 raise LayoutError(
-                    "Editable paragraph exceeds its slot or has protected controls"
+                    "Editable "
+                    + str(block["binding"].get("kind", "paragraph"))
+                    + " block exceeds its slot or has protected controls"
                 )
             texts = _distribute(value, block["runs"])
         context.update(

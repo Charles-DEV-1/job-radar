@@ -11,63 +11,75 @@ from postgres_helpers import PostgresStore
 
 from pipeline.llm.client import Reply
 from pipeline.resume.layout import create_template
+from pipeline.resume.pdf import Pagination
 from pipeline.resume.schema import MasterResume
 from pipeline.resume.store import BUCKET
 
 
-def synthetic_resume(directory: Path) -> tuple[MasterResume, Path, Path, Path]:
-    master = MasterResume.model_validate(
-        {
-            "contact": {"name": "Synthetic Candidate"},
-            "summary": "Backend developer with Python & SQL experience.",
-            "approved_summary_rephrasings": ["Backend developer using Python & SQL."],
-            "skills": [
-                {
-                    "name": "Languages",
-                    "items": ["Python", "SQL"],
-                    "raw": "Languages: Python, SQL",
-                }
-            ],
-            "experience": [
-                {
-                    "id": "role-1",
-                    "employer": "Example Labs",
-                    "title": "Backend Developer",
-                    "location": "Lagos",
-                    "dates": "2021–2023",
-                    "bullets": [
-                        {
-                            "id": "b-1",
-                            "text": "Built Python APIs serving 20 users.",
-                            "approved_rephrasings": ["Built Python APIs for 20 users."],
-                        },
-                        {"id": "b-2", "text": "Used SQL to reduce response by 15%."},
-                    ],
-                }
-            ],
-            "projects": [
-                {
-                    "id": "p-1",
-                    "name": "Example CLI",
-                    "bullets": [{"id": "pb-1", "text": "Built a CLI with Python."}],
-                },
-                {
-                    "id": "p-2",
-                    "name": "Example Tool",
-                    "bullets": [{"id": "pb-2", "text": "Used SQL for reports."}],
-                },
-            ],
-            "education": [
-                {
-                    "institution": "Example University",
-                    "degree": "BSc Computing",
-                    "dates": "2017–2021",
-                }
-            ],
-            "certifications": [{"name": "Example Certificate"}],
-            "reviewed": True,
-        }
-    )
+def synthetic_resume(
+    directory: Path,
+    *,
+    skills: list[dict[str, Any]] | None = None,
+    experience_bullets: list[str] | None = None,
+) -> tuple[MasterResume, Path, Path, Path]:
+    master_data: dict[str, Any] = {
+        "contact": {"name": "Synthetic Candidate"},
+        "summary": "Backend developer with Python & SQL experience.",
+        "approved_summary_rephrasings": ["Backend developer using Python & SQL."],
+        "skills": [
+            {
+                "name": "Languages",
+                "items": ["Python", "SQL"],
+                "raw": "Languages: Python, SQL",
+            }
+        ],
+        "experience": [
+            {
+                "id": "role-1",
+                "employer": "Example Labs",
+                "title": "Backend Developer",
+                "location": "Lagos",
+                "dates": "2021–2023",
+                "bullets": [
+                    {
+                        "id": "b-1",
+                        "text": "Built Python APIs serving 20 users.",
+                        "approved_rephrasings": ["Built Python APIs for 20 users."],
+                    },
+                    {"id": "b-2", "text": "Used SQL to reduce response by 15%."},
+                ],
+            }
+        ],
+        "projects": [
+            {
+                "id": "p-1",
+                "name": "Example CLI",
+                "bullets": [{"id": "pb-1", "text": "Built a CLI with Python."}],
+            },
+            {
+                "id": "p-2",
+                "name": "Example Tool",
+                "bullets": [{"id": "pb-2", "text": "Used SQL for reports."}],
+            },
+        ],
+        "education": [
+            {
+                "institution": "Example University",
+                "degree": "BSc Computing",
+                "dates": "2017–2021",
+            }
+        ],
+        "certifications": [{"name": "Example Certificate"}],
+        "reviewed": True,
+    }
+    if skills is not None:
+        master_data["skills"] = skills
+    if experience_bullets is not None:
+        master_data["experience"][0]["bullets"] = [
+            {"id": f"b-{index + 1}", "text": text}
+            for index, text in enumerate(experience_bullets)
+        ]
+    master = MasterResume.model_validate(master_data)
     original = directory / "master.docx"
     document = Document()
     document.sections[0].left_margin = Inches(0.8)
@@ -76,15 +88,21 @@ def synthetic_resume(directory: Path) -> tuple[MasterResume, Path, Path, Path]:
     document.add_paragraph(master.contact.name, "Title")
     document.add_heading("Summary", 1)
     paragraph = document.add_paragraph()
-    first = paragraph.add_run("Backend developer ")
-    first.bold = True
-    first.font.name = "Arial"
-    first.font.size = Pt(11)
-    second = paragraph.add_run("with Python & SQL experience.")
-    second.italic = True
-    second.font.color.rgb = RGBColor(30, 50, 70)
+    if master.summary == "Backend developer with Python & SQL experience.":
+        first = paragraph.add_run("Backend developer ")
+        first.bold = True
+        first.font.name = "Arial"
+        first.font.size = Pt(11)
+        second = paragraph.add_run("with Python & SQL experience.")
+        second.italic = True
+        second.font.color.rgb = RGBColor(30, 50, 70)
+    else:
+        paragraph.add_run(master.summary)
     document.add_heading("Skills", 1)
-    document.add_table(rows=1, cols=1).cell(0, 0).text = master.skills[0].raw
+    for group in master.skills:
+        document.add_table(rows=1, cols=1).cell(0, 0).text = (
+            group.raw or f"{group.name}: {', '.join(group.items)}"
+        )
     document.add_heading("Experience", 1)
     document.add_paragraph("Example Labs | Backend Developer | Lagos | 2021–2023")
     for bullet in master.experience[0].bullets:
@@ -112,6 +130,13 @@ def job() -> dict[str, Any]:
         "description_text": "Requirements: Python, SQL, and AWS.",
         "content_hash": "a" * 64,
     }
+
+
+def verified_pagination() -> Pagination:
+    """Use a controlled page-count result for synthetic DOCX fixtures."""
+    pagination = Pagination("controlled-renderer", discover=False)
+    pagination.convert = lambda *_: 1  # type: ignore[method-assign]
+    return pagination
 
 
 class ControlledBackend:

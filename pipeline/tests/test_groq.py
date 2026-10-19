@@ -11,13 +11,12 @@ import httpx
 import pytest
 from conftest import FakeClock
 from postgres_helpers import PostgresStore
-from resume_helpers import job, synthetic_resume
+from resume_helpers import job, synthetic_resume, verified_pagination
 from test_stage3 import SOURCE, run_page
 
 from pipeline.llm import client as llm_module
 from pipeline.llm.client import ExtractionClient, SDKBackend, Usage, retry_after_delay
 from pipeline.llm.pacing import TokenBudget
-from pipeline.resume.pdf import Pagination
 from pipeline.resume.tailor import TailoringClient, tailor_job
 from pipeline.resume.validate import unchanged
 from pipeline.sources.careers_page import CareersPageAdapter
@@ -381,10 +380,11 @@ def test_groq_resume_exhausted_rate_limit_falls_back_without_nested_retries(
         tmp_path / "output",
         client,
         usage,
-        Pagination(discover=False),
+        verified_pagination(),
     )
-    assert result.status == "failed" and "HTTP 429" in result.error
-    assert result.path.read_bytes() == original.read_bytes()
+    assert result.status == "ready" and result.error is None
+    assert any("deterministic master-only ordering" in w for w in result.warnings)
+    assert result.path.read_bytes() != original.read_bytes()
     assert len(calls) == usage.attempts == 4
 
 
@@ -442,11 +442,15 @@ def test_groq_valid_resume_json_renders_with_unchanged_truth_validator(
         tmp_path / "output",
         client,
         usage,
-        Pagination(discover=False),
+        verified_pagination(),
     )
     assert result.status == "ready" and result.error is None
     assert usage.attempts == 1 and usage.input_tokens == 10 and usage.output_tokens == 5
-    assert result.match_notes == {"matched": [], "gaps": []}
+    assert [m["requirement"] for m in result.match_notes["matched"]] == [
+        "Python",
+        "SQL",
+    ]
+    assert result.match_notes["gaps"] == ["AWS"]
 
 
 def test_missing_provider_usage_keeps_full_token_reservation(

@@ -1,8 +1,8 @@
 # Stage 2 rules. No salary, compensation, paid, or unpaid checks.
 # Student profile: internships and junior roles; title rules only.
 seniority:
-  exclude: [manager, head of, director, VP, vice president, principal, staff, chief, CTO]
-  maybe: [senior, lead]
+  exclude: [senior, sr., lead, principal, staff, manager, head of, director, VP, vice president, chief, CTO]
+  maybe: []
 roles:
   # Explicit engineering titles take priority over product areas such as "Asset Sales".
   engineering_titles: [backend engineer, backend developer, back-end engineer, software engineer, software developer, frontend engineer, full stack engineer, platform engineer, python developer, java developer, go engineer, node.js engineer]
@@ -35,7 +35,7 @@ roles:
     - front-end
     - mobile engineer
   maybe: [devops, sre, site reliability, data engineer, data engineering, android engineer, ios engineer, software development engineer in test, sdet, qa engineer, test engineer]
-  training: [intern, internship, graduate, trainee]
+  training: [intern, internship, graduate, trainee, junior, associate, entry level, entry-level]
   exclude:
     - sales
     - marketing
@@ -73,6 +73,8 @@ roles:
     - executive assistant
     - growth analyst
     - growth associate
+    - go to market
+    - platform operations
     - reconciliation
     - settlement officer
     - scrum master
@@ -151,9 +153,11 @@ locations:
     ZW: {name: Zimbabwe, aliases: [Zimbabwe], cities: [Harare, Bulawayo]}
   african_regions: [Africa, Sub-Saharan Africa, West Africa, East Africa, North Africa, Southern Africa]
   remote_terms: [remote, remotely, work from home]
-  remote_regions: [EMEA, worldwide, world-wide, globally, anywhere in the world]
+  remote_regions: [EMEA, worldwide, world-wide, globally, anywhere, anywhere in the world]
   non_african:
     - United States
+    - US
+    - U.S.
     - USA
     - New York
     - NYC
@@ -165,6 +169,18 @@ locations:
     - London
     - Europe
     - European Union
+    - North America
+    - South America
+    - Latin America
+    - Central America
+    - Caribbean
+    - Middle East
+    - South Asia
+    - East Asia
+    - Southeast Asia
+    - Asia-Pacific
+    - APAC
+    - Oceania
     - Germany
     - Berlin
     - France
@@ -184,6 +200,22 @@ locations:
     - Australia
     - Sydney
     - India
+    - Pakistan
+    - Asia
+    - Bangladesh
+    - Nepal
+    - Sri Lanka
+    - China
+    - Japan
+    - South Korea
+    - Indonesia
+    - Thailand
+    - Philippines
+    - Vietnam
+    - Brazil
+    - Argentina
+    - Mexico
+    - Chile
     - Bangalore
     - Bengaluru
     - Mumbai

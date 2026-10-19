@@ -67,7 +67,7 @@ def test_preview_apply_and_repeat_are_idempotent(tmp_path: Path) -> None:
     assert (
         result.scanned == 3 and result.category_changed == 2 and result.reason_only == 1
     )
-    assert result.transitions == {"include -> exclude": 1, "include -> maybe": 1}
+    assert result.transitions == {"include -> exclude": 2}
     for old, saved in zip(original, store.data, strict=True):
         assert {
             key: value for key, value in old.items() if not key.startswith("filter_")

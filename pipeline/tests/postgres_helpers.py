@@ -55,6 +55,17 @@ class PostgresEngine:
                     if stage6
                     else []
                 ),
+                *(
+                    [
+                        str(
+                            migration.with_name(
+                                "20261019000200_stage6_include_email_only.sql"
+                            )
+                        )
+                    ]
+                    if stage6
+                    else []
+                ),
             ],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,

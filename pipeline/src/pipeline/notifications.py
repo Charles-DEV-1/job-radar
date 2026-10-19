@@ -27,25 +27,22 @@ def _job_rows(value: Any) -> list[dict[str, Any]]:
 
 
 def notification_email(
-    jobs: list[dict[str, Any]], dashboard_url: str
+    jobs: list[dict[str, Any]], dashboard_url: str, check_fit_count: int = 0
 ) -> tuple[str, str]:
-    """Build a compact email; all provider content is escaped as plain text."""
+    """Email only included jobs; maybe jobs are represented by a dashboard count."""
+    jobs = [row for row in jobs if row.get("filter_result") == "include"]
     if not jobs:
-        raise ValueError("Cannot build an empty job notification")
+        raise ValueError("Cannot build an email without included jobs")
     count = len(jobs)
-    strong = sum(row.get("filter_result") == "include" for row in jobs)
     subject = (
-        f"{count} new job{'s' if count != 1 else ''} found ({strong} strong matches)"
+        f"{count} new job{'s' if count != 1 else ''} found ({count} strong matches)"
     )
     rows = []
     for row in jobs[:15]:
         company = html.escape(str(row.get("company") or "Company"))
         title = html.escape(str(row.get("title") or "Role"))
         location = html.escape(str(row.get("location") or "Location not listed"))
-        badge = "Include" if row.get("filter_result") == "include" else "Maybe"
-        rows.append(
-            f"<li><strong>{company}</strong> — {title}<br>{location} · {badge}</li>"
-        )
+        rows.append(f"<li><strong>{company}</strong> - {title}<br>{location}</li>")
     remaining = count - min(count, 15)
     if remaining:
         rows.append(f"<li>+{remaining} more</li>")
@@ -57,6 +54,11 @@ def notification_email(
         'background:#155eef;color:#fff;text-decoration:none;border-radius:6px">'
         "Open Job Radar</a></p>"
     )
+    if check_fit_count:
+        body += (
+            f"<p>{check_fit_count} more role"
+            f"{'s' if check_fit_count != 1 else ''} to check on the dashboard.</p>"
+        )
     return subject, body
 
 
@@ -183,13 +185,17 @@ def send_pending_notification(
     if attempt is None:
         return None
     url = dashboard_url() if callable(dashboard_url) else dashboard_url
-    subject, body = notification_email(attempt["jobs"], url)
+    subject, body = notification_email(
+        attempt["jobs"], url, int(attempt.get("check_fit_count") or 0)
+    )
     send(subject, body, str(attempt["idempotency_key"]))
     finish_notification(client, str(attempt["id"]))
     return len(attempt["jobs"])
 
 
-def dry_run_jobs(client: Client, grace_minutes: int) -> list[dict[str, Any]]:
+def dry_run_jobs(
+    client: Client, grace_minutes: int
+) -> tuple[list[dict[str, Any]], int]:
     rows = (
         client.table("jobs")
         .select(
@@ -204,8 +210,12 @@ def dry_run_jobs(client: Client, grace_minutes: int) -> list[dict[str, Any]]:
         .data
     )
     now = datetime.now(UTC)
-    eligible = []
+    eligible: list[dict[str, Any]] = []
+    check_fit_count = 0
     for row in _job_rows(rows):
+        if row.get("filter_result") == "maybe":
+            check_fit_count += 1
+            continue
         if row.get("resume_status") in {"ready", "failed"}:
             eligible.append(row)
             continue
@@ -214,7 +224,7 @@ def dry_run_jobs(client: Client, grace_minutes: int) -> list[dict[str, Any]]:
         )
         if first_seen <= now - timedelta(minutes=grace_minutes):
             eligible.append(row)
-    return eligible
+    return eligible, check_fit_count
 
 
 def _median_positive(values: list[int]) -> float:

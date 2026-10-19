@@ -107,9 +107,11 @@ def main(argv: list[str] | None = None) -> int:
             store = SupabaseStore.from_environment(http)
             now = datetime.now(UTC)
             if args.dry_run:
-                jobs = dry_run_jobs(store.client, grace)
+                jobs, check_fit_count = dry_run_jobs(store.client, grace)
                 if jobs:
-                    subject, body = notification_email(jobs, _dashboard_url())
+                    subject, body = notification_email(
+                        jobs, _dashboard_url(), check_fit_count
+                    )
                     print(f"DRY RUN — {subject}\n{body}")
                 else:
                     print("no new jobs")
@@ -121,6 +123,7 @@ def main(argv: list[str] | None = None) -> int:
                     recorder,
                     dry_run=True,
                     new_jobs=len(jobs),
+                    check_fit_count=check_fit_count,
                     health_issues=len(active),
                     recovered=len(recovered),
                 )

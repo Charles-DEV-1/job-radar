@@ -5,8 +5,11 @@ from typing import Any
 
 import httpx
 import pytest
+from test_filters import FILTERS, example_job
 from test_storage_sql import prepared, snapshot, source_ids
 
+from pipeline.dedupe import hash_job
+from pipeline.filters import JobFilter
 from pipeline.notifications import (
     NotificationError,
     ResendMailer,
@@ -20,8 +23,12 @@ from pipeline.notifications import (
 
 
 def test_no_jobs_produces_no_email() -> None:
-    with pytest.raises(ValueError, match="empty job notification"):
+    with pytest.raises(ValueError, match="without included jobs"):
         notification_email([], "https://radar.example/jobs?new=1")
+    with pytest.raises(ValueError, match="without included jobs"):
+        notification_email(
+            [{"filter_result": "maybe"}], "https://radar.example/jobs?new=1"
+        )
 
 
 def test_empty_claim_sends_nothing_and_does_not_require_dashboard() -> None:
@@ -59,8 +66,18 @@ def test_job_email_caps_list_and_escapes_content() -> None:
         }
         for index in range(17)
     ]
-    subject, body = notification_email(jobs, "https://radar.example/jobs?new=1")
+    jobs.append(
+        {
+            "company": "Maybe Co",
+            "title": "Maybe Role",
+            "location": "Remote",
+            "filter_result": "maybe",
+        }
+    )
+    subject, body = notification_email(jobs, "https://radar.example/jobs?new=1", 3)
     assert subject == "17 new jobs found (17 strong matches)"
+    assert "Maybe Role" not in body
+    assert "3 more roles to check on the dashboard" in body
     assert body.count("<li>") == 16
     assert "+2 more" in body and "&lt;script&gt;" in body
     assert "<script>" not in body
@@ -107,12 +124,19 @@ def test_notification_sql_waits_for_resume_then_commits_exact_membership(
 ) -> None:
     store = stage6_store
     source_id, _ = source_ids(store)
+    maybe_job = JobFilter(FILTERS).classify(
+        example_job(title="DevOps Engineer", external_id="check-fit")
+    )
     snapshot(store, source_id, [prepared()])
     snapshot(
-        store, source_id, [prepared(), prepared("new-job", "Backend Engineer II")], 1
+        store,
+        source_id,
+        [prepared(), prepared("new-job", "Backend Engineer II"), hash_job(maybe_job)],
+        1,
     )
     store.db.query(
-        "update public.jobs set first_seen_at=now() where external_id='new-job'"
+        "update public.jobs set first_seen_at=now() "
+        "where external_id in ('new-job','check-fit')"
     )
     assert (
         store.db.query("select public.radar_claim_notification(30) as result")[0][
@@ -146,6 +170,7 @@ def test_notification_sql_waits_for_resume_then_commits_exact_membership(
     ]
     assert len(result["jobs"]) == 1
     assert result["jobs"][0]["title"] == "Backend Engineer II"
+    assert result["check_fit_count"] == 1
     retry = store.db.query("select public.radar_claim_notification(30) as result")[0][
         "result"
     ]
@@ -166,7 +191,13 @@ def test_notification_sql_waits_for_resume_then_commits_exact_membership(
         store.db.query("select count(*)::int as n from public.notification_jobs")[0][
             "n"
         ]
-        == 1
+        == 2
+    )
+    assert (
+        store.db.query(
+            "select notified_at from public.jobs where external_id='check-fit'"
+        )[0]["notified_at"]
+        is None
     )
     assert (
         store.db.query("select public.radar_claim_notification(30) as result")[0][

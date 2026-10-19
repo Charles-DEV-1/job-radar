@@ -134,8 +134,8 @@ class JobFilter:
             return "maybe", "location is missing"
         if african:
             return "include", "African location: " + ", ".join(dict.fromkeys(african))
-        if remote and broad:
-            return "include", "remote eligibility region: " + ", ".join(broad)
+        if broad:
+            return "include", "broad eligibility region: " + ", ".join(broad)
         non_african = matches(raw, self.geo["non_african"])
         if non_african:
             return "exclude", "only non-African locations listed: " + ", ".join(

@@ -53,6 +53,7 @@ def example_job(
         ("Python Developer", "Remote Africa", "", False, "include"),
         ("API Engineer", "EMEA", "", True, "include"),
         ("Java Engineer", "Worldwide", "", True, "include"),
+        ("Java Engineer", "Anywhere", "", False, "include"),
         ("Go Engineer", "Nairobi", "", False, "include"),
         ("Node.js Engineer", "Cape Town", "", False, "include"),
         ("Platform Engineer", "Cairo", "", False, "include"),
@@ -66,6 +67,9 @@ def example_job(
         ("SRE", "Nigeria", "", False, "maybe"),
         ("DevOps Engineer", "Accra", "", False, "maybe"),
         ("Data Engineer", "Lagos", "", False, "maybe"),
+        ("Site Reliability Engineer", "Remote, Pakistan", "", True, "exclude"),
+        ("Backend Engineer", "Remote, Brazil", "", True, "exclude"),
+        ("Backend Engineer", "Remote", "", True, "maybe"),
         ("Intern", "Nigeria", "", False, "maybe"),
         ("Backend Engineer", "", "", False, "maybe"),
         (
@@ -104,6 +108,15 @@ def test_filter_cases(
     job = JobFilter(FILTERS).classify(example_job(title, location, description, remote))
     assert job.filter_result == expected
     assert "Role:" in job.filter_reason and "Location:" in job.filter_reason
+
+
+def test_non_african_remote_location_excludes_with_reason() -> None:
+    job = JobFilter(FILTERS).classify(
+        example_job("Site Reliability Engineer", "Remote, Pakistan", remote=True)
+    )
+    assert job.filter_result == "exclude"
+    assert "Pakistan" in job.filter_reason
+    assert "only non-African locations" in job.filter_reason
 
 
 def test_compensation_never_changes_classification() -> None:
@@ -174,9 +187,14 @@ def test_seniority_excluded_before_engineering_evidence(title: str, term: str) -
 @pytest.mark.parametrize(
     "title,expected",
     [
-        ("Senior Backend Engineer", "maybe"),
-        ("Lead Software Developer", "maybe"),
+        ("Senior Backend Engineer", "exclude"),
+        ("Sr. Backend Engineer", "exclude"),
+        ("Lead Software Developer", "exclude"),
+        ("Senior Backend Engineer - Mobility (12 month FTC)", "exclude"),
         ("Junior Backend Engineer", "include"),
+        ("Associate Backend Engineer", "include"),
+        ("Entry Level Backend Engineer", "include"),
+        ("Graduate Software Engineer", "include"),
         ("Software Engineering Intern", "include"),
         ("Backend Developer for Staffing Tools", "include"),
         ("Backend Developer for Leadership Tools", "include"),
@@ -250,10 +268,11 @@ def test_non_engineering_titles_do_not_leak_into_check_fit(title: str) -> None:
     "title",
     [
         "Android Engineer",
-        "Senior iOS Engineer - Lagos",
+        "iOS Engineer - Lagos",
         "Software Development Engineer in Test (SDET)",
         "Devops Engineer",
-        "Senior Backend Engineer",
+        "Site Reliability Engineer",
+        "Data Engineer",
     ],
 )
 def test_technical_review_roles_remain_available(title: str) -> None:

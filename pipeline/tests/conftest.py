@@ -97,3 +97,24 @@ def pg_store(pg_engine: PostgresEngine) -> PostgresStore:
     )
     pg_engine.query("set role service_role")
     return PostgresStore(pg_engine)
+
+
+@pytest.fixture
+def stage6_store() -> Any:
+    node = shutil.which("node")
+    module = REPO / ".tools/pglite"
+    if not node or not (module / "node_modules/@electric-sql/pglite").exists():
+        pytest.skip(
+            "Install the documented PGlite dependency for notification SQL checks"
+        )
+    engine = PostgresEngine(
+        node,
+        Path(__file__).with_name("db_bridge.mjs"),
+        module,
+        REPO / "supabase/migrations/20261006000100_stage2_fetch_storage.sql",
+        dashboard=True,
+        stage6=True,
+    )
+    engine.query("set role service_role")
+    yield PostgresStore(engine)
+    engine.close()

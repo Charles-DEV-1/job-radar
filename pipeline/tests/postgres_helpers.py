@@ -21,6 +21,7 @@ class PostgresEngine:
         migration: Path,
         *,
         dashboard: bool = False,
+        stage6: bool = False,
     ) -> None:
         self.lock = threading.Lock()
         self.process = subprocess.Popen(
@@ -41,6 +42,17 @@ class PostgresEngine:
                         )
                     ]
                     if dashboard
+                    else []
+                ),
+                *(
+                    [
+                        str(
+                            migration.with_name(
+                                "20261019000100_stage6_notifications_health.sql"
+                            )
+                        )
+                    ]
+                    if stage6
                     else []
                 ),
             ],

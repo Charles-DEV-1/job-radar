@@ -79,7 +79,27 @@ The first successful fetch backfills existing jobs with notifications suppressed
 
 `pipeline/src/pipeline/` contains the CLIs and six isolated adapters. Fetches return complete provider JSON, including verified description requests and SmartRecruiters pagination/details. Tests mock all external HTTP using recorded ATS fixtures; storage semantics execute against local PostgreSQL. [Fixture notes](pipeline/tests/fixtures/README.md) list verified endpoints and real-job filter samples.
 
-The [Stage 5 private dashboard](dashboard/README.md) is a Next.js app in `dashboard/`. Apply its forward migration and configure the single owner before signing in. Email and scheduled workflows remain later stages.
+The [Stage 5 private dashboard](dashboard/README.md) is a Next.js app in `dashboard/`. Apply its forward migration and configure the single owner before signing in. Stage 6 sends new-job and health emails; Stage 7 scheduling remains separate.
+
+## Stage 6 email notifications and health alerts
+
+Apply [the Stage 6 migration](supabase/migrations/20261019000100_stage6_notifications_health.sql) after Stage 5. Set `RESEND_API_KEY`, `RESEND_FROM_EMAIL` to a sender verified in Resend, `NOTIFY_EMAIL`, and `DASHBOARD_URL`. `NOTIFY_RESUME_GRACE_MINUTES` defaults to 30 and can be set from 0 to 1440. New jobs wait for a ready/failed resume or this grace period, whichever comes first.
+
+Preview without sending or writing to Supabase:
+
+```powershell
+.\.venv\Scripts\python.exe -m pipeline.run_notify --dry-run
+```
+
+Send notifications and evaluate source health:
+
+```powershell
+.\.venv\Scripts\python.exe -m pipeline.run_notify
+```
+
+Each run sends at most one new-job email for all eligible jobs, lists at most 15, and links to `/jobs?new=1`. It sends no new-job email when there are no eligible jobs. A durable private attempt and Resend idempotency key make retries safe if delivery succeeds while the database acknowledgment fails. Resend retains idempotency keys for 24 hours, so automated retries after a prolonged outage beyond that window cannot guarantee deduplication. Jobs are marked notified and added to the dashboard's notification membership only after Resend confirms success. Failed sends remain eligible for retry. Health alerts are separate, aggregate current issues, throttle each issue for 24 hours, and send a recovery notice when an issue clears. Health checks cover repeated source failures, repeated unexpected zero-job snapshots, careers-page shrink warnings, no successful source run for three hours, and three consecutive failed tailoring attempts. Stage 7's independent heartbeat is not available yet; until then, last successful source-run completion is the heartbeat proxy.
+
+The local run log is gitignored at `data/notify-runs.jsonl`; it records counts and delivery state, never descriptions or secrets. All Resend calls are mocked in tests; live delivery requires your Resend account and verified sender.
 
 ## Stage 3 careers pages and supplied feeds
 
@@ -131,4 +151,4 @@ Empty/failed pages, unfinished shells, and snapshots below 40% of a previous sna
 
 On 2026-10-10, TechCabal's jobs page embedded Airtable; its advertised feed and Techpoint Africa's advertised feed returned general news, not job-only postings. No job-specific RSS/JSON feed was verified for either, so both remain disabled. [Recorded verification](pipeline/tests/fixtures/stage3-verification.json) includes the real responses checked. Documented LLM endpoints returned 401 without credentials; authenticated generation remains to be verified with your configuration. The owner reported applying the Stage 3 migration on 2026-10-12; hosted database state has not been independently rechecked here.
 
-Tests include controlled changes built from recorded job facts, recorded public HTML, mock Playwright, real PostgreSQL transactions/RLS, and optional actual Chromium rendering over mocked HTTP. To include the browser check, set `RUN_CHROMIUM_TESTS=1` before running pytest with an installed browser. Resume setup/tailoring is covered in [Stage 4](data/RESUMES.md); email, health-alert emails, and dashboard work belong to later stages.
+Tests include controlled changes built from recorded job facts, recorded public HTML, mock Playwright, real PostgreSQL transactions/RLS, mocked Resend delivery, and optional actual Chromium rendering over mocked HTTP. To include the browser check, set `RUN_CHROMIUM_TESTS=1` before running pytest with an installed browser. Resume setup/tailoring is covered in [Stage 4](data/RESUMES.md); scheduled orchestration belongs to Stage 7.

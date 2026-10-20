@@ -86,6 +86,52 @@ def test_private_docx_upload_and_short_lived_signed_download(tmp_path: Path) -> 
     )
 
 
+def test_private_resume_input_json_upload_and_download(tmp_path: Path) -> None:
+    source = tmp_path / "master_resume.json"
+    source.write_text('{"reviewed": true}', encoding="utf-8")
+    target = tmp_path / "staged" / source.name
+    uploaded: list[bytes] = []
+    paths: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        paths.append(request.url.path)
+        if request.method == "GET":
+            if "/bucket/radar-resumes" in request.url.path:
+                return httpx.Response(200, json=bucket_response())
+            return httpx.Response(200, content=source.read_bytes())
+        if request.method == "POST":
+            assert request.headers["content-type"].startswith("multipart/form-data")
+            assert request.headers["x-upsert"] == "true"
+            assert b"application/json" in request.content
+            uploaded.append(source.read_bytes())
+            return httpx.Response(
+                200, json={"Key": "pipeline-inputs/master_resume.json"}
+            )
+        raise AssertionError(
+            f"Unexpected Storage request: {request.method} {request.url.path}"
+        )
+
+    with httpx.Client(transport=httpx.MockTransport(handler)) as session:
+        private = store_client(session)
+        private.upload_input("pipeline-inputs/master_resume.json", source)
+        private.download_input("pipeline-inputs/master_resume.json", target)
+
+    assert uploaded == [source.read_bytes()]
+    assert target.read_bytes() == source.read_bytes()
+    assert any(path.endswith("/pipeline-inputs/master_resume.json") for path in paths)
+
+
+def test_resume_input_paths_reject_traversal(tmp_path: Path) -> None:
+    with httpx.Client(
+        transport=httpx.MockTransport(lambda _: httpx.Response(200))
+    ) as session:
+        private = store_client(session)
+        with pytest.raises(StoreError, match="path"):
+            private.download_input(
+                "pipeline-inputs/../master_resume.json", tmp_path / "x"
+            )
+
+
 def test_public_bucket_is_rejected_before_upload() -> None:
     with httpx.Client(
         transport=httpx.MockTransport(

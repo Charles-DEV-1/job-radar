@@ -72,6 +72,74 @@ def test_full_orchestrator_two_runs_and_one_failing_source(
     assert "description" not in recorder.path.read_text(encoding="utf-8")
 
 
+def test_timeout_malformed_and_empty_body_are_isolated_and_recorded(
+    recorded: dict[str, Any],
+    make_http: Any,
+    pg_store: PostgresStore,
+    tmp_path: Path,
+) -> None:
+    good_payload = deepcopy(recorded["greenhouse-content"])
+    good_payload["meta"]["total"] = len(good_payload["jobs"])
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        host = request.url.host
+        if host == "api.lever.co":
+            raise httpx.ReadTimeout("recorded timeout", request=request)
+        if host == "api.ashbyhq.com":
+            return httpx.Response(200, text="{")
+        if host == "apply.workable.com":
+            return httpx.Response(200, text="")
+        assert host == "boards-api.greenhouse.io"
+        return httpx.Response(200, json=good_payload)
+
+    sources = [
+        SourceConfig(
+            f"{provider} case",
+            provider,
+            f"{provider}-audit",
+            f"https://{host}/fixture",
+        )
+        for provider, host in (
+            ("lever", "api.lever.co"),
+            ("ashby", "api.ashbyhq.com"),
+            ("workable", "apply.workable.com"),
+            ("greenhouse", "boards-api.greenhouse.io"),
+        )
+    ]
+    recorder = RunRecorder(tmp_path / "isolation.jsonl")
+    adapters = {
+        adapter.name: adapter for adapter in create_adapters(make_http(handler))
+    }
+
+    outcomes = run_sources(
+        sources, adapters, pg_store, JobFilter(FILTERS), recorder, concurrency=4
+    )
+
+    assert [outcome.status for outcome in outcomes] == [
+        "error",
+        "error",
+        "error",
+        "ok",
+    ]
+    assert outcomes[0].error == "ReadTimeout"
+    assert outcomes[1].error and outcomes[1].error.startswith("Expecting property name")
+    assert outcomes[2].error and outcomes[2].error.startswith("Expecting value:")
+    assert len(pg_store.db.query("select * from public.jobs")) == len(
+        good_payload["jobs"]
+    )
+    source_runs = pg_store.db.query(
+        "select s.ats,r.status,r.error_message from public.source_runs r "
+        "join public.sources s on s.id=r.source_id"
+    )
+    assert {row["ats"] for row in source_runs if row["status"] == "error"} == {
+        "lever",
+        "ashby",
+        "workable",
+    }
+    assert len([row for row in source_runs if row["status"] == "ok"]) == 1
+    assert all(row["error_message"] for row in source_runs if row["status"] == "error")
+
+
 def test_malformed_job_keeps_previous_snapshot(
     recorded: dict[str, Any], make_http: Any, pg_store: PostgresStore, tmp_path: Path
 ) -> None:

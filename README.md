@@ -176,7 +176,29 @@ Apply [the Stage 7 orchestration migration](supabase/migrations/20261022000100_s
 
 It runs fetch, tailoring, job notifications, and a separate health evaluation in order. A failed step is logged and does not block later stages. The run writes a heartbeat after health evaluation; inability to persist that heartbeat makes the run fail. `python -m pipeline.run_all --dry-run` validates local inputs and source configuration, previews pending job/health notifications read-only, and makes no provider calls, emails, or database writes. Its run log is still written locally. Dry-run intentionally does not fetch postings or tailor resumes.
 
-The main GitHub Actions workflow runs at minute 7 of every hour and supports manual dispatch. It serializes runs, uses Python 3.12, installs Chromium only if enabled careers-page sources need it, and uploads sanitized JSONL logs after failure. The independent daily `Job Radar heartbeat check` workflow reads the latest heartbeat and sends a throttled health email if it is missing or older than three hours. A separate daily retention workflow runs the existing idempotent cleanup command. All workflows need `SUPABASE_URL` and `SUPABASE_SERVICE_KEY`; the main workflow also needs `LLM_PROVIDER`, `LLM_API_KEY`, `LLM_MODEL`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `NOTIFY_EMAIL`, and `DASHBOARD_URL`. Optional quota/cap/cost values can also be set as secrets. Since resume inputs are gitignored, the main workflow restores them from `MASTER_RESUME_JSON_B64`, `MASTER_RESUME_DOCX_B64`, `RESUME_TEMPLATE_DOCX_B64`, and `RESUME_LAYOUT_JSON_B64` secrets. Without those four secrets, fetch, notifications, and health still run, while tailoring reports its missing-input failure.
+The main GitHub Actions workflow runs at minute 7 of every hour and supports manual dispatch. It serializes runs, uses Python 3.12, installs Chromium only if enabled careers-page sources need it, and uploads sanitized JSONL logs after failure. The first run step after Python setup checks required configuration, prints the Python version, and lists only the names of missing settings before failing. After dependency installation, a read-only Storage listing reports whether all four private resume input objects exist; it does not download or print their contents. The independent daily `Job Radar heartbeat check` workflow reads the latest heartbeat and sends a throttled health email if it is missing or older than three hours. A separate daily retention workflow runs the existing idempotent cleanup command.
+
+Create these **GitHub Actions repository secrets** under Settings → Secrets and variables → Actions → New repository secret:
+
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_KEY` (service-role key; keep private)
+- `LLM_PROVIDER` (`openai`, `anthropic`, or `groq`)
+- `LLM_API_KEY`
+- `LLM_MODEL`
+- `RESEND_API_KEY`
+- `RESEND_FROM_EMAIL`
+- `NOTIFY_EMAIL`
+- `DASHBOARD_URL`
+
+These nine are required for the hourly workflow. The same Supabase secrets are used by daily cleanup; the daily health check also needs the three Resend secrets. Optional hourly workflow secrets are `LLM_MAX_TOKENS_PER_MINUTE` (default `6000`), `LLM_MAX_CALLS_PER_RUN` (default `50`), `LLM_INPUT_USD_PER_MILLION`, `LLM_OUTPUT_USD_PER_MILLION`, `RESUME_MAX_PER_RUN` (default `3`), `NOTIFY_RESUME_GRACE_MINUTES` (default `30`), and `CAREERS_MAX_FETCHES_PER_RUN` (default `20`). The resume bucket name is fixed as `radar-resumes`; it is not a secret.
+
+Gitignored resume inputs are read from the existing private `radar-resumes` Supabase Storage bucket. Apply [the private input MIME migration](supabase/migrations/20261023000100_stage7_private_resume_inputs.sql) once, then upload the reviewed local JSON, original DOCX, generated template, and layout metadata:
+
+```powershell
+.\.venv\Scripts\python.exe -m pipeline.resume.upload_inputs
+```
+
+The command reads `data/master_resume.json`, `data/master_resume.docx`, `data/resume_template.docx`, and `data/resume_layout.json`, then stores them under `pipeline-inputs/` in the private bucket. It prints filenames and upload status only. GitHub Actions uses `SUPABASE_URL` and `SUPABASE_SERVICE_KEY` to download those four objects into an OS temporary directory before the stages run, passes those paths to tailoring, and removes the directory when the run exits. The bucket remains private and its client-facing policy still denies access. Remove the old `MASTER_RESUME_JSON_B64`, `MASTER_RESUME_DOCX_B64`, `RESUME_TEMPLATE_DOCX_B64`, and `RESUME_LAYOUT_JSON_B64` GitHub secrets; they are no longer used.
 
 GitHub may delay scheduled workflows during high load and may disable them after prolonged repository inactivity. The daily heartbeat check detects a stopped main workflow, provided the daily workflow itself still runs. Keep the repository active with periodic commits and use `workflow_dispatch` to run the main workflow when needed. A heartbeat proves the pipeline reached its final database write; it does not guarantee every source succeeded. Check `data/run-all-runs.jsonl`, `data/fetch-runs.jsonl`, `data/tailor-runs.jsonl`, `data/notify-runs.jsonl`, and `data/health-runs.jsonl` locally or download the failure artifact. Logs contain counts and sanitized status/error types, not job descriptions or credentials.
 

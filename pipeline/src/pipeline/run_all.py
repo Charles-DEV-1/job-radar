@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import tempfile
 from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
@@ -19,6 +20,8 @@ from pipeline.llm.pacing import (
     end_run_call_budget,
     reset_call_budget,
 )
+from pipeline.resume.inputs import download_resume_inputs
+from pipeline.resume.store import BUCKET, SupabaseResumeStore
 from pipeline.storage import StoreError, SupabaseStore
 
 
@@ -56,10 +59,52 @@ def main(argv: list[str] | None = None) -> int:
     os.environ["PIPELINE_RUN_ALL"] = "1"
     reset_call_budget()
     begin_run_call_budget()
+    resume_temp: tempfile.TemporaryDirectory[str] | None = None
+    resume_args: list[str] = []
+    resume_input_error = False
     try:
+        requested_bucket = os.environ.get("RESUME_INPUTS_BUCKET", "").strip()
+        if requested_bucket:
+            if requested_bucket != BUCKET:
+                resume_input_error = True
+                print("Private resume inputs unavailable; tailoring will be skipped")
+            elif not args.dry_run:
+                resume_temp = tempfile.TemporaryDirectory(prefix="job-radar-resume-")
+                try:
+                    with HTTPClient() as http:
+                        store = SupabaseStore.from_environment(http)
+                        try:
+                            staged = download_resume_inputs(
+                                SupabaseResumeStore(store), Path(resume_temp.name)
+                            )
+                        finally:
+                            store.close()
+                    resume_args = [
+                        "--master-json",
+                        str(staged["master_json"]),
+                        "--master-docx",
+                        str(staged["master_docx"]),
+                        "--template",
+                        str(staged["template"]),
+                        "--layout",
+                        str(staged["layout"]),
+                    ]
+                    print("Private resume inputs downloaded to a temporary folder")
+                except Exception as exc:
+                    resume_input_error = True
+                    print(
+                        "Private resume inputs unavailable ("
+                        f"{type(exc).__name__}); tailoring will be skipped"
+                    )
+
+        def tailor() -> int:
+            if resume_input_error:
+                raise RuntimeError("Private resume inputs unavailable")
+            return run_tailor.main([*tailor_args, *resume_args])
+
         for name, action in (
             ("fetch", lambda: run_fetch.main(fetch_args)),
-            ("tailor", lambda: run_tailor.main(tailor_args)),
+            ("tailor", tailor),
             ("notify", lambda: run_notify.main(notify_args)),
             ("health", lambda: check_health.main(health_args)),
         ):
@@ -124,6 +169,8 @@ def main(argv: list[str] | None = None) -> int:
             os.environ.pop("PIPELINE_RUN_ALL", None)
         else:
             os.environ["PIPELINE_RUN_ALL"] = previous_flag
+        if resume_temp is not None:
+            resume_temp.cleanup()
 
 
 if __name__ == "__main__":

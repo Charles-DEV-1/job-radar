@@ -169,3 +169,68 @@ def test_run_all_dry_run_does_not_write_heartbeat(
     )
     assert [stage for stage, _ in called] == ["fetch", "tailor", "notify", "health"]
     assert all("--dry-run" in args for _, args in called)
+
+
+def test_run_all_stages_private_resume_files_and_removes_them(
+    monkeypatch: Any, tmp_path: Any
+) -> None:
+    from pathlib import Path
+
+    from pipeline import check_health, run_all, run_fetch, run_notify, run_tailor
+
+    monkeypatch.setenv("RESUME_INPUTS_BUCKET", "radar-resumes")
+    temp_paths: list[Path] = []
+
+    class FakeHttp:
+        def __enter__(self) -> FakeHttp:
+            return self
+
+        def __exit__(self, *_args: Any) -> None:
+            return None
+
+    class FakeStore:
+        client = object()
+
+        @classmethod
+        def from_environment(cls, _http: Any) -> FakeStore:
+            return cls()
+
+        def close(self) -> None:
+            pass
+
+    def stage_inputs(_store: Any, destination: Path) -> dict[str, Path]:
+        temp_paths.append(destination)
+        result: dict[str, Path] = {}
+        for key, filename in (
+            ("master_json", "master_resume.json"),
+            ("master_docx", "master_resume.docx"),
+            ("template", "resume_template.docx"),
+            ("layout", "resume_layout.json"),
+        ):
+            path = destination / filename
+            path.write_bytes(b"private test fixture")
+            result[key] = path
+        return result
+
+    monkeypatch.setattr(run_all, "HTTPClient", FakeHttp)
+    monkeypatch.setattr(run_all, "SupabaseStore", FakeStore)
+    monkeypatch.setattr(run_all, "download_resume_inputs", stage_inputs)
+    monkeypatch.setattr(run_all, "record_heartbeat", lambda *_args: None)
+    for module in (run_fetch, run_notify, check_health):
+        monkeypatch.setattr(module, "main", lambda _args: 0)
+
+    def tailor(args: list[str]) -> int:
+        assert "--master-json" in args and "--template" in args
+        paths = [
+            Path(args[args.index(flag) + 1])
+            for flag in ("--master-json", "--master-docx", "--template", "--layout")
+        ]
+        assert all(path.is_file() for path in paths)
+        return 0
+
+    monkeypatch.setattr(run_tailor, "main", tailor)
+    result = run_all.main(["--report-file", str(tmp_path / "run.jsonl")])
+
+    assert result == 0
+    assert len(temp_paths) == 1
+    assert not temp_paths[0].exists()

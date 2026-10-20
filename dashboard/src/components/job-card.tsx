@@ -77,11 +77,11 @@ export function JobCard({
               ? "Resume archived"
               : job.resume_status === "low_fit"
                 ? "Low fit · master resume"
-              : job.resume_status === "ready"
-                ? "Resume ready"
-                : job.resume_status === "failed"
-                  ? "Master resume (tailoring failed)"
-                  : "Master resume (not tailored yet)"}
+                : job.resume_status === "ready"
+                  ? "Resume ready"
+                  : job.resume_status === "failed"
+                    ? "Master resume (tailoring failed)"
+                    : "Master resume (not tailored yet)"}
           </div>
         </div>
         <div className="job-actions">

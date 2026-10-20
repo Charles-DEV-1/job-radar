@@ -5,3 +5,4 @@ package-lock.json
 next-env.d.ts
 *.tsbuildinfo
 .env*
+.next-radar

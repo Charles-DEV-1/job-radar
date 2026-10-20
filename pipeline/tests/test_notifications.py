@@ -207,6 +207,72 @@ def test_notification_sql_waits_for_resume_then_commits_exact_membership(
     )
 
 
+def test_repeated_notification_pipeline_sends_once_and_creates_no_duplicate_jobs(
+    stage6_store: Any,
+) -> None:
+    store = stage6_store
+    source_id, _ = source_ids(store)
+    snapshot(store, source_id, [prepared()])
+    snapshot(
+        store,
+        source_id,
+        [prepared(), prepared("email-job")],
+        1,
+    )
+    store.db.query(
+        "update public.jobs set first_seen_at=now(),resume_status='ready' "
+        "where external_id='email-job'"
+    )
+
+    class RPC:
+        def __init__(self, name: str, params: dict[str, Any]) -> None:
+            self.name, self.params = name, params
+
+        def execute(self) -> Any:
+            if self.name == "radar_claim_notification":
+                data = store.db.query(
+                    "select public.radar_claim_notification($1) as result",
+                    [self.params["p_resume_grace_minutes"]],
+                )[0]["result"]
+            else:
+                data = store.db.query(
+                    "select public.radar_finish_notification($1::uuid) as result",
+                    [self.params["p_attempt_id"]],
+                )[0]["result"]
+            return type("Result", (), {"data": data})()
+
+    class Client:
+        def rpc(self, name: str, params: dict[str, Any]) -> RPC:
+            return RPC(name, params)
+
+    sent_keys: list[str] = []
+
+    def send(_subject: str, _body: str, key: str) -> None:
+        sent_keys.append(key)
+
+    assert (
+        send_pending_notification(
+            Client(), 30, "https://radar.example/jobs?new=1", send
+        )
+        == 1
+    )
+    assert (
+        send_pending_notification(
+            Client(), 30, "https://radar.example/jobs?new=1", send
+        )
+        is None
+    )
+    assert len(sent_keys) == 1
+    assert len(set(sent_keys)) == 1
+    assert len(store.db.query("select * from public.jobs")) == 2
+    assert (
+        store.db.query("select count(*)::int as n from public.notification_batches")[0][
+            "n"
+        ]
+        == 1
+    )
+
+
 class FakeQuery:
     def __init__(
         self, rows: list[dict[str, Any]], table_name: str = "health_events"

@@ -11,6 +11,7 @@ from pipeline.storage import StoreError, SupabaseStore
 
 BUCKET = "radar-resumes"
 DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+JSON_MIME = "application/json"
 
 
 class ClaimedJob(StrictModel):
@@ -96,6 +97,52 @@ class SupabaseResumeStore:
             )
         except Exception:
             raise StoreError("Private resume upload failed") from None
+
+    def upload_input(self, path: str, document: Path) -> None:
+        """Upload a private pipeline input without exposing its contents."""
+        parts = path.split("/")
+        if (
+            len(parts) != 2
+            or parts[0] != "pipeline-inputs"
+            or parts[1] in {"", ".", ".."}
+            or document.suffix.lower() not in {".json", ".docx"}
+            or not document.is_file()
+            or document.stat().st_size > 8_388_608
+        ):
+            raise StoreError("Resume input missing or invalid")
+        self.assert_private()
+        mime = DOCX_MIME if document.suffix.lower() == ".docx" else JSON_MIME
+        try:
+            self.store.client.storage.from_(BUCKET).upload(
+                path,
+                document.read_bytes(),
+                file_options={"content-type": mime, "upsert": "true"},
+            )
+        except Exception:
+            raise StoreError("Private resume input upload failed") from None
+
+    def download_input(self, path: str, destination: Path) -> None:
+        """Download one allowlisted input object to a caller-owned temp folder."""
+        parts = path.split("/")
+        if (
+            len(parts) != 2
+            or parts[0] != "pipeline-inputs"
+            or parts[1] in {"", ".", ".."}
+            or Path(parts[1]).suffix.lower() not in {".json", ".docx"}
+        ):
+            raise StoreError("Invalid private resume input path")
+        self.assert_private()
+        try:
+            content = self.store.client.storage.from_(BUCKET).download(path)
+        except Exception:
+            raise StoreError("Private resume input download failed") from None
+        if not isinstance(content, bytes) or not content or len(content) > 8_388_608:
+            raise StoreError("Private resume input is empty or exceeds bucket limit")
+        try:
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.write_bytes(content)
+        except OSError:
+            raise StoreError("Private resume input could not be staged") from None
 
     def remove(self, path: str) -> None:
         try:

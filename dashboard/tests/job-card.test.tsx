@@ -17,6 +17,7 @@ describe("JobCard status persistence", () => {
     expect(
       screen.getByText(/Master resume \(not tailored yet\)/),
     ).toBeVisible();
+    expect(screen.getByText(/posted 1 week ago/)).toBeVisible();
     expect(
       screen.getByRole("button", { name: "Download master" }),
     ).toBeVisible();
@@ -126,6 +127,8 @@ describe("JobCard status persistence", () => {
       />,
     );
     expect(screen.getByText(/Low fit/)).toBeVisible();
-    expect(screen.getByRole("button", { name: "Download master" })).toBeVisible();
+    expect(
+      screen.getByRole("button", { name: "Download master" }),
+    ).toBeVisible();
   });
 });

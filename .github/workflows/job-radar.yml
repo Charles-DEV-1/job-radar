@@ -16,6 +16,7 @@ jobs:
     env:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+      RESUME_INPUTS_BUCKET: radar-resumes
       LLM_PROVIDER: ${{ secrets.LLM_PROVIDER }}
       LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
       LLM_MODEL: ${{ secrets.LLM_MODEL }}
@@ -30,10 +31,6 @@ jobs:
       DASHBOARD_URL: ${{ secrets.DASHBOARD_URL }}
       NOTIFY_RESUME_GRACE_MINUTES: ${{ secrets.NOTIFY_RESUME_GRACE_MINUTES || '30' }}
       CAREERS_MAX_FETCHES_PER_RUN: ${{ secrets.CAREERS_MAX_FETCHES_PER_RUN || '20' }}
-      MASTER_RESUME_JSON_B64: ${{ secrets.MASTER_RESUME_JSON_B64 }}
-      MASTER_RESUME_DOCX_B64: ${{ secrets.MASTER_RESUME_DOCX_B64 }}
-      RESUME_TEMPLATE_DOCX_B64: ${{ secrets.RESUME_TEMPLATE_DOCX_B64 }}
-      RESUME_LAYOUT_JSON_B64: ${{ secrets.RESUME_LAYOUT_JSON_B64 }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -41,23 +38,16 @@ jobs:
           python-version: "3.12"
           cache: pip
           cache-dependency-path: pipeline/pyproject.toml
+      - name: Validate required configuration
+        run: python pipeline/scripts/check_required_env.py
       - uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('pipeline/pyproject.toml') }}
       - name: Install pipeline dependencies
         run: python -m pip install -e "./pipeline[dev,llm]"
-      - name: Restore private resume inputs
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [[ -n "$MASTER_RESUME_JSON_B64" ]]; then
-            mkdir -p data
-            printf '%s' "$MASTER_RESUME_JSON_B64" | base64 --decode > data/master_resume.json
-            printf '%s' "$MASTER_RESUME_DOCX_B64" | base64 --decode > data/master_resume.docx
-            printf '%s' "$RESUME_TEMPLATE_DOCX_B64" | base64 --decode > data/resume_template.docx
-            printf '%s' "$RESUME_LAYOUT_JSON_B64" | base64 --decode > data/resume_layout.json
-          fi
+      - name: Check private master resume inputs
+        run: python -m pipeline.resume.check_inputs
       - name: Check whether Chromium is required
         id: browser
         run: |

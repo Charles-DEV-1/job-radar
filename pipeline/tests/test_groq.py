@@ -11,14 +11,18 @@ import httpx
 import pytest
 from conftest import FakeClock
 from postgres_helpers import PostgresStore
-from resume_helpers import job, synthetic_resume, verified_pagination
+from resume_helpers import (
+    job,
+    synthetic_resume,
+    tailoring_proposal,
+    verified_pagination,
+)
 from test_stage3 import SOURCE, run_page
 
 from pipeline.llm import client as llm_module
 from pipeline.llm.client import ExtractionClient, SDKBackend, Usage, retry_after_delay
 from pipeline.llm.pacing import TokenBudget
 from pipeline.resume.tailor import TailoringClient, tailor_job
-from pipeline.resume.validate import unchanged
 from pipeline.sources.careers_page import CareersPageAdapter
 from pipeline.sources.pages import PageFetcher
 from pipeline.storage import PacedTransport
@@ -426,7 +430,12 @@ def test_groq_valid_resume_json_renders_with_unchanged_truth_validator(
     def handler(request: httpx.Request) -> httpx.Response:
         assert json.loads(request.content)["model"] == model
         return httpx.Response(
-            200, json=groq_reply(recorded, unchanged(master).model_dump_json(), model)
+            200,
+            json=groq_reply(
+                recorded,
+                json.dumps(tailoring_proposal(master)),
+                model,
+            ),
         )
 
     mock_provider(monkeypatch, handler)

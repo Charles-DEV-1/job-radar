@@ -1,5 +1,4 @@
 import json
-from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
@@ -10,6 +9,7 @@ from resume_helpers import (
     ControlledBackend,
     job,
     synthetic_resume,
+    tailoring_proposal,
     verified_pagination,
 )
 
@@ -24,7 +24,7 @@ from pipeline.resume.layout import (
     render,
 )
 from pipeline.resume.pdf import Pagination
-from pipeline.resume.schema import SkillGroup, Tailoring
+from pipeline.resume.schema import SkillGroup, Tailoring, TailoringProposal
 from pipeline.resume.tailor import TailoringClient, filename, tailor_job
 from pipeline.resume.validate import TruthError, unchanged, validate_tailoring
 
@@ -220,12 +220,9 @@ def test_projects_reorder_as_whole_blocks_and_selected_bullets_remove_cleanly(
     assert master.experience[0].bullets[1].text in text
 
 
-def test_retry_feedback_and_cost_count_every_attempt(tmp_path: Path) -> None:
+def test_model_proposal_is_strict_and_usage_is_counted(tmp_path: Path) -> None:
     master, original, template, layout = synthetic_resume(tmp_path)
-    good = unchanged(master).model_dump()
-    bad = deepcopy(good)
-    bad["skills_order"].append("AWS")
-    backend = ControlledBackend([bad, good])
+    backend = ControlledBackend([tailoring_proposal(master)])
     client = TailoringClient(backend, 1, 2, sleep=lambda _: None)
     usage = Usage()
     result = tailor_job(
@@ -239,40 +236,37 @@ def test_retry_feedback_and_cost_count_every_attempt(tmp_path: Path) -> None:
         usage,
         verified_pagination(),
     )
-    assert result.status == "ready" and usage.attempts == 2
-    assert usage.input_tokens == 200 and usage.output_tokens == 60
-    assert usage.cost_usd == pytest.approx(0.00032)
-    assert "invented skill" in backend.calls[1]["validator_errors"][0]
+    assert result.status == "ready" and usage.attempts == 1
+    assert usage.input_tokens == 100 and usage.output_tokens == 30
+    assert usage.cost_usd == pytest.approx(0.00016)
+    assert set(backend.calls[0]) == {
+        "master",
+        "job",
+        "validator_errors",
+        "slot_character_limits",
+    }
     assert "contact" not in backend.calls[0]["master"]
 
 
-def test_rejected_model_output_uses_safe_master_only_fallback(tmp_path: Path) -> None:
+def test_proposal_schema_rejects_ordering_and_excess_rewrites(tmp_path: Path) -> None:
     master, original, template, layout = synthetic_resume(tmp_path)
-    bad = unchanged(master).model_dump()
-    bad["skills_order"].append("AWS")
-    backend = ControlledBackend([bad] * 3)
-    usage = Usage()
-    result = tailor_job(
-        master,
-        job(),
-        original,
-        template,
-        layout,
-        tmp_path / "output",
-        TailoringClient(backend, sleep=lambda _: None),
-        usage,
-        verified_pagination(),
-    )
-    assert result.status == "ready" and result.changes["tailoring_changed"]
-    assert result.path.read_bytes() != original.read_bytes()
-    assert usage.attempts == 3 and result.match_notes["matched"]
-    assert any("deterministic master-only ordering" in w for w in result.warnings)
+    payload = tailoring_proposal(master)
+    with pytest.raises(ValidationError):
+        TailoringProposal.model_validate({**payload, "skills_order": ["AWS"]})
+    with pytest.raises(ValidationError):
+        TailoringProposal.model_validate(
+            {
+                **payload,
+                "bullet_rewrites": [{"id": f"b-{i}", "text": "x"} for i in range(4)],
+            }
+        )
 
 
 def test_no_libreoffice_rejects_unverified_changed_layout(tmp_path: Path) -> None:
     master, original, template, layout = synthetic_resume(tmp_path)
-    proposed = unchanged(master).model_dump()
-    proposed["summary"] = master.approved_summary_rephrasings[0]
+    proposed = tailoring_proposal(
+        master, summary=master.approved_summary_rephrasings[0]
+    )
     result = tailor_job(
         master,
         job(),

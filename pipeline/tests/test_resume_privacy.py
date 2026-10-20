@@ -12,6 +12,7 @@ from resume_helpers import (
     ControlledBackend,
     job,
     synthetic_resume,
+    tailoring_proposal,
     verified_pagination,
 )
 from test_groq import groq_reply
@@ -63,9 +64,17 @@ def test_no_contact_in_any_http_request_including_retries_and_local_render(
     current_job = job()
     current_job["description_text"] += " Contact: " + private_line
     current_job["description_text"] += " Phone alternative: +234-912-345-6789."
-    invalid = unchanged(master).model_dump()
-    invalid["experience"][0]["bullets"][0]["text"] += " Improved by 99%."
-    outputs = [invalid, unchanged(master).model_dump()]
+    original_bullet = master.experience[0].bullets[0].text
+    proposal = tailoring_proposal(
+        master,
+        bullet_rewrites=[
+            {
+                "id": master.experience[0].bullets[0].id,
+                "text": original_bullet + " Improved by 99%.",
+            }
+        ],
+    )
+    outputs = [proposal, {"text": original_bullet}]
     calls: list[dict[str, Any]] = []
 
     def handler(request: httpx.Request) -> httpx.Response:
@@ -74,7 +83,11 @@ def test_no_contact_in_any_http_request_including_retries_and_local_render(
         serialized = json.dumps(body, ensure_ascii=False).casefold()
         for sentinel in [*SENTINELS, "+234-912-345-6789"]:
             assert sentinel.casefold() not in serialized
-        assert "contact" not in json.loads(body["messages"][-1]["content"])["master"]
+        sent_payload = json.loads(body["messages"][-1]["content"])
+        if "master" in sent_payload:
+            assert "contact" not in sent_payload["master"]
+        else:
+            assert set(sent_payload) == {"slot", "job"}
         if len(calls) == 1:
             return httpx.Response(429, headers={"Retry-After": "1"})
         content = json.dumps(outputs.pop(0))
@@ -118,7 +131,8 @@ def test_no_contact_in_any_http_request_including_retries_and_local_render(
     assert len(calls) == 3
     first = json.loads(calls[0]["messages"][-1]["content"])
     last = json.loads(calls[-1]["messages"][-1]["content"])
-    assert last["validator_errors"]
+    assert last["slot"]["kind"] == "bullet"
+    assert "validator_errors" not in last
     assert set(first["master"]) == {
         "summary",
         "approved_summary_rephrasings",
@@ -129,10 +143,13 @@ def test_no_contact_in_any_http_request_including_retries_and_local_render(
     assert set(first["job"]) == {"title", "company", "description_text"}
     assert set(first["master"]["experience"][0]) == {"id", "bullets"}
     assert set(first["master"]["skills"][0]) == {"name", "items"}
-    assert not any(
-        key.startswith(("education:", "certification:", "role:"))
-        for key in first["evidence"]
-    )
+    assert set(first) == {
+        "master",
+        "job",
+        "validator_errors",
+        "slot_character_limits",
+    }
+    assert first["slot_character_limits"]["bullets"]["b-1"] == len(original_bullet)
     assert "url" not in first["master"]["projects"][0]
     for immutable in (
         master.experience[0].employer,
@@ -154,7 +171,7 @@ def test_no_contact_in_any_http_request_including_retries_and_local_render(
 def test_validator_feedback_is_redacted_before_the_next_request(tmp_path: Path) -> None:
     master, _, _, _ = synthetic_resume(tmp_path)
     master.contact.email = EMAIL
-    valid = unchanged(master).model_dump()
+    valid = tailoring_proposal(master)
     backend = ControlledBackend([valid, valid])
     checks = 0
 

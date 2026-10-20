@@ -12,6 +12,7 @@ from resume_helpers import (
     PgResumeStore,
     job,
     synthetic_resume,
+    tailoring_proposal,
     verified_pagination,
 )
 from test_run_tailor import insert_jobs
@@ -21,9 +22,8 @@ from pipeline.detector import RunRecorder
 from pipeline.llm.client import Usage
 from pipeline.resume.pdf import Pagination
 from pipeline.resume.privacy import tailoring_facts
-from pipeline.resume.prompt import compact_json, request
+from pipeline.resume.prompt import request
 from pipeline.resume.tailor import TailoringClient, tailor_job
-from pipeline.resume.validate import unchanged
 
 
 def test_deterministic_changes_print_actual_path_and_human_report(
@@ -33,7 +33,7 @@ def test_deterministic_changes_print_actual_path_and_human_report(
     insert_jobs(pg_store, ["include"])
     outcomes = run_tailor.run_jobs(
         PgResumeStore(pg_store),
-        TailoringClient(ControlledBackend([unchanged(master).model_dump()])),
+        TailoringClient(ControlledBackend([tailoring_proposal(master)])),
         master,
         original,
         template,
@@ -65,8 +65,6 @@ def test_valid_skill_reordering_is_reported_as_tailored(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: Any
 ) -> None:
     master, original, template, layout = synthetic_resume(tmp_path)
-    proposed = unchanged(master).model_dump()
-    proposed["skills_order"] = ["SQL", "Python"]
     pagination = Pagination("controlled-renderer", discover=False)
     monkeypatch.setattr(pagination, "convert", lambda *_: 1)
     result = tailor_job(
@@ -76,7 +74,7 @@ def test_valid_skill_reordering_is_reported_as_tailored(
         template,
         layout,
         tmp_path / "output",
-        TailoringClient(ControlledBackend([proposed])),
+        TailoringClient(ControlledBackend([tailoring_proposal(master)])),
         Usage(),
         pagination,
     )
@@ -110,7 +108,7 @@ def test_same_job_retry_gets_new_filename_and_retains_previous_file(
             template,
             layout,
             tmp_path / "output",
-            TailoringClient(ControlledBackend([unchanged(master).model_dump()])),
+            TailoringClient(ControlledBackend([tailoring_proposal(master)])),
             Usage(),
             verified_pagination(),
             attempt_id=str(uuid4()),
@@ -130,7 +128,7 @@ def test_upload_failure_reports_master_fallback_not_earlier_tailoring(
     insert_jobs(pg_store, ["include"])
     outcome = run_tailor.run_jobs(
         PgResumeStore(pg_store, upload_error=True),
-        TailoringClient(ControlledBackend([unchanged(master).model_dump()])),
+        TailoringClient(ControlledBackend([tailoring_proposal(master)])),
         master,
         original,
         template,
@@ -159,17 +157,15 @@ def test_prompt_compaction_keeps_all_skills_words_and_used_evidence(
             bullet.approved_rephrasings = []
     current_job = job()
     _, payload, _ = request(master, current_job)
-    original_facts, original_evidence = tailoring_facts(master)
+    original_facts, _ = tailoring_facts(master)
     assert payload["master"]["skills"] == original_facts["skills"]
     assert payload["job"]["description_text"] == current_job["description_text"]
     assert "approved_summary_rephrasings" not in payload["master"]
     assert (
         "approved_rephrasings" not in payload["master"]["experience"][0]["bullets"][0]
     )
-    for match in payload["match_note_options"]["matched"]:
-        assert all(key in payload["evidence"] for key in match["evidence_ids"])
-    before = {**payload, "master": original_facts, "evidence": original_evidence}
-    assert len(compact_json(before)) - len(compact_json(payload)) > 3 * 167
+    assert "evidence" not in payload and "match_note_options" not in payload
+    assert payload["master"]["skills"] == original_facts["skills"]
 
 
 def test_cosmetic_changes_are_not_presented_as_tailoring(capsys: Any) -> None:

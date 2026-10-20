@@ -3,15 +3,20 @@
 from __future__ import annotations
 
 import re
+from functools import lru_cache
+from pathlib import Path
 from typing import Any
+
+from ruamel.yaml import YAML
 
 from pipeline.resume.description import compact_description
 from pipeline.resume.requirements import options
-from pipeline.resume.schema import MasterResume, MatchNotes, Tailoring
+from pipeline.resume.schema import MasterResume, MatchNotes, RewrittenBullet, Tailoring
 from pipeline.resume.validate import evidence_map
 
 TOKEN = re.compile(r"[a-z0-9+#]+", re.I)
 SKILL_PART = re.compile(r"[,()/;&]+")
+REPO_ROOT = Path(__file__).resolve().parents[4]
 STOP_WORDS = {
     "about",
     "across",
@@ -56,17 +61,59 @@ def _skill_anchors(skill: str) -> list[tuple[str, ...]]:
 
 def _contains(query: list[str], phrase: tuple[str, ...]) -> bool:
     width = len(phrase)
-    return any(
-        tuple(query[index : index + width]) == phrase for index in range(len(query))
+    for index in range(len(query)):
+        if tuple(query[index : index + width]) != phrase:
+            continue
+        # Do not read the `.js` suffix of Node.js/Next.js as a standalone JS
+        # requirement; doing so can outrank the actual framework requirement.
+        if (
+            phrase == ("js",)
+            and index > 0
+            and query[index - 1] in {"node", "next", "express"}
+        ):
+            continue
+        return True
+    return False
+
+
+@lru_cache(maxsize=1)
+def _skill_alias_groups() -> tuple[tuple[tuple[str, ...], ...], ...]:
+    """Load reviewed spelling aliases; they match existing facts, never add skills."""
+    path = REPO_ROOT / "data" / "skill_aliases.yaml"
+    if not path.exists():
+        return ()
+    with path.open(encoding="utf-8") as handle:
+        config = YAML(typ="safe").load(handle) or {}
+    groups = config.get("aliases", [])
+    return tuple(
+        tuple(phrase for item in group if (phrase := tuple(_tokens(str(item)))))
+        for group in groups
+        if isinstance(group, list)
     )
+
+
+def _variants(phrase: tuple[str, ...]) -> tuple[tuple[str, ...], ...]:
+    for group in _skill_alias_groups():
+        if phrase in group:
+            return group
+    return (phrase,)
+
+
+def _expanded_token_set(tokens: list[str]) -> set[str]:
+    result = set(tokens)
+    for group in _skill_alias_groups():
+        if any(_contains(tokens, phrase) for phrase in group):
+            result.add("alias:" + "/".join(group[0]))
+    return result
 
 
 def _skill_score(skill: str, title: list[str], description: list[str]) -> int:
     score = 0
     for phrase in _skill_anchors(skill):
-        if _contains(title, phrase):
+        variants = _variants(phrase)
+        if any(_contains(title, item) for item in variants):
             score += 5 * len(phrase)
-        elif _contains(description, phrase):
+        elif any(_contains(description, item) for item in variants):
             score += len(phrase)
     return score
 
@@ -98,6 +145,8 @@ def _role_type(title: str) -> str:
 
 
 def _safe_summary(master: MasterResume, job: dict[str, Any], skills: list[str]) -> str:
+    if "\n" in master.summary:
+        return master.summary
     title = _role_type(job["title"])
     summary = ""
     selected: list[str] = []
@@ -108,16 +157,14 @@ def _safe_summary(master: MasterResume, job: dict[str, Any], skills: list[str]) 
             selected = candidate
             summary = text
     if not summary:
-        raise ValueError("Safe target summary does not fit the master resume layout")
+        return master.summary
     return summary
 
 
 def _bullet_score(text: str, title: list[str], description: list[str]) -> int:
-    query = set(title) | set(description)
-    return sum(
-        token not in STOP_WORDS and len(token) > 2
-        for token in set(_tokens(text)) & query
-    )
+    query = _expanded_token_set([*title, *description])
+    evidence = _expanded_token_set(_tokens(text))
+    return sum(token not in STOP_WORDS and len(token) > 2 for token in evidence & query)
 
 
 def deterministic_tailoring(
@@ -163,7 +210,7 @@ def deterministic_tailoring(
     if not matched:
         notes = options(
             master,
-            compact_description(job["description_text"], job["company"]).text,
+            compact_description(job["description_text"], job.get("company", "")).text,
             set(evidence_map(master)),
         )
         return candidate.model_copy(
@@ -211,7 +258,13 @@ def deterministic_tailoring(
             bullet.id: _bullet_score(bullet.text, title_tokens, description_tokens)
             for bullet in role.bullets
         }
-        texts = {bullet.id: bullet.text for bullet in edit.bullets}
+        bullet_records = {bullet.id: bullet for bullet in edit.bullets}
+        for bullet in role.bullets:
+            bullet_records.setdefault(
+                bullet.id,
+                RewrittenBullet(id=bullet.id, text=bullet.text),
+            )
+        texts = {bullet_id: bullet.text for bullet_id, bullet in bullet_records.items()}
         remaining = sorted(
             original_ids,
             key=lambda bullet_id: (-rank[bullet_id], original_ids.index(bullet_id)),
@@ -233,26 +286,40 @@ def deterministic_tailoring(
                 continue
             ordered.append(chosen)
             remaining.remove(chosen)
-        selected_ids = set(ordered)
         ordered_experience.append(
             edit.model_copy(
                 update={
                     "bullet_order": ordered,
-                    "bullets": [
-                        bullet for bullet in edit.bullets if bullet.id in selected_ids
-                    ],
+                    "bullets": [bullet_records[bullet_id] for bullet_id in ordered],
                 }
             )
         )
+    project_order = sorted(
+        master.projects,
+        key=lambda project: (
+            -_bullet_score(
+                " ".join(
+                    [project.name, project.description or "", *project.detail_lines]
+                    + [bullet.text for bullet in project.bullets]
+                ),
+                title_tokens,
+                description_tokens,
+            ),
+            master.projects.index(project),
+        ),
+    )
     return candidate.model_copy(
         update={
             "summary": _safe_summary(master, job, matched),
             "skills_order": ordered_skills,
             "experience": ordered_experience,
+            "projects_order": [project.id for project in project_order],
             "match_notes": MatchNotes.model_validate(
                 options(
                     master,
-                    compact_description(job["description_text"], job["company"]).text,
+                    compact_description(
+                        job["description_text"], job.get("company", "")
+                    ).text,
                     set(evidence_map(master)),
                 )
             ),

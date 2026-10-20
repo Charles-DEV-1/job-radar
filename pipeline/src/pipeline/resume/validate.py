@@ -4,9 +4,7 @@ import re
 from collections import Counter
 from dataclasses import dataclass
 
-from pydantic import BaseModel
-
-from pipeline.resume.schema import MasterResume, Tailoring
+from pipeline.resume.schema import MasterResume, Tailoring, TailoringProposal
 
 FIGURES = re.compile(
     r"(?<!\w)(?:[$£€₦]\s*)?\d+(?:[.,]\d+)*(?:\s*(?:%|k\b|million\b|billion\b))?",
@@ -95,6 +93,29 @@ class TruthError(ValueError):
         self.errors = list(dict.fromkeys(errors))
         # Errors contain field IDs/check names, never resume or job text.
         super().__init__("; ".join(self.errors))
+
+
+def slot_length_errors(master: MasterResume, output: Tailoring) -> list[str]:
+    """Check text lengths before rendering into fixed DOCX editable regions."""
+    errors = []
+    if len(output.summary) > len(master.summary):
+        errors.append("summary: length overflow")
+    original_segments = master.summary.split("\n")
+    output_segments = output.summary.split("\n")
+    if len(output_segments) != len(original_segments) or any(
+        len(value) > len(original_segments[index])
+        for index, value in enumerate(output_segments[: len(original_segments)])
+    ):
+        errors.append("summary: editable paragraph slot overflow")
+    known = {
+        bullet.id: bullet.text for role in master.experience for bullet in role.bullets
+    }
+    for role in output.experience:
+        for bullet in role.bullets:
+            original = known.get(bullet.id)
+            if original is not None and len(bullet.text) > len(original):
+                errors.append(f"{bullet.id}: length overflow")
+    return errors
 
 
 def evidence_map(master: MasterResume) -> dict[str, str]:
@@ -186,6 +207,7 @@ def validate_tailoring(
     errors: list[str] = []
     if not master.reviewed:
         errors.append("master: review required before tailoring")
+    errors.extend(slot_length_errors(master, output))
     all_skills = {s.casefold(): s for g in master.skills for s in g.items}
     selected = [s.casefold() for s in output.skills_order]
     for i, skill in enumerate(selected):
@@ -289,130 +311,73 @@ def validate_tailoring(
 
 def audit_proposal(master: MasterResume, raw_response: str, description: str) -> dict:
     """Explain independent field validation without changing normal log privacy."""
-
-    def jsonable(value):
-        if isinstance(value, BaseModel):
-            return value.model_dump(mode="json")
-        if isinstance(value, list):
-            return [jsonable(item) for item in value]
-        if isinstance(value, dict):
-            return {key: jsonable(item) for key, item in value.items()}
-        return value
-
     try:
-        output = Tailoring.model_validate_json(raw_response)
+        output = TailoringProposal.model_validate_json(raw_response)
     except Exception:
         return {
             "raw_response": raw_response,
             "schema": {
                 "accepted": False,
-                "reason": "Strict JSON schema rejected the response",
+                "reason": "Strict proposal schema rejected the response",
             },
             "fields": {},
         }
 
     baseline = unchanged(master)
-    fields: dict[str, dict] = {}
-
-    def field_changed(name: str, proposed) -> bool:
-        before = getattr(baseline, name)
-        if isinstance(before, BaseModel):
-            before = before.model_dump(mode="json")
-        if isinstance(proposed, BaseModel):
-            proposed = proposed.model_dump(mode="json")
-        elif isinstance(proposed, list):
-            proposed = jsonable(proposed)
-        return proposed != before
-
-    def check(name: str, candidate: Tailoring, prefix: str | None = None) -> None:
-        proposed = getattr(output, name) if hasattr(output, name) else None
-        try:
-            validate_tailoring(master, candidate, description)
-        except TruthError as exc:
-            reasons = [
-                error
-                for error in exc.errors
-                if prefix is None or error.startswith(prefix)
-            ]
-            fields[name] = {
-                "proposed": jsonable(proposed),
-                "changed": field_changed(name, proposed),
-                "accepted": not reasons,
-                "reason": "; ".join(reasons)
-                if reasons
-                else "Accepted by field validator",
-            }
-        else:
-            fields[name] = {
-                "proposed": jsonable(proposed),
-                "changed": field_changed(name, proposed),
-                "accepted": True,
-                "reason": "Accepted by field validator",
-            }
-
-    check(
-        "summary", baseline.model_copy(update={"summary": output.summary}), "summary:"
-    )
-    check(
-        "skills_order",
-        baseline.model_copy(update={"skills_order": output.skills_order}),
-        "skills_order:",
-    )
-    check("experience", baseline.model_copy(update={"experience": output.experience}))
-    for edit in output.experience:
-        if edit.id not in {role.id for role in baseline.experience}:
-            fields[f"experience.{edit.id}"] = {
-                "proposed": edit.model_dump(mode="json"),
-                "changed": True,
-                "accepted": False,
-                "reason": "Unknown master role ID",
-            }
-            continue
-        role_edits = [
-            edit if role.id == edit.id else role for role in baseline.experience
-        ]
-        try:
-            validate_tailoring(
-                master,
-                baseline.model_copy(update={"experience": role_edits}),
-                description,
-            )
-        except TruthError as exc:
-            reasons = [error for error in exc.errors if edit.id in error]
-        else:
-            reasons = []
-        fields[f"experience.{edit.id}"] = {
-            "proposed": edit.model_dump(mode="json"),
-            "changed": edit.model_dump(mode="json")
-            != next(
-                role.model_dump(mode="json")
-                for role in baseline.experience
-                if role.id == edit.id
-            ),
-            "accepted": not reasons,
-            "reason": "; ".join(reasons) if reasons else "Accepted by field validator",
-        }
-    check(
-        "projects_order",
-        baseline.model_copy(update={"projects_order": output.projects_order}),
-        "projects_order:",
-    )
-    check(
-        "match_notes",
-        baseline.model_copy(update={"match_notes": output.match_notes}),
-        "match_notes:",
-    )
+    summary_candidate = baseline.model_copy(update={"summary": output.summary})
     try:
-        validate_tailoring(master, output, description)
-        schema_reason = "All proposed fields passed together"
-        schema_accepted = True
+        validate_tailoring(master, summary_candidate, description)
+        summary_accepted, summary_reason = True, "Accepted by field validator"
     except TruthError as exc:
-        schema_reason = "; ".join(exc.errors)
-        schema_accepted = False
+        summary_accepted, summary_reason = False, "; ".join(exc.errors)
+
+    bullet_results = []
+    accepted = summary_accepted
+    for rewrite in output.bullet_rewrites:
+        roles = []
+        found = False
+        for role in baseline.experience:
+            bullets = []
+            for bullet in role.bullets:
+                if bullet.id == rewrite.id:
+                    found = True
+                    bullets.append(bullet.model_copy(update={"text": rewrite.text}))
+                else:
+                    bullets.append(bullet)
+            roles.append(role.model_copy(update={"bullets": bullets}))
+        if not found:
+            valid, reason = False, "Unknown master bullet ID"
+        else:
+            candidate = summary_candidate.model_copy(update={"experience": roles})
+            try:
+                validate_tailoring(master, candidate, description)
+                valid, reason = True, "Accepted by field validator"
+            except TruthError as exc:
+                valid, reason = False, "; ".join(exc.errors)
+        accepted = accepted and valid
+        bullet_results.append(
+            {
+                "id": rewrite.id,
+                "proposed": rewrite.text,
+                "accepted": valid,
+                "reason": reason,
+            }
+        )
     return {
         "raw_response": raw_response,
-        "schema": {"accepted": schema_accepted, "reason": schema_reason},
-        "fields": fields,
+        "schema": {
+            "accepted": accepted,
+            "reason": "Only the summary and up to three bullet rewrites are proposed",
+        },
+        "fields": {
+            "summary": {
+                "proposed": output.summary,
+                "changed": plain(output.summary) != plain(master.summary),
+                "accepted": summary_accepted,
+                "reason": summary_reason,
+            },
+            "bullet_rewrites": bullet_results,
+        },
     }
 
 

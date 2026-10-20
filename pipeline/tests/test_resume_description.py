@@ -10,6 +10,7 @@ from resume_helpers import (
     ControlledBackend,
     job,
     synthetic_resume,
+    tailoring_proposal,
     verified_pagination,
 )
 from test_groq import MODELS, groq_reply, mock_provider
@@ -19,7 +20,6 @@ from pipeline.llm.pacing import prompt_tokens
 from pipeline.resume.description import compact_description
 from pipeline.resume.prompt import request
 from pipeline.resume.tailor import TailoringClient, tailor_job
-from pipeline.resume.validate import unchanged
 
 
 def test_short_unheaded_description_is_preserved() -> None:
@@ -120,7 +120,8 @@ def test_long_description_fits_budget_and_logs_truncation(
         assert prompt_tokens(system, content) + body["max_completion_tokens"] <= 6000
         assert body["max_completion_tokens"] >= request(master, current_job)[2]
         return httpx.Response(
-            200, json=groq_reply(recorded, unchanged(master).model_dump_json(), model)
+            200,
+            json=groq_reply(recorded, json.dumps(tailoring_proposal(master)), model),
         )
 
     mock_provider(monkeypatch, handler)
@@ -153,18 +154,20 @@ def test_gap_quotes_only_validate_against_sent_compacted_text(
     current_job["description_text"] = (
         "Requirements:\nPython SQL AWS\nBenefits:\nKubernetes"
     )
-    value = unchanged(master).model_dump()
-    value["match_notes"]["gaps"] = [quote]
-    backend = ControlledBackend([value] * 3)
+    backend = ControlledBackend([tailoring_proposal(master)])
     client = TailoringClient(backend, sleep=lambda _: None)
+    warnings: list[str] = []
+    result = client.propose(
+        master, current_job, Usage(), lambda _: None, warnings=warnings
+    )
     if accepted:
-        client.propose(master, current_job, Usage(), lambda _: None)
+        assert quote in result.match_notes.gaps
     else:
-        with pytest.raises(ValueError, match="gap must quote the job"):
-            client.propose(master, current_job, Usage(), lambda _: None)
+        assert quote not in result.match_notes.gaps
+        assert any("sections dropped" in warning for warning in warnings)
     for payload in backend.calls:
         assert "Kubernetes" not in payload["job"]["description_text"]
-        assert "Kubernetes" not in payload["match_note_options"]["gaps"]
+        assert "match_note_options" not in payload
 
 
 def test_gap_cannot_quote_redacted_contact(tmp_path: Path) -> None:
@@ -172,13 +175,11 @@ def test_gap_cannot_quote_redacted_contact(tmp_path: Path) -> None:
     master.contact.email = "private@example.test"
     current_job = job()
     current_job["description_text"] += " Must contact private@example.test"
-    value = unchanged(master).model_dump()
-    value["match_notes"]["gaps"] = ["private@example.test"]
-    backend = ControlledBackend([value] * 3)
-    with pytest.raises(ValueError, match="gap must quote the job"):
-        TailoringClient(backend, sleep=lambda _: None).propose(
-            master, current_job, Usage(), lambda _: None
-        )
+    backend = ControlledBackend([tailoring_proposal(master)])
+    result = TailoringClient(backend, sleep=lambda _: None).propose(
+        master, current_job, Usage(), lambda _: None
+    )
+    assert "private@example.test" not in result.match_notes.gaps
     assert all(
         "private@example.test" not in json.dumps(payload) for payload in backend.calls
     )

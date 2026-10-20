@@ -9,6 +9,7 @@ from resume_helpers import (
     ControlledBackend,
     PgResumeStore,
     synthetic_resume,
+    tailoring_proposal,
     verified_pagination,
 )
 from test_storage_sql import prepared, snapshot, source_ids
@@ -17,7 +18,6 @@ from pipeline import run_tailor
 from pipeline.detector import RunRecorder
 from pipeline.resume.pdf import Pagination
 from pipeline.resume.tailor import TailoringClient
-from pipeline.resume.validate import unchanged
 from pipeline.storage import StoreError
 
 
@@ -85,7 +85,7 @@ def test_claim_outage_still_records_usage_from_completed_jobs(
     with pytest.raises(StoreError, match="unavailable"):
         run_tailor.run_jobs(
             store,
-            TailoringClient(ControlledBackend([unchanged(master).model_dump()])),
+            TailoringClient(ControlledBackend([tailoring_proposal(master)])),
             master,
             original,
             template,
@@ -104,7 +104,7 @@ def test_run_cap_private_upload_notes_usage_and_repeat_idempotence(
 ) -> None:
     master, original, template, layout = synthetic_resume(tmp_path)
     insert_jobs(pg_store, ["include", "include", "include"])
-    proposed = unchanged(master).model_dump()
+    proposed = tailoring_proposal(master)
     backend = ControlledBackend([proposed] * 3)
     client = TailoringClient(backend, 1, 2, sleep=lambda _: None)
     store = PgResumeStore(pg_store)
@@ -152,18 +152,18 @@ def test_run_cap_private_upload_notes_usage_and_repeat_idempotence(
     )
 
 
-def test_rejected_llm_output_uses_safe_deterministic_changes_and_continues(
+def test_invalid_model_order_field_retries_without_controlling_ordering(
     tmp_path: Path, pg_store: PostgresStore
 ) -> None:
     master, original, template, layout = synthetic_resume(tmp_path)
     insert_jobs(pg_store, ["include", "include"])
-    good = unchanged(master).model_dump()
-    bad = unchanged(master).model_dump()
-    bad["skills_order"].append("InventedSkill")
+    good = tailoring_proposal(master)
+    bad = {**tailoring_proposal(master), "skills_order": ["InventedSkill"]}
+    backend = ControlledBackend([bad, good, good])
     store = PgResumeStore(pg_store)
     results = run_tailor.run_jobs(
         store,
-        TailoringClient(ControlledBackend([bad] * 3 + [good]), sleep=lambda _: None),
+        TailoringClient(backend, sleep=lambda _: None),
         master,
         original,
         template,
@@ -186,8 +186,10 @@ def test_rejected_llm_output_uses_safe_deterministic_changes_and_continues(
     runs = pg_store.db.query(
         "select status,metadata from public.resume_runs order by started_at"
     )
-    assert runs[0]["metadata"]["llm"]["attempts"] == 3
-    assert runs[0]["metadata"]["fallback"]
+    assert runs[0]["metadata"]["llm"]["attempts"] == 2
+    assert not runs[0]["metadata"]["fallback"]
+    assert len(backend.calls) == 3
+    assert backend.calls[1]["validator_errors"]
 
 
 def test_upload_failure_is_recorded_and_does_not_set_ready(
@@ -198,7 +200,7 @@ def test_upload_failure_is_recorded_and_does_not_set_ready(
     results = run_tailor.run_jobs(
         PgResumeStore(pg_store, upload_error=True),
         TailoringClient(
-            ControlledBackend([unchanged(master).model_dump()]), sleep=lambda _: None
+            ControlledBackend([tailoring_proposal(master)]), sleep=lambda _: None
         ),
         master,
         original,

@@ -71,13 +71,17 @@ placeholders render from `master_resume.json`, preserving their original runs an
 formatting. Existing templates remain compatible; inline hyperlink targets remain
 in the hash-checked local document and are never sent to the LLM.
 
-The LLM may select and reorder skills and role bullets and reorder whole project
-blocks. Deterministic code then ranks existing skill groups/items and original
-bullets against the job title and description; it can only reorder or omit those
-master items. For a matching job, it composes a short target-role summary from
-the job's role wording and exact matching master skills. The summary stays within
-the original character limit and passes the metric/markup checks. Other model
-wording must match original wording or **owner-approved** alternatives in
+Deterministic code owns skill, role-bullet, and project ordering. It ranks only
+existing master items against the job title and description, using the reviewed
+spelling aliases in `data/skill_aliases.yaml`; aliases help match terminology and
+never become resume skills. Existing items are kept within their Word slots. For
+a matching job, local code composes a short target-role summary from the job's
+role wording and exact matching master skills. The LLM may propose a summary and
+up to three lightly rephrased experience bullets, with each exact character limit
+included in its request. If a proposed slot is too long, it gets one focused
+shortening request; if it remains too long or fails truth checks, only that slot
+reverts to its original wording while deterministic ordering and other valid
+edits remain. Other model wording must match original wording or **owner-approved** alternatives in
 `approved_rephrasings`/`approved_summary_rephrasings`. Add alternatives only after
 you have checked that they say the same thing. Arbitrary paraphrases remain
 rejected. Alternatives cannot add metrics, unsupported proper nouns,

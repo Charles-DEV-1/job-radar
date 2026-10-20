@@ -1,0 +1,15 @@
+# Reviewed equivalent spellings used only to match job language to existing
+# master-resume skills and experience. Aliases never become output skills.
+aliases:
+  - [PostgreSQL, Postgres, postgres]
+  - [Node.js, NodeJS, Node]
+  - [JavaScript, JS]
+  - [TypeScript, TS]
+  - [React, React.js, ReactJS]
+  - [Next.js, NextJS]
+  - [Go, Golang]
+  - [Kubernetes, K8s]
+  - [REST, RESTful]
+  - [MongoDB, Mongo]
+  - [Express.js, ExpressJS]
+  - [FastAPI, Fast API]

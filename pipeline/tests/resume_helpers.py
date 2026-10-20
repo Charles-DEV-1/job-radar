@@ -122,6 +122,19 @@ def synthetic_resume(
     return master, original, template, layout
 
 
+def tailoring_proposal(
+    master: MasterResume,
+    *,
+    summary: str | None = None,
+    bullet_rewrites: list[dict[str, str]] | None = None,
+) -> dict[str, Any]:
+    """Strict LLM surface: wording proposals only, with no ordering fields."""
+    return {
+        "summary": summary if summary is not None else master.summary,
+        "bullet_rewrites": bullet_rewrites or [],
+    }
+
+
 def job() -> dict[str, Any]:
     return {
         "id": str(uuid4()),

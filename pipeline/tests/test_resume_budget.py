@@ -6,14 +6,18 @@ from typing import Any
 
 import httpx
 import pytest
-from resume_helpers import job, synthetic_resume, verified_pagination
+from resume_helpers import (
+    job,
+    synthetic_resume,
+    tailoring_proposal,
+    verified_pagination,
+)
 from test_groq import MODELS, groq_reply, mock_provider
 
 from pipeline.llm.client import SDKBackend, Usage
 from pipeline.llm.pacing import prompt_tokens
 from pipeline.resume.prompt import compact_json, request
 from pipeline.resume.tailor import TailoringClient, tailor_job
-from pipeline.resume.validate import unchanged
 
 
 def test_compact_request_preserves_all_facts_and_description_words(
@@ -24,16 +28,20 @@ def test_compact_request_preserves_all_facts_and_description_words(
     current_job["description_text"] = "Requirements:\n Python\tSQL\n  AWS\n"
     system, payload, minimum = request(master, current_job)
     assert payload["job"]["description_text"] == "Requirements: Python SQL AWS"
-    for key, pointer in payload["evidence"].items():
-        value: Any = payload["master"]
-        for part in pointer.lstrip("/").split("/"):
-            value = value[int(part)] if isinstance(value, list) else value[part]
-        if key == "summary":
-            assert value == master.summary
-        elif key == "b-1":
-            assert value == master.experience[0].bullets[0].text
+    assert payload["slot_character_limits"]["summary"] == len(master.summary)
+    assert payload["slot_character_limits"]["bullets"] == {
+        bullet.id: len(bullet.text)
+        for role in master.experience
+        for bullet in role.bullets
+    }
+    assert "at most 3" in system
+    assert payload["master"]["summary"] == master.summary
+    assert payload["master"]["experience"][0]["bullets"][0]["text"] == (
+        master.experience[0].bullets[0].text
+    )
+    assert "evidence" not in payload and "match_note_options" not in payload
     serialized = compact_json(payload)
-    # A real bullet occurs once instead of twice (facts + evidence text).
+    # A real bullet occurs once in the model facts.
     assert serialized.count(master.experience[0].bullets[0].text) == 1
     assert '"title":' not in system  # Schema presentation labels removed.
     assert '"additionalProperties":false' in system
@@ -63,7 +71,8 @@ def test_8000_budget_renders_complete_resume_with_reserved_output(
         assert prompt_tokens(system, content) + capacity <= 8000
         assert payload["reasoning_effort"] == "low"
         return httpx.Response(
-            200, json=groq_reply(recorded, unchanged(master).model_dump_json(), model)
+            200,
+            json=groq_reply(recorded, json.dumps(tailoring_proposal(master)), model),
         )
 
     mock_provider(monkeypatch, handler)

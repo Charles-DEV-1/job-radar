@@ -133,5 +133,18 @@ class Tailoring(StrictModel):
     match_notes: MatchNotes
 
 
+class SlotRewrite(StrictModel):
+    """Response for one focused shortening retry; no extra fields are allowed."""
+
+    text: str
+
+
+class TailoringProposal(StrictModel):
+    """The model's complete editable surface; ordering stays in deterministic code."""
+
+    summary: str
+    bullet_rewrites: list[RewrittenBullet] = Field(default_factory=list, max_length=3)
+
+
 def load_master(path: Path) -> MasterResume:
     return MasterResume.model_validate_json(path.read_text(encoding="utf-8"))

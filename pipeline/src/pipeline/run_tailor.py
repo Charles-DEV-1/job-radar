@@ -268,7 +268,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--local-only",
         action="store_true",
-        default=os.environ.get("RESUME_TAILORING_MODE", "llm").casefold() == "local",
+        default=os.environ.get("RESUME_TAILORING_MODE", "local").casefold() == "local",
         help=(
             "Tailor by deterministic local ordering and approved master wording; "
             "never send resume content to an LLM"

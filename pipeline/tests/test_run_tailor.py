@@ -432,6 +432,7 @@ def test_missing_llm_credentials_leaves_jobs_unclaimed(
     path.write_text(master.model_dump_json(), encoding="utf-8")
     for name in ("LLM_PROVIDER", "LLM_MODEL", "LLM_API_KEY"):
         monkeypatch.delenv(name, raising=False)
+    monkeypatch.setenv("RESUME_TAILORING_MODE", "llm")
     monkeypatch.setattr(run_tailor, "load_dotenv", lambda *args, **kwargs: None)
 
     def forbidden(_: Any) -> Any:
@@ -454,3 +455,31 @@ def test_missing_llm_credentials_leaves_jobs_unclaimed(
         == 2
     )
     assert "Configure LLM_PROVIDER" in capsys.readouterr().out
+
+
+def test_local_tailoring_is_the_default_without_provider_credentials(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: Any
+) -> None:
+    master, original, template, layout = synthetic_resume(tmp_path)
+    path = tmp_path / "master.json"
+    path.write_text(master.model_dump_json(), encoding="utf-8")
+    for name in ("LLM_PROVIDER", "LLM_MODEL", "LLM_API_KEY", "RESUME_TAILORING_MODE"):
+        monkeypatch.delenv(name, raising=False)
+    monkeypatch.setattr(run_tailor, "load_dotenv", lambda *args, **kwargs: None)
+    assert (
+        run_tailor.main(
+            [
+                "--master-docx",
+                str(original),
+                "--master-json",
+                str(path),
+                "--template",
+                str(template),
+                "--layout",
+                str(layout),
+                "--dry-run",
+            ]
+        )
+        == 0
+    )
+    assert "eligible jobs locally" in capsys.readouterr().out

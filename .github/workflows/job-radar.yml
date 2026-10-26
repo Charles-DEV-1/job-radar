@@ -20,7 +20,7 @@ jobs:
       LLM_PROVIDER: ${{ secrets.LLM_PROVIDER }}
       LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
       LLM_MODEL: ${{ secrets.LLM_MODEL }}
-      RESUME_TAILORING_MODE: ${{ secrets.RESUME_TAILORING_MODE || 'llm' }}
+      RESUME_TAILORING_MODE: ${{ secrets.RESUME_TAILORING_MODE || 'local' }}
       LLM_MAX_TOKENS_PER_MINUTE: ${{ secrets.LLM_MAX_TOKENS_PER_MINUTE || '6000' }}
       LLM_MAX_CALLS_PER_RUN: ${{ secrets.LLM_MAX_CALLS_PER_RUN || '50' }}
       LLM_INPUT_USD_PER_MILLION: ${{ secrets.LLM_INPUT_USD_PER_MILLION }}

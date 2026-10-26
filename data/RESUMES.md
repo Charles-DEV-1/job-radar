@@ -146,7 +146,7 @@ necessary because fonts and renderers can differ.
 After applying `supabase/migrations/20261012000200_stage4_resume_tailoring.sql`
 and the forward migration `supabase/migrations/20261021000100_resume_low_fit.sql`,
 configure `LLM_PROVIDER`, `LLM_API_KEY`, and `LLM_MODEL` only when ready for live
-tailoring. Set `RESUME_TAILORING_MODE=local` (or pass `--local-only`) to use
+tailoring. `RESUME_TAILORING_MODE` defaults to `local` (or pass `--local-only`) to use
 deterministic local tailoring and make no model request containing resume facts.
 This is the recommended option for an unpaid Gemini tier. The configured provider
 may still process changed public careers-page regions for job extraction. The

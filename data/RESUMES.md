@@ -146,13 +146,18 @@ necessary because fonts and renderers can differ.
 After applying `supabase/migrations/20261012000200_stage4_resume_tailoring.sql`
 and the forward migration `supabase/migrations/20261021000100_resume_low_fit.sql`,
 configure `LLM_PROVIDER`, `LLM_API_KEY`, and `LLM_MODEL` only when ready for live
-tailoring. The OpenAI/Anthropic/Groq clients and optional per-million token
+tailoring. Set `RESUME_TAILORING_MODE=local` (or pass `--local-only`) to use
+deterministic local tailoring and make no model request containing resume facts.
+This is the recommended option for an unpaid Gemini tier. The configured provider
+may still process changed public careers-page regions for job extraction. The
+OpenAI/Anthropic/Groq/Gemini clients and optional per-million token
 prices are reused; unknown prices/usage produce a null estimate, never a made-up
 cost. Missing credentials fail before any job is claimed.
 
 ```powershell
 .\.venv\Scripts\python.exe -m pipeline.run_tailor --limit 3
 .\.venv\Scripts\python.exe -m pipeline.run_tailor --limit 3 --include-maybe
+.\.venv\Scripts\python.exe -m pipeline.run_tailor --limit 1 --local-only
 ```
 
 To inspect one provider proposal without claiming or changing a job, run:

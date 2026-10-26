@@ -125,7 +125,7 @@ def record_total(
 
 def run_jobs(
     store: ResumeStore,
-    client: TailoringClient,
+    client: TailoringClient | None,
     master: MasterResume,
     original: Path,
     template: Path,
@@ -135,6 +135,7 @@ def run_jobs(
     limit: int = 3,
     include_maybe: bool = False,
     pagination: Pagination | None = None,
+    local_only: bool = False,
 ) -> list[Outcome]:
     if not 1 <= limit <= 20:
         raise ValueError("Tailoring run limit must be between 1 and 20")
@@ -172,6 +173,7 @@ def run_jobs(
                 usage,
                 pagination,
                 attempt_id=claim_id,
+                local_only=local_only,
             )
             remote_path = f"{job['id']}/{claim_id}/{result.filename}"
             store.upload(remote_path, result.path)
@@ -264,6 +266,15 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--include-maybe", action="store_true")
     parser.add_argument(
+        "--local-only",
+        action="store_true",
+        default=os.environ.get("RESUME_TAILORING_MODE", "llm").casefold() == "local",
+        help=(
+            "Tailor by deterministic local ordering and approved master wording; "
+            "never send resume content to an LLM"
+        ),
+    )
+    parser.add_argument(
         "--diagnose-job",
         help=(
             "Make one read-only tailoring request and print raw response "
@@ -284,16 +295,19 @@ def main(argv: list[str] | None = None) -> int:
             )
         load_layout(args.layout, master, args.master_docx, args.template)
         if args.dry_run:
+            strategy = "locally" if args.local_only else "with the configured LLM"
             print(
                 f"Tailoring dry-run: inputs validated; would tailor up to {args.limit} "
-                "eligible jobs with the configured LLM and upload resumes; "
-                "no database reads/writes or provider calls made"
+                f"eligible jobs {strategy} and upload resumes; no database "
+                "reads/writes or provider calls made"
             )
             return 0
+        if args.local_only and args.diagnose_job:
+            raise ValueError("--diagnose-job requires LLM mode")
         with HTTPClient() as http:
-            # Configure before claiming any jobs: missing LLM credentials leave
-            # pending jobs untouched and make no provider calls.
-            client = TailoringClient.from_environment(http)
+            # Configure before claiming jobs unless local-only mode explicitly
+            # avoids sending private resume facts to an external model.
+            client = None if args.local_only else TailoringClient.from_environment(http)
             store = SupabaseStore.from_environment(http)
             if args.diagnose_job:
                 response = (
@@ -343,6 +357,7 @@ def main(argv: list[str] | None = None) -> int:
                 RunRecorder(args.report_file),
                 args.limit,
                 args.include_maybe,
+                local_only=args.local_only,
             )
         tailored_count = sum(
             o.status == "ready" and bool(o.changes.get("tailoring_changed"))
@@ -357,7 +372,11 @@ def main(argv: list[str] | None = None) -> int:
         )
         for outcome in outcomes:
             print_outcome(outcome)
-        print("Usage/cost recorded in the private tailoring run log")
+        print(
+            "No LLM calls made; resume content stayed local"
+            if args.local_only
+            else "Usage/cost recorded in the private tailoring run log"
+        )
         return 1 if any(o.status == "failed" for o in outcomes) else 0
     except ValidationError:
         print("Tailoring setup failed: master JSON violates its strict schema")

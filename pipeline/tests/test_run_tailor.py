@@ -152,6 +152,44 @@ def test_run_cap_private_upload_notes_usage_and_repeat_idempotence(
     )
 
 
+def test_local_only_tailoring_uses_deterministic_changes_without_llm(
+    tmp_path: Path, pg_store: PostgresStore
+) -> None:
+    master, original, template, layout = synthetic_resume(
+        tmp_path,
+        skills=[
+            {"name": "Databases", "items": ["SQL"]},
+            {"name": "Backend", "items": ["Python", "FastAPI"]},
+        ],
+        experience_bullets=[
+            "Used SQL to reduce response by 15%.",
+            "Built Python APIs serving 20 users.",
+        ],
+    )
+    insert_jobs(pg_store, ["include"])
+    store = PgResumeStore(pg_store)
+    results = run_tailor.run_jobs(
+        store,
+        None,
+        master,
+        original,
+        template,
+        layout,
+        tmp_path / "output",
+        RunRecorder(tmp_path / "runs"),
+        local_only=True,
+        pagination=verified_pagination(),
+    )
+    assert len(results) == 1 and results[0].status == "ready"
+    assert results[0].usage.attempts == 0
+    assert results[0].changes["tailoring_changed"]
+    assert "no resume content sent to an LLM" in " ".join(results[0].warnings)
+    saved = pg_store.db.query("select resume_path,resume_status from public.jobs")[0]
+    assert saved["resume_status"] == "ready"
+    assert saved["resume_path"] in store.uploads
+    assert store.uploads[saved["resume_path"]] != original.read_bytes()
+
+
 def test_invalid_model_order_field_retries_without_controlling_ordering(
     tmp_path: Path, pg_store: PostgresStore
 ) -> None:

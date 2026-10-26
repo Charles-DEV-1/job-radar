@@ -482,10 +482,11 @@ def tailor_job(
     template: Path,
     layout_path: Path,
     output: Path,
-    client: TailoringClient,
+    client: TailoringClient | None,
     usage: Usage,
     pagination: Pagination | None = None,
     attempt_id: str | None = None,
+    local_only: bool = False,
 ) -> TailorResult:
     job_id = str(UUID(job["id"]))
     name = filename(master, job["company"], job["title"])
@@ -537,9 +538,25 @@ def tailor_job(
         )
 
     try:
-        proposed = client.propose(
-            master, job, usage, check, input_warnings, skill_slot_limits
-        )
+        if local_only:
+            proposed = deterministic_tailoring(
+                master, job, unchanged(master), skill_slot_limits
+            )
+            proposed = validate_tailoring(
+                master,
+                proposed,
+                compact_description(job["description_text"], job["company"]).text,
+                generated_summary=proposed.summary,
+            )
+        else:
+            if client is None:
+                raise TailoringFailure("LLM tailoring client is unavailable")
+            proposed = client.propose(
+                master, job, usage, check, input_warnings, skill_slot_limits
+            )
+        if local_only:
+            check(proposed)
+            warnings.append("Local-only tailoring; no resume content sent to an LLM")
     except TailoringFailure as exc:
         # Keep the deterministic, master-only match useful even if optional LLM
         # prose or match-note generation fails. No proposed wording is accepted.
@@ -567,10 +584,15 @@ def tailor_job(
                 warnings,
             )
         else:
-            warnings.append(
-                "LLM proposal rejected or unavailable; applied deterministic "
-                "master-only ordering instead (" + str(exc) + ")"
-            )
+            if local_only:
+                warnings.append(
+                    "Local-only tailoring; no resume content sent to an LLM"
+                )
+            else:
+                warnings.append(
+                    "LLM proposal rejected or unavailable; applied deterministic "
+                    "master-only ordering instead (" + str(exc) + ")"
+                )
             changes = summarize(master, proposed, original, destination)
             result = TailorResult(
                 destination,

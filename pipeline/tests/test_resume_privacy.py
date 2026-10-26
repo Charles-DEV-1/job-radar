@@ -33,7 +33,7 @@ LINK = "https://portfolio.example.test/ada-private"
 SENTINELS = [NAME, "Ada", "PrivacySentinel", EMAIL, PHONE, ADDRESS, LINK]
 
 
-@pytest.mark.parametrize("provider", ["openai", "anthropic", "groq"])
+@pytest.mark.parametrize("provider", ["openai", "anthropic", "groq", "google"])
 @pytest.mark.parametrize("raw_only", [False, True])
 def test_no_contact_in_any_http_request_including_retries_and_local_render(
     tmp_path: Path,
@@ -83,7 +83,10 @@ def test_no_contact_in_any_http_request_including_retries_and_local_render(
         serialized = json.dumps(body, ensure_ascii=False).casefold()
         for sentinel in [*SENTINELS, "+234-912-345-6789"]:
             assert sentinel.casefold() not in serialized
-        sent_payload = json.loads(body["messages"][-1]["content"])
+        if provider == "google":
+            sent_payload = json.loads(body["contents"][-1]["parts"][0]["text"])
+        else:
+            sent_payload = json.loads(body["messages"][-1]["content"])
         if "master" in sent_payload:
             assert "contact" not in sent_payload["master"]
         else:
@@ -102,6 +105,22 @@ def test_no_contact_in_any_http_request_including_retries_and_local_render(
                     "content": [{"type": "text", "text": content}],
                     "stop_reason": "end_turn",
                     "usage": {"input_tokens": 10, "output_tokens": 5},
+                },
+            )
+        if provider == "google":
+            return httpx.Response(
+                200,
+                json={
+                    "candidates": [
+                        {
+                            "content": {"parts": [{"text": content}]},
+                            "finishReason": "STOP",
+                        }
+                    ],
+                    "usageMetadata": {
+                        "promptTokenCount": 10,
+                        "candidatesTokenCount": 5,
+                    },
                 },
             )
         return httpx.Response(200, json=groq_reply(recorded, content))
@@ -129,8 +148,12 @@ def test_no_contact_in_any_http_request_including_retries_and_local_render(
     )
     assert result.status == "ready", result.error
     assert len(calls) == 3
-    first = json.loads(calls[0]["messages"][-1]["content"])
-    last = json.loads(calls[-1]["messages"][-1]["content"])
+    if provider == "google":
+        first = json.loads(calls[0]["contents"][-1]["parts"][0]["text"])
+        last = json.loads(calls[-1]["contents"][-1]["parts"][0]["text"])
+    else:
+        first = json.loads(calls[0]["messages"][-1]["content"])
+        last = json.loads(calls[-1]["messages"][-1]["content"])
     assert last["slot"]["kind"] == "bullet"
     assert "validator_errors" not in last
     assert set(first["master"]) == {

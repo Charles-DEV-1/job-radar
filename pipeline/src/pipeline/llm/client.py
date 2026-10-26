@@ -9,6 +9,7 @@ from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from email.utils import parsedate_to_datetime
 from typing import Protocol, Self
+from urllib.parse import quote
 
 import httpx
 from pydantic import BaseModel, ConfigDict, RootModel, ValidationError
@@ -63,6 +64,15 @@ class ProviderRateLimitError(ValueError):
 
 class ProviderBudgetError(ValueError):
     """The request cannot fit; retries would send the same oversized input."""
+
+
+class ProviderHTTPError(ValueError):
+    """HTTP failure carrying only the status needed for retry policy."""
+
+    def __init__(self, response: httpx.Response) -> None:
+        self.status_code = response.status_code
+        self.response = response
+        super().__init__(f"LLM provider returned HTTP {response.status_code}")
 
 
 def account_rate_limit(error: ProviderRateLimitError, usage: Usage) -> None:
@@ -256,6 +266,52 @@ class SDKBackend:
                 complete=message.stop_reason == "end_turn",
                 finish_reason=message.stop_reason,
             )
+        if self.provider == "google":
+            url = (
+                "https://generativelanguage.googleapis.com/v1beta/models/"
+                + quote(self.model, safe="-._")
+                + ":generateContent"
+            )
+            with httpx.Client(
+                timeout=30,
+                transport=PacedTransport(self.limiter),
+                headers={"User-Agent": USER_AGENT},
+            ) as client:
+                response = client.post(
+                    url,
+                    headers={"x-goog-api-key": self.key},
+                    json={
+                        "systemInstruction": {"parts": [{"text": system}]},
+                        "contents": [{"role": "user", "parts": [{"text": content}]}],
+                        "generationConfig": {
+                            "maxOutputTokens": capacity,
+                            "responseMimeType": "application/json",
+                        },
+                    },
+                )
+            if response.is_error:
+                raise ProviderHTTPError(response)
+            data = response.json()
+            candidates = data.get("candidates") or []
+            candidate = candidates[0] if candidates else {}
+            parts = (candidate.get("content") or {}).get("parts") or []
+            text = "".join(
+                part.get("text", "") for part in parts if not part.get("thought")
+            )
+            usage = data.get("usageMetadata") or {}
+            input_tokens = usage.get("promptTokenCount")
+            output_tokens = usage.get("candidatesTokenCount")
+            if output_tokens is not None:
+                output_tokens += usage.get("thoughtsTokenCount", 0) or 0
+            finish_reason = candidate.get("finishReason")
+            return Reply(
+                text,
+                input_tokens or 0,
+                output_tokens or 0,
+                complete=finish_reason == "STOP",
+                usage_known=input_tokens is not None and output_tokens is not None,
+                finish_reason=finish_reason,
+            )
         raise ValueError("Unsupported LLM_PROVIDER; extraction is disabled")
 
 
@@ -276,7 +332,11 @@ class ExtractionClient:
             os.environ.get(name, "")
             for name in ("LLM_PROVIDER", "LLM_API_KEY", "LLM_MODEL")
         )
-        if provider not in {"openai", "anthropic", "groq"} or not key or not model:
+        if (
+            provider not in {"openai", "anthropic", "groq", "google"}
+            or not key
+            or not model
+        ):
             raise ValueError("Configure LLM_PROVIDER, LLM_API_KEY and LLM_MODEL")
         try:
             budget = int(os.environ.get("LLM_MAX_TOKENS_PER_MINUTE", "6000"))

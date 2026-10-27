@@ -102,7 +102,7 @@ companies:
     careers_url: https://apply.workable.com/mono/
     category: fintech
     country: NG
-    enabled: true
+    enabled: false
     ats: workable
     ats_slug: mono
     detection_status: needs_review
@@ -349,7 +349,7 @@ companies:
     careers_url: https://chowdeck.bamboohr.com/careers
     category: other
     country: NG
-    enabled: true
+    enabled: false
     ats: workable
     ats_slug: chowdeck
     detection_status: needs_review
@@ -522,7 +522,7 @@ companies:
     careers_url: https://risevest.bamboohr.com/careers/
     category: fintech
     country: NG
-    enabled: true
+    enabled: false
     ats: unknown
     ats_slug:
     detection_status: needs_review

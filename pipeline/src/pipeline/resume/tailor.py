@@ -311,7 +311,7 @@ class TailoringClient(ExtractionClient):
         master: MasterResume,
         job: dict[str, Any],
         usage: Usage,
-        check: Callable[[Tailoring], None],
+        check: Callable[[Tailoring], Tailoring | None],
         warnings: list[str] | None = None,
         skill_slot_limits: list[int] | None = None,
         capture_diagnostic: bool = False,
@@ -395,8 +395,8 @@ class TailoringClient(ExtractionClient):
                 )
                 if warnings is not None:
                     warnings.extend(slot_warnings)
-                check(proposed)
-                return proposed
+                fitted = check(proposed)
+                return fitted if fitted is not None else proposed
             except ProviderRateLimitError as exc:
                 account_rate_limit(exc, usage)
                 raise TailoringFailure(str(exc)) from None
@@ -527,15 +527,101 @@ def tailor_job(
         write_report(result)
         return result
 
-    def check(candidate: Tailoring) -> None:
+    original_edit = unchanged(master)
+
+    def render_candidate(candidate: Tailoring) -> None:
         if slot_length_errors(master, candidate):
             raise LayoutError("Editable wording exceeds its original character limit")
         destination.unlink(missing_ok=True)
         destination.with_suffix(".pdf").unlink(missing_ok=True)
         render(master, candidate, original, template, layout_path, destination)
-        warnings[:] = pagination.check(
-            original, destination, layout.get("target_pages")
+
+    def check(candidate: Tailoring) -> Tailoring:
+        """Render safe edits independently so one tight slot cannot discard all."""
+        try:
+            render_candidate(candidate)
+            fitted = candidate
+        except LayoutError:
+            fallbacks: list[tuple[str, Callable[[Tailoring], Tailoring]]] = [
+                (
+                    "summary",
+                    lambda edit: edit.model_copy(update={"summary": master.summary}),
+                )
+            ]
+            master_roles = {role.id: role for role in original_edit.experience}
+            for role_id, master_role in master_roles.items():
+                fallbacks.append(
+                    (
+                        f"experience role {role_id}",
+                        lambda edit, role_id=role_id, master_role=master_role: (
+                            edit.model_copy(
+                                update={
+                                    "experience": [
+                                        master_role if role.id == role_id else role
+                                        for role in edit.experience
+                                    ]
+                                }
+                            )
+                        ),
+                    )
+                )
+            fallbacks.extend(
+                [
+                    (
+                        "skills ordering",
+                        lambda edit: edit.model_copy(
+                            update={"skills_order": original_edit.skills_order}
+                        ),
+                    ),
+                    (
+                        "projects ordering",
+                        lambda edit: edit.model_copy(
+                            update={"projects_order": original_edit.projects_order}
+                        ),
+                    ),
+                ]
+            )
+
+            # First isolate a single slot that restores renderability. If the
+            # overflow comes from an interaction, progressively restore fields
+            # while retaining every independent edit that still fits.
+            fitted = None
+            for label, revert in fallbacks:
+                trial = revert(candidate)
+                try:
+                    render_candidate(trial)
+                except LayoutError:
+                    continue
+                fitted = trial
+                warnings.append(
+                    f"Kept the master {label} because its tailored version did not fit"
+                )
+                break
+            if fitted is None:
+                working = candidate
+                for label, revert in fallbacks:
+                    working = revert(working)
+                    try:
+                        render_candidate(working)
+                    except LayoutError:
+                        continue
+                    fitted = working
+                    warnings.append(
+                        f"Kept the master {label} because its tailored version "
+                        "did not fit"
+                    )
+                    break
+            if fitted is None:
+                fitted = original_edit
+                render_candidate(fitted)
+                warnings.append(
+                    "Kept the master resume wording and order because tailored edits "
+                    "did not fit its DOCX slots"
+                )
+        warnings.extend(
+            pagination.check(original, destination, layout.get("target_pages"))
         )
+        return fitted
 
     try:
         if local_only:
@@ -555,7 +641,7 @@ def tailor_job(
                 master, job, usage, check, input_warnings, skill_slot_limits
             )
         if local_only:
-            check(proposed)
+            proposed = check(proposed)
             warnings.append("Local-only tailoring; no resume content sent to an LLM")
     except TailoringFailure as exc:
         # Keep the deterministic, master-only match useful even if optional LLM
@@ -570,7 +656,7 @@ def tailor_job(
                 compact_description(job["description_text"], job["company"]).text,
                 generated_summary=proposed.summary,
             )
-            check(proposed)
+            proposed = check(proposed)
         except (LayoutError, TailoringFailure, TruthError, ValueError) as render_exc:
             destination.parent.mkdir(parents=True, exist_ok=True)
             destination.with_suffix(".pdf").unlink(missing_ok=True)

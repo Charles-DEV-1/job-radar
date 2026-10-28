@@ -3,10 +3,14 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+import pytest
 from docx import Document
 from resume_helpers import ControlledBackend, synthetic_resume, tailoring_proposal
 
 from pipeline.llm.client import Usage
+from pipeline.resume import tailor as tailor_module
+from pipeline.resume.layout import LayoutError
+from pipeline.resume.layout import render as render_resume
 from pipeline.resume.pdf import Pagination
 from pipeline.resume.relevance import deterministic_tailoring, matching_skills
 from pipeline.resume.schema import TailoringProposal
@@ -206,6 +210,58 @@ def test_overlong_summary_retry_reverts_only_summary_and_keeps_ordering(
     bullets = [p.text for p in document.paragraphs if p.style.name == "List Bullet"]
     assert bullets[0] == "Built FastAPI backend services in Python."
     assert len(backend.calls) == 2
+
+
+def test_local_layout_overflow_keeps_other_safe_tailoring_changes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    master, original, template, layout = synthetic_resume(
+        tmp_path,
+        skills=[
+            {"name": "Database Technologies", "items": ["SQL"]},
+            {"name": "Backend", "items": ["Python", "FastAPI"]},
+        ],
+        experience_bullets=[
+            "Used SQL database queries to optimize response handling by 15%.",
+            "Built FastAPI backend services.",
+        ],
+    )
+    original_order = [bullet.id for bullet in master.experience[0].bullets]
+
+    def reject_reordered_role(*args: Any, **kwargs: Any) -> None:
+        edit = args[1]
+        if edit.experience[0].bullet_order != original_order:
+            raise LayoutError("Synthetic bullet slot overflow")
+        render_resume(*args, **kwargs)
+
+    monkeypatch.setattr(tailor_module, "render", reject_reordered_role)
+    pagination = Pagination("controlled-renderer", discover=False)
+    pagination.convert = lambda *_: 1
+    result = tailor_job(
+        master,
+        {
+            "id": "004ebdc0-87c9-4d76-98a5-857628a65ac4",
+            "company": "Example Company",
+            "title": "FastAPI Backend Engineer",
+            "description_text": "Required: FastAPI, Python, and SQL.",
+        },
+        original,
+        template,
+        layout,
+        tmp_path / "output",
+        None,
+        Usage(),
+        pagination,
+        local_only=True,
+    )
+
+    assert result.status == "ready", result.error
+    assert result.change_report["skills_after"][0]["group"] == "Backend"
+    assert any("master experience role" in warning for warning in result.warnings)
+    document = Document(result.path)
+    assert document.tables[0].cell(0, 0).text.startswith("Backend: FastAPI")
+    bullets = [p.text for p in document.paragraphs if p.style.name == "List Bullet"]
+    assert bullets[:2] == [bullet.text for bullet in master.experience[0].bullets]
 
 
 def test_overlong_bullet_retry_reverts_only_that_bullet(tmp_path: Path) -> None:

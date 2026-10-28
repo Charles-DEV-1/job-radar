@@ -91,10 +91,9 @@ roles:
     - api development
     - distributed systems
     - python developer
-    - java developer
-    - golang
     - node.js
     - software development
+    - frontend development
 locations:
   countries:
     DZ: {name: Algeria, aliases: [Algeria], cities: [Algiers]}
